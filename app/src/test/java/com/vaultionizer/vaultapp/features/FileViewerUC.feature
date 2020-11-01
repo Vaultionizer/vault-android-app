@@ -1,4 +1,7 @@
 Feature: FileViewer
+  As a user,
+    I want to upload, download, select, deselect
+
   Scenario Outline: A user selects a file
     Given a user was logged in successfully
     And the user has opened the FileViewer
@@ -50,9 +53,7 @@ Feature: FileViewer
     Then the native file explorer is opened
     And all chosen files are return with their path to the application <2beUploaded>
     And the clients sends a upload request with the returned files to the server
+    And clients send updated refFile to server
     Examples:
-      | 2beUploaded                                                                                                                                     |
-      |  "storage://dcim/pictures/pic_001", "storage://dcim/videos/video008.mp4", "storage://db/keybases/key.kdbx", "storage://dcim/pictures/pic_002",  |
-
-    @TODO
-    # save file
+      | 2beUploaded                                                                                                                                    |
+      | "storage://dcim/pictures/pic_001", "storage://dcim/videos/video008.mp4", "storage://db/keybases/key.kdbx", "storage://dcim/pictures/pic_002",  |
