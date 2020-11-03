@@ -26,21 +26,44 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/login_username_layout"
+        android:id="@+id/login_host_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
         android:layout_marginTop="24dp"
         android:layout_marginEnd="24dp"
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-        android:hint="User"
-        app:startIconDrawable="@drawable/ic_account_circle_24px"
+        android:hint="Host"
+        app:startIconDrawable="@drawable/ic_dns_24px"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView">
 
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/username"
+            android:id="@+id/register_host"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:backgroundTint="#FFFFFF"
+            android:inputType="textEmailAddress"
+            android:selectAllOnFocus="true" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/login_username_layout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="24dp"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:hint="User"
+        app:startIconDrawable="@drawable/ic_account_circle_24px"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/login_host_layout">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/login_username"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:backgroundTint="#FFFFFF"
@@ -79,7 +102,7 @@
         app:layout_constraintTop_toBottomOf="@+id/login_username_layout">
 
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/password"
+            android:id="@+id/login_password"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:imeActionLabel="@string/action_sign_in_short"
@@ -87,17 +110,28 @@
             android:inputType="textPassword"
             android:selectAllOnFocus="true" />
     </com.google.android.material.textfield.TextInputLayout>
-    
+
     <ProgressBar
         android:id="@+id/loading"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:layout_marginStart="16dp"
         android:layout_marginTop="1dp"
         android:visibility="gone"
         app:layout_constraintEnd_toEndOf="@+id/login_password_layout"
         app:layout_constraintStart_toStartOf="@+id/login_password_layout"
         app:layout_constraintTop_toBottomOf="@+id/login_password_layout" />
+
+    <include
+        layout="@layout/fragment_sign_in_alternative"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="8dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

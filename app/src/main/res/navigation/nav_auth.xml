@@ -11,13 +11,31 @@
         android:label="fragment_login"
         tools:layout="@layout/fragment_login" >
         <action
-            android:id="@+id/action_loginFragment_to_registerFragment"
-            app:destination="@id/registerFragment"
+            android:id="@+id/action_loginFragment_to_registerStepHostFragment"
+            app:destination="@id/registerStepHostFragment"
             app:enterAnim="@anim/fragment_fade_enter" />
     </fragment>
     <fragment
-        android:id="@+id/registerFragment"
-        android:name="com.vaultionizer.vaultapp.ui.register.RegisterFragment"
-        android:label="fragment_register"
-        tools:layout="@layout/fragment_register" />
+        android:id="@+id/registerStepHostFragment"
+        android:name="com.vaultionizer.vaultapp.ui.register.host.RegisterStepHostFragment"
+        android:label="fragment_register_step_host"
+        tools:layout="@layout/fragment_register_step_host" >
+        <action
+            android:id="@+id/action_registerStepHostFragment_to_registerStepUserFragment3"
+            app:destination="@id/registerStepUserFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/registerStepUserFragment"
+        android:name="com.vaultionizer.vaultapp.ui.register.user.RegisterStepUserFragment"
+        android:label="fragment_register_step_user"
+        tools:layout="@layout/fragment_register_step_user" >
+        <action
+            android:id="@+id/action_registerStepUserFragment_to_registerStepAuthKeyFragment"
+            app:destination="@id/registerStepAuthKeyFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/registerStepAuthKeyFragment"
+        android:name="com.vaultionizer.vaultapp.ui.register.authKey.RegisterStepAuthKeyFragment"
+        android:label="fragment_register_step_auth_key"
+        tools:layout="@layout/fragment_register_step_auth_key" />
 </navigation>

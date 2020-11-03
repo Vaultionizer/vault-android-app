@@ -36,8 +36,8 @@ class LoginFragment : Fragment() {
         loginViewModel = ViewModelProvider(this, LoginViewModelFactory())
                 .get(LoginViewModel::class.java)
 
-        val usernameEditText = view.findViewById<EditText>(R.id.username)
-        val passwordEditText = view.findViewById<EditText>(R.id.password)
+        val usernameEditText = view.findViewById<EditText>(R.id.login_username)
+        val passwordEditText = view.findViewById<EditText>(R.id.login_password)
         val loginButton = view.findViewById<Button>(R.id.login)
         val loadingProgressBar = view.findViewById<ProgressBar>(R.id.loading)
 
@@ -101,7 +101,12 @@ class LoginFragment : Fragment() {
                     usernameEditText.text.toString(),
                     passwordEditText.text.toString()
             ) */
-            val action = LoginFragmentDirections.actionLoginFragmentToRegisterFragment()
+
+        }
+
+        val signUpButton = view.findViewById<Button>(R.id.login_sign_up)
+        signUpButton.setOnClickListener {
+            val action = LoginFragmentDirections.actionLoginFragmentToRegisterStepHostFragment()
             findNavController().navigate(action)
         }
     }
