@@ -14,7 +14,7 @@
         android:layout_marginStart="24dp"
         android:layout_marginTop="32dp"
         android:layout_marginEnd="24dp"
-        android:text="On which host do you want to store your data securly? "
+        android:text="@string/register_step_host_header"
         android:textAlignment="center"
         android:textSize="18sp"
         android:textStyle="bold"
@@ -30,9 +30,9 @@
         android:layout_marginStart="24dp"
         android:layout_marginTop="32dp"
         android:layout_marginEnd="24dp"
-        android:hint="Host"
+        android:hint="@string/all_host"
         app:helperTextEnabled="true"
-        app:helperText="For example https://example.com"
+        app:helperText="@string/all_example_url"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView3">
@@ -43,7 +43,7 @@
             android:layout_height="match_parent"
             android:inputType="textUri"
             android:imeOptions="actionNext"
-            android:imeActionLabel="Next step"
+            android:imeActionLabel="@string/all_next_step"
             android:selectAllOnFocus="true" />
     </com.google.android.material.textfield.TextInputLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -33,7 +33,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
-        android:text="Oder"
+        android:text="@string/signup_divider"
         app:layout_constraintBottom_toTopOf="@+id/login_sign_up"
         app:layout_constraintEnd_toEndOf="@+id/login_sign_up"
         app:layout_constraintStart_toStartOf="@+id/login_sign_up"
@@ -43,7 +43,7 @@
         android:id="@+id/login_sign_up"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Create account"
+        android:text="@string/signup_create_account"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />

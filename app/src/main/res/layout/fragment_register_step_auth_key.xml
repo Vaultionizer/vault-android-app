@@ -14,7 +14,7 @@
         android:layout_marginStart="24dp"
         android:layout_marginTop="32dp"
         android:layout_marginEnd="24dp"
-        android:text="Almost done! Please give us a proof that you are allowed to register on the specified host."
+        android:text="@string/register_step_auth_key_header"
         android:textAlignment="center"
         android:textSize="18sp"
         android:textStyle="bold"
@@ -30,7 +30,7 @@
         android:layout_marginStart="24dp"
         android:layout_marginTop="32dp"
         android:layout_marginEnd="24dp"
-        android:hint="Auth key"
+        android:hint="@string/register_step_auth_key_auth_key"
         app:endIconMode="custom"
         app:endIconDrawable="@drawable/ic_qr_code_scanner_24px"
         app:layout_constraintEnd_toEndOf="parent"
@@ -41,9 +41,9 @@
             android:id="@+id/register_auth_key"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:inputType="textUri"
-            android:imeOptions="actionNext"
             android:imeActionLabel="Next step"
+            android:imeOptions="actionNext"
+            android:inputType="textUri"
             android:selectAllOnFocus="true" />
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -52,7 +52,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="16dp"
-        android:text="You can obtain this key from the server owner."
+        android:text="@string/register_step_auth_key_auth_key_hint"
         app:layout_constraintStart_toStartOf="@+id/register_auth_key_layout"
         app:layout_constraintTop_toBottomOf="@+id/register_auth_key_layout" />
 
@@ -61,7 +61,7 @@
         style="@style/Widget.MaterialComponents.Button.TextButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Learn more"
+        android:text="@string/all_learn_more"
         app:layout_constraintStart_toStartOf="@+id/textView4"
         app:layout_constraintTop_toBottomOf="@+id/textView4" />
 

@@ -1,23 +1,28 @@
 <resources>
+    <string name="login_failed">Login failed</string>
+    <string name="invalid_username">Invalid username</string>
+    <string name="invalid_password">Invalid password</string>
+
     <string name="app_name">Vaultionizer</string>
-    <string name="action_settings">Settings</string>
-    <!-- Strings used for fragments for navigation -->
+    <string name="all_host">Host</string>
+    <string name="all_password">Password</string>
+    <string name="all_example_url">For example https://example.com</string>
+    <string name="all_next_step">Next step</string>
+    <string name="all_user">User</string>
+    <string name="all_user_hint">For example donald@trump.shit or donald.trump</string>
+    <string name="all_learn_more">Learn more</string>
 
-    <string name="next">Next</string>
-    <string name="previous">Previous</string>
+    <string name="login_header">Login</string>
+    <string name="login_login">Login</string>
 
-    <!-- Strings related to login -->
-    <string name="prompt_email">Email</string>
-    <string name="prompt_password">Password</string>
+    <string name="signup_divider">Or</string>
+    <string name="signup_create_account">Create account</string>
 
-    <string name="action_sign_in">Sign in or register</string>
-    <string name="action_sign_in_short">Sign in</string>
-    <string name="action_sign_up_short">Sign up</string>
-    <string name="welcome">"Welcome!"</string>
+    <string name="register_step_user_header">How shall we remember you?</string>
 
-    <string name="invalid_username">Not a valid username</string>
-    <string name="invalid_password">Password must be >5 characters</string>
-    <string name="login_failed">"Login failed"</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="register_step_host_header">On which host do you want to store your data securly? </string>
+
+    <string name="register_step_auth_key_header">Almost done! Please give us a proof that you are allowed to register on the specified host.</string>
+    <string name="register_step_auth_key_auth_key">Auth key</string>
+    <string name="register_step_auth_key_auth_key_hint">You can obtain this key from the server owner.</string>
 </resources>

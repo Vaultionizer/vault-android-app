@@ -14,7 +14,7 @@
         android:layout_marginStart="24dp"
         android:layout_marginTop="32dp"
         android:layout_marginEnd="24dp"
-        android:text="How shall we remember you?"
+        android:text="@string/register_step_user_header"
         android:textAlignment="center"
         android:textSize="18sp"
         android:textStyle="bold"
@@ -30,9 +30,9 @@
         android:layout_marginStart="24dp"
         android:layout_marginTop="32dp"
         android:layout_marginEnd="24dp"
-        android:hint="Username"
+        android:hint="@string/all_user"
         app:helperTextEnabled="true"
-        app:helperText="For example donald@trump.shit or donald.trump"
+        app:helperText="@string/all_user_hint"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView3">
@@ -53,7 +53,7 @@
         android:layout_marginStart="24dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="24dp"
-        android:hint="Password"
+        android:hint="@string/all_password"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/register_username_layout">
@@ -64,7 +64,7 @@
             android:layout_height="match_parent"
             android:inputType="textPassword"
             android:imeOptions="actionDone"
-            android:imeActionLabel="Next step"
+            android:imeActionLabel="@string/all_next_step"
             android:selectAllOnFocus="true" />
     </com.google.android.material.textfield.TextInputLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
