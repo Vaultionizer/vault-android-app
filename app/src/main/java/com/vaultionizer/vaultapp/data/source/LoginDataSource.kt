@@ -1,5 +1,6 @@
-package com.vaultionizer.vaultapp.data
+package com.vaultionizer.vaultapp.data.source
 
+import com.vaultionizer.vaultapp.data.model.Result
 import com.vaultionizer.vaultapp.data.model.LoggedInUser
 import java.io.IOException
 

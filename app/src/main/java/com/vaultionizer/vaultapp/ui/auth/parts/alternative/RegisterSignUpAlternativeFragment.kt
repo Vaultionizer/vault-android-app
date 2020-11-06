@@ -1,4 +1,4 @@
-package com.vaultionizer.vaultapp.ui.register.support
+package com.vaultionizer.vaultapp.ui.auth.parts.alternative
 
 import android.os.Bundle
 import android.view.LayoutInflater

@@ -1,6 +1,8 @@
-package com.vaultionizer.vaultapp.data
+package com.vaultionizer.vaultapp.data.repository
 
+import com.vaultionizer.vaultapp.data.model.Result
 import com.vaultionizer.vaultapp.data.model.LoggedInUser
+import com.vaultionizer.vaultapp.data.source.LoginDataSource
 
 /**
  * Class that requests authentication and user information from the remote data source and

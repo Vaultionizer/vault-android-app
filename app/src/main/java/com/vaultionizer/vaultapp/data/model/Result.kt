@@ -1,4 +1,4 @@
-package com.vaultionizer.vaultapp.data
+package com.vaultionizer.vaultapp.data.model
 
 /**
  * A generic class that holds a value with its loading status.

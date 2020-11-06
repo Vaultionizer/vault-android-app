@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_height="match_parent"
     android:layout_width="match_parent"
-    tools:context=".ui.register.authKey.RegisterStepAuthKeyFragment">
+    tools:context=".ui.auth.register.key.RegisterStepAuthKeyFragment">
 
 
     <TextView
@@ -67,7 +67,7 @@
 
     <fragment
         android:id="@+id/fragment"
-        android:name="com.vaultionizer.vaultapp.ui.register.support.RegisterSignUpAlternativeFragment"
+        android:name="com.vaultionizer.vaultapp.ui.auth.parts.alternative.RegisterSignUpAlternativeFragment"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
@@ -76,5 +76,15 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/button4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="@string/register_step_auth_key_finish"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/button2" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

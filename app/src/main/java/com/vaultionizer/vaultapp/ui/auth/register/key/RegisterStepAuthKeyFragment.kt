@@ -1,4 +1,4 @@
-package com.vaultionizer.vaultapp.ui.register.authKey
+package com.vaultionizer.vaultapp.ui.auth.register.key
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment

@@ -1,23 +1,20 @@
-package com.vaultionizer.vaultapp.ui.login
+package com.vaultionizer.vaultapp.ui.auth.login
 
-import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.annotation.StringRes
 import androidx.fragment.app.Fragment
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.EditorInfo
 import android.widget.Button
 import android.widget.EditText
-import android.widget.ProgressBar
 import android.widget.Toast
 import androidx.navigation.fragment.findNavController
 
 import com.vaultionizer.vaultapp.R
+import com.vaultionizer.vaultapp.ui.auth.parts.input.HostInputFragment
 
 class LoginFragment : Fragment() {
 
@@ -36,7 +33,19 @@ class LoginFragment : Fragment() {
         loginViewModel = ViewModelProvider(this, LoginViewModelFactory())
                 .get(LoginViewModel::class.java)
 
-        val usernameEditText = view.findViewById<EditText>(R.id.login_username)
+        val hostInputFragment = childFragmentManager.findFragmentById(R.id.fragment_part_host_login) as HostInputFragment
+        val editText = view.findViewById<EditText>(R.id.input_host)
+
+        editText.setOnEditorActionListener { v, actionId, event ->
+            if(actionId == EditorInfo.IME_ACTION_NEXT) {
+                hostInputFragment.triggerHostValidation(true)
+                true
+            }
+
+            false
+        }
+
+        /*val usernameEditText = view.findViewById<EditText>(R.id.login_username)
         val passwordEditText = view.findViewById<EditText>(R.id.login_password)
         val loginButton = view.findViewById<Button>(R.id.login)
         val loadingProgressBar = view.findViewById<ProgressBar>(R.id.loading)
@@ -102,7 +111,7 @@ class LoginFragment : Fragment() {
                     passwordEditText.text.toString()
             ) */
 
-        }
+        } */
 
         val signUpButton = view.findViewById<Button>(R.id.login_sign_up)
         signUpButton.setOnClickListener {

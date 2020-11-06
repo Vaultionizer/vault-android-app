@@ -1,4 +1,4 @@
-package com.vaultionizer.vaultapp.ui.login
+package com.vaultionizer.vaultapp.ui.auth.login
 
 /**
  * Data validation state of the login form.
