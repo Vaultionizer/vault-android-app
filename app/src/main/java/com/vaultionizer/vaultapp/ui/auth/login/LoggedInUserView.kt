@@ -1,4 +1,4 @@
-package com.vaultionizer.vaultapp.ui.login
+package com.vaultionizer.vaultapp.ui.auth.login
 
 /**
  * User details post authentication that is exposed to the UI

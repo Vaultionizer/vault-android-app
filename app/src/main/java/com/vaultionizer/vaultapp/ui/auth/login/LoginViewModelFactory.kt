@@ -1,9 +1,9 @@
-package com.vaultionizer.vaultapp.ui.login
+package com.vaultionizer.vaultapp.ui.auth.login
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.vaultionizer.vaultapp.data.LoginDataSource
-import com.vaultionizer.vaultapp.data.LoginRepository
+import com.vaultionizer.vaultapp.data.source.LoginDataSource
+import com.vaultionizer.vaultapp.data.repository.LoginRepository
 
 /**
  * ViewModel provider factory to instantiate LoginViewModel.

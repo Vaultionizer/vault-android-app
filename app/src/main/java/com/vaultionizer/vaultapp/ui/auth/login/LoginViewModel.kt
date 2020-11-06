@@ -1,11 +1,11 @@
-package com.vaultionizer.vaultapp.ui.login
+package com.vaultionizer.vaultapp.ui.auth.login
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import android.util.Patterns
-import com.vaultionizer.vaultapp.data.LoginRepository
-import com.vaultionizer.vaultapp.data.Result
+import com.vaultionizer.vaultapp.data.repository.LoginRepository
+import com.vaultionizer.vaultapp.data.model.Result
 
 import com.vaultionizer.vaultapp.R
 

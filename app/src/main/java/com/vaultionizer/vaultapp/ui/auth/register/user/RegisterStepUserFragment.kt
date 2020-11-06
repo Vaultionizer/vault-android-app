@@ -1,6 +1,7 @@
-package com.vaultionizer.vaultapp.ui.register.user
+package com.vaultionizer.vaultapp.ui.auth.register.user
 
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -9,7 +10,9 @@ import android.view.inputmethod.EditorInfo
 import android.widget.EditText
 import androidx.navigation.fragment.findNavController
 import com.vaultionizer.vaultapp.R
-import com.vaultionizer.vaultapp.ui.register.host.RegisterStepHostFragmentDirections
+import dagger.hilt.android.AndroidEntryPoint
+import retrofit2.Retrofit
+import javax.inject.Inject
 
 // TODO: Rename parameter arguments, choose names that match
 // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
@@ -21,10 +24,13 @@ private const val ARG_PARAM2 = "param2"
  * Use the [RegisterStepUserFragment.newInstance] factory method to
  * create an instance of this fragment.
  */
+@AndroidEntryPoint
 class RegisterStepUserFragment : Fragment() {
     // TODO: Rename and change types of parameters
     private var param1: String? = null
     private var param2: String? = null
+
+    @Inject lateinit var retrofit: Retrofit
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -42,6 +48,8 @@ class RegisterStepUserFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        Log.e("VAULT", retrofit.baseUrl().toString())
 
         val registerUserPasswordEdit = view.findViewById<EditText>(R.id.register_password)
         registerUserPasswordEdit.setOnEditorActionListener { _, actionId, event ->

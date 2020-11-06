@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/loginFragment"
-        android:name="com.vaultionizer.vaultapp.ui.login.LoginFragment"
+        android:name="com.vaultionizer.vaultapp.ui.auth.login.LoginFragment"
         android:label="fragment_login"
         tools:layout="@layout/fragment_login" >
         <action
@@ -16,10 +16,10 @@
             app:enterAnim="@anim/fragment_fade_enter" />
     </fragment>
     <navigation android:id="@+id/navigation"
-        app:startDestination="@id/registerStepHostFragment">
+        app:startDestination="@id/registerStepUserFragment">
         <fragment
             android:id="@+id/registerStepUserFragment"
-            android:name="com.vaultionizer.vaultapp.ui.register.user.RegisterStepUserFragment"
+            android:name="com.vaultionizer.vaultapp.ui.auth.register.user.RegisterStepUserFragment"
             android:label="fragment_register_step_user"
             tools:layout="@layout/fragment_register_step_user">
             <action
@@ -28,12 +28,12 @@
         </fragment>
         <fragment
             android:id="@+id/registerStepAuthKeyFragment"
-            android:name="com.vaultionizer.vaultapp.ui.register.authKey.RegisterStepAuthKeyFragment"
+            android:name="com.vaultionizer.vaultapp.ui.auth.register.key.RegisterStepAuthKeyFragment"
             android:label="fragment_register_step_auth_key"
             tools:layout="@layout/fragment_register_step_auth_key" />
         <fragment
             android:id="@+id/registerStepHostFragment"
-            android:name="com.vaultionizer.vaultapp.ui.register.host.RegisterStepHostFragment"
+            android:name="com.vaultionizer.vaultapp.ui.auth.register.host.RegisterStepHostFragment"
             android:label="fragment_register_step_host"
             tools:layout="@layout/fragment_register_step_host">
             <action
@@ -42,6 +42,8 @@
         </fragment>
         <action
             android:id="@+id/action_global_loginFragment"
-            app:destination="@id/loginFragment" />
+            app:destination="@id/loginFragment"
+            app:popUpTo="@id/loginFragment"
+            app:popUpToInclusive="true" />
     </navigation>
 </navigation>

@@ -11,6 +11,8 @@
     <string name="all_user">User</string>
     <string name="all_user_hint">For example donald@trump.shit or donald.trump</string>
     <string name="all_learn_more">Learn more</string>
+    <string name="all_continue">Continue</string>
+    <string name="all_finish">Finish</string>
 
     <string name="login_header">Login</string>
     <string name="login_login">Login</string>
@@ -21,8 +23,14 @@
     <string name="register_step_user_header">How shall we remember you?</string>
 
     <string name="register_step_host_header">On which host do you want to store your data securly? </string>
+    <string name="register_step_host_loading">Checking host</string>
 
     <string name="register_step_auth_key_header">Almost done! Please give us a proof that you are allowed to register on the specified host.</string>
     <string name="register_step_auth_key_auth_key">Auth key</string>
     <string name="register_step_auth_key_auth_key_hint">You can obtain this key from the server owner.</string>
+    <string name="register_step_auth_key_finish">Finish registration</string>
+
+    <string name="host_error_syntax">Please specify host with format https://&lt;host&gt;:&lt;port&gt;</string>
+    <string name="host_error_network">An unexpected error occurred</string>
+    <string name="host_error_code">Host responded with error code %1$d</string>
 </resources>
