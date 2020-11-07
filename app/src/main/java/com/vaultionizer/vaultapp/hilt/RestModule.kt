@@ -1,6 +1,8 @@
 package com.vaultionizer.vaultapp.hilt
 
+import android.util.JsonReader
 import android.util.Log
+import com.google.gson.JsonObject
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -44,13 +46,13 @@ object RestModule {
                 return@addInterceptor it.proceed(request.newBuilder().url(injectHostUrl(request)).build())
             }
 
-            val requestJsonObj = JSONObject(requestBodyToString(request.body))
-            requestJsonObj.put("sessionKey", sessionToken)
+            var jsonBody = JSONObject(requestBodyToString(it.request().body))
+            jsonBody.put("auth", JSONObject().apply {
+                put("sessionKey", sessionToken)
+            })
 
-            val body = requestJsonObj.toString().toRequestBody(request.body!!.contentType())
-
-            println("Host: $host")
-            return@addInterceptor it.proceed(request.newBuilder().url(injectHostUrl(request)).post(body).build())
+            val requestBody = jsonBody.toString().toRequestBody(request.body!!.contentType())
+            return@addInterceptor it.proceed(request.newBuilder().url(injectHostUrl(request)).post(requestBody).build())
         }.addInterceptor(HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY }).build()
 
     @Provides
