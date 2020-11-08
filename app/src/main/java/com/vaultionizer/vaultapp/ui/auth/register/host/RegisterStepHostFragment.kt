@@ -55,6 +55,8 @@ class RegisterStepHostFragment : Fragment() {
             if(it.version != null) {
                 val action = RegisterStepHostFragmentDirections.actionRegisterStepHostFragmentToRegisterStepUserFragment3()
                 findNavController().navigate(action)
+            } else {
+                continueButton.hideProgress(R.string.all_continue)
             }
         })
 

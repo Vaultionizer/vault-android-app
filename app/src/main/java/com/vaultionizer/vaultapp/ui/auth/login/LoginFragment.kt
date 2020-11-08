@@ -45,6 +45,14 @@ class LoginFragment : Fragment() {
             false
         }
 
+        val loginButton = view.findViewById<Button>(R.id.login)
+        loginButton.isEnabled = true
+        loginButton.setOnClickListener {
+            val action = LoginFragmentDirections.actionLoginFragmentToMainActivity2()
+            findNavController().navigate(action)
+            activity?.finish()
+        }
+
         /*val usernameEditText = view.findViewById<EditText>(R.id.login_username)
         val passwordEditText = view.findViewById<EditText>(R.id.login_password)
         val loginButton = view.findViewById<Button>(R.id.login)
