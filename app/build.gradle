@@ -62,12 +62,39 @@ dependencies {
     implementation "com.squareup.okhttp3:logging-interceptor:4.9.0"
     implementation 'com.github.razir.progressbutton:progressbutton:2.1.0'
 
+    // Material drawer
+    implementation "com.mikepenz:materialdrawer:8.1.8"
+
+    //required support lib modules
+    implementation "androidx.recyclerview:recyclerview:1.2.0-alpha06"
+
+    // Add for NavController support
+    implementation "com.mikepenz:materialdrawer-nav:8.1.8"
+
+    // Add for Android-Iconics support
+    implementation "com.mikepenz:materialdrawer-iconics:8.1.8"
+
+    implementation "com.mikepenz:iconics-core:5.0.3"
+    implementation 'com.mikepenz:google-material-typeface:3.0.1.4.original-kotlin@aar'
+    implementation 'com.mikepenz:fontawesome-typeface:5.9.0.0-kotlin@aar'
+    implementation "com.mikepenz:iconics-views:5.0.3"
+
+    implementation 'com.github.mancj:MaterialSearchBar:0.8.5'
+
     implementation 'androidx.hilt:hilt-lifecycle-viewmodel:1.0.0-alpha01'
     implementation "com.google.dagger:hilt-android:2.28-alpha"
     kapt "com.google.dagger:hilt-android-compiler:2.28-alpha"
     kapt 'androidx.hilt:hilt-compiler:1.0.0-alpha01'
 
+    // ROOM
+    def room_version = "2.2.5"
+    implementation "androidx.room:room-runtime:$room_version"
+    kapt "androidx.room:room-compiler:$room_version"
+    implementation "androidx.room:room-ktx:$room_version"
+
+
     testImplementation 'junit:junit:4.12'
+    testImplementation "androidx.room:room-testing:$room_version"
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
     androidTestImplementation 'info.cukes:cucumber-android:1.2.5@jar'
