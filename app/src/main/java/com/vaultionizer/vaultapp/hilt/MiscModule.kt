@@ -6,6 +6,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.components.ActivityComponent
 import retrofit2.Retrofit
+import retrofit2.http.GET
 
 @Module
 @InstallIn(ActivityComponent::class)
@@ -13,5 +14,6 @@ object MiscModule {
 
     @Provides
     fun provideMiscService(retrofit: Retrofit): MiscService = retrofit.create(MiscService::class.java)
+
 
 }
