@@ -19,7 +19,7 @@ android {
         versionName "1.0"
 
         //testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        testInstrumentationRunner "com.vaultionizer.vaultapp.cucumber.runner.CucumberTestRunner"
+        testInstrumentationRunner getInstrumentation()
     }
 
     sourceSets {
@@ -100,4 +100,8 @@ dependencies {
     androidTestImplementation 'info.cukes:cucumber-android:1.2.5@jar'
     androidTestImplementation 'info.cukes:cucumber-picocontainer:1.2.5'
     androidTestImplementation 'com.android.support:support-annotations:26.1.0'
+}
+
+def getInstrumentation() {
+    project.hasProperty("cucumber") ? "com.vaultionizer.vaultapp.cucumber.runner.CucumberTestRunner" : "androidx.test.runner.AndroidJUnitRunner"
 }
