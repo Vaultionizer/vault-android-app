@@ -53,7 +53,7 @@
           "type": "string"
         }
       },
-      "required": [ "type", "crc", "name", "id" ],
+      "required": [ "type", "crc", "name", "id", "createdAt", "updatedAt", "size" ],
       "additionalProperties": false
     },
     "folder": {
