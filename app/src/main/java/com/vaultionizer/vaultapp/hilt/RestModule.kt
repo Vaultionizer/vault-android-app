@@ -23,6 +23,7 @@ import okio.BufferedSink
 import org.json.JSONObject
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import retrofit2.http.GET
 import javax.inject.Singleton
 
 @Module
@@ -78,5 +79,8 @@ object RestModule {
 
     private fun injectHostUrl(request: Request): HttpUrl =
         request.url.newBuilder().host(host).scheme("https").addPathSegments(relativePath).build()
+
+
+
 
 }

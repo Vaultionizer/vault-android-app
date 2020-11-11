@@ -12,5 +12,4 @@ interface MiscService {
 
     @GET("misc/version")
     fun echoCall(): Call<JsonObject>
-
 }
