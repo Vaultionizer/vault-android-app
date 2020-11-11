@@ -13,7 +13,7 @@ jobs:
       - name: SonarQube Scan
         uses: kitabisa/sonarqube-action@v1.0.1
         with:
-          host: ${{ secrets. SONARQUBE_HOST }}
+          host: ${{ secrets.SONARQUBE_HOST }}
           login: ${{ secrets.SONARQUBE_TOKEN }} 
       
         
