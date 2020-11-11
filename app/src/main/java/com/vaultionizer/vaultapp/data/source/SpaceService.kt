@@ -11,10 +11,10 @@ interface SpaceService {
     fun createSpace(@Body createSpaceRequest: CreateSpaceRequest): Call<Long>
 
     @POST("space/getall")  //TODO change to getAll later on
-    fun getAll(@Body getAllRequest: GetAllRequest): Call<Long>
+    fun getAll(@Body getAllSpacesRequest: GetAllSpacesRequest): Call<Long>
 
     @POST("space/join")
-    fun join(@Body joinRequest: JoinRequest): Call<Long>
+    fun join(@Body joinSpaceRequest: JoinSpaceRequest): Call<Long>
 
     @POST("space/key")
     fun getAuthKey(@Body getAuthKeyRequest: GetAuthKeyRequest): Call<SpaceAuthPair>
