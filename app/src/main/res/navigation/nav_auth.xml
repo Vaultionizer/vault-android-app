@@ -19,10 +19,10 @@
             app:destination="@id/mainActivity2" />
     </fragment>
     <navigation android:id="@+id/navigation"
-        app:startDestination="@id/registerStepUserFragment">
+        app:startDestination="@id/registerStepHostFragment">
         <fragment
             android:id="@+id/registerStepUserFragment"
-            android:name="com.vaultionizer.vaultapp.ui.auth.register.user.RegisterStepUserFragment"
+            android:name="com.vaultionizer.vaultapp.ui.auth.register.RegisterStepUserFragment"
             android:label="fragment_register_step_user"
             tools:layout="@layout/fragment_register_step_user">
             <action
@@ -31,7 +31,7 @@
         </fragment>
         <fragment
             android:id="@+id/registerStepAuthKeyFragment"
-            android:name="com.vaultionizer.vaultapp.ui.auth.register.key.RegisterStepAuthKeyFragment"
+            android:name="com.vaultionizer.vaultapp.ui.auth.register.RegisterStepAuthKeyFragment"
             android:label="fragment_register_step_auth_key"
             tools:layout="@layout/fragment_register_step_auth_key" >
             <action
@@ -42,7 +42,7 @@
         </fragment>
         <fragment
             android:id="@+id/registerStepHostFragment"
-            android:name="com.vaultionizer.vaultapp.ui.auth.register.host.RegisterStepHostFragment"
+            android:name="com.vaultionizer.vaultapp.ui.auth.register.RegisterStepHostFragment"
             android:label="fragment_register_step_host"
             tools:layout="@layout/fragment_register_step_host">
             <action

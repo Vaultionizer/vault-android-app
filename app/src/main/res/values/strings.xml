@@ -30,6 +30,8 @@
     <string name="register_step_auth_key_auth_key_hint">You can obtain this key from the server owner.</string>
     <string name="register_step_auth_key_finish">Finish registration</string>
 
+    <string name="username_error_length">The username is too short!</string>
+
     <string name="host_error_syntax">Please specify host with format https://&lt;host&gt;:&lt;port&gt;</string>
     <string name="host_error_network">An unexpected error occurred</string>
     <string name="host_error_code">Host responded with error code %1$d</string>

@@ -2,12 +2,10 @@ package com.vaultionizer.vaultapp.ui.auth.parts.input
 
 import android.graphics.drawable.Animatable
 import android.os.Bundle
-import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
-import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
@@ -16,8 +14,7 @@ import androidx.lifecycle.Observer
 import com.google.android.material.textfield.TextInputLayout
 import com.vaultionizer.vaultapp.R
 import com.vaultionizer.vaultapp.ui.auth.data.AuthViewModel
-import com.vaultionizer.vaultapp.ui.auth.data.HostValidationResult
-import com.vaultionizer.vaultapp.util.getProgressBarDrawable
+import com.vaultionizer.vaultapp.util.extension.getProgressBarDrawable
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint

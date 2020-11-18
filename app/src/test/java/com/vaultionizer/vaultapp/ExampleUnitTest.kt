@@ -1,10 +1,10 @@
 package com.vaultionizer.vaultapp
 
 import com.google.gson.GsonBuilder
-import com.vaultionizer.vaultapp.data.model.rf.Element
-import com.vaultionizer.vaultapp.data.model.rf.File
-import com.vaultionizer.vaultapp.data.model.rf.Folder
-import com.vaultionizer.vaultapp.data.model.rf.ReferenceFile
+import com.vaultionizer.vaultapp.data.model.rest.rf.Element
+import com.vaultionizer.vaultapp.data.model.rest.rf.File
+import com.vaultionizer.vaultapp.data.model.rest.rf.Folder
+import com.vaultionizer.vaultapp.data.model.rest.rf.ReferenceFile
 import com.vaultionizer.vaultapp.util.external.RuntimeTypeAdapterFactory
 import org.junit.Test
 
@@ -18,7 +18,7 @@ import org.junit.Assert.*
 class ExampleUnitTest {
 
     val EXAMPLE_REF_FILE =
-            """
+        """
                 {
                     "version": 1,
                     "files": [
@@ -33,12 +33,12 @@ class ExampleUnitTest {
     @Test
     fun addition_isCorrect() {
         val factory = RuntimeTypeAdapterFactory.of(Element::class.java, "type")
-                .registerSubtype(File::class.java, "file")
-                .registerSubtype(Folder::class.java, "directory")
+            .registerSubtype(File::class.java, "file")
+            .registerSubtype(Folder::class.java, "directory")
 
         val gson = GsonBuilder()
-                .registerTypeAdapterFactory(factory)
-                .create()
+            .registerTypeAdapterFactory(factory)
+            .create()
 
         var refFile = gson.fromJson<ReferenceFile>(EXAMPLE_REF_FILE, ReferenceFile::class.java)
         assertEquals(refFile?.version, 1)
