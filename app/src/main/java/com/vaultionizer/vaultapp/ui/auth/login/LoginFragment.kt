@@ -11,6 +11,7 @@ import android.view.inputmethod.EditorInfo
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
+import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 
 import com.vaultionizer.vaultapp.R
@@ -18,7 +19,7 @@ import com.vaultionizer.vaultapp.ui.auth.parts.input.HostInputFragment
 
 class LoginFragment : Fragment() {
 
-    private lateinit var loginViewModel: LoginViewModel
+    // private lateinit var loginViewModel: LoginViewModel by activityViewModels()
 
     override fun onCreateView(
             inflater: LayoutInflater,
@@ -30,8 +31,6 @@ class LoginFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        loginViewModel = ViewModelProvider(this, LoginViewModelFactory())
-                .get(LoginViewModel::class.java)
 
         val hostInputFragment = childFragmentManager.findFragmentById(R.id.fragment_part_host_login) as HostInputFragment
         val editText = view.findViewById<EditText>(R.id.input_host)

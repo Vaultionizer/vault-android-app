@@ -1,6 +1,6 @@
-package com.vaultionizer.vaultapp.data.source
+package com.vaultionizer.vaultapp.service
 
-import com.vaultionizer.vaultapp.data.model.space.*
+import com.vaultionizer.vaultapp.data.model.rest.space.*
 import retrofit2.Call
 import retrofit2.http.Body
 import retrofit2.http.POST

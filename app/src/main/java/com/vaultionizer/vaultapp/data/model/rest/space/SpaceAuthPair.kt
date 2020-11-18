@@ -1,4 +1,4 @@
-package com.vaultionizer.vaultapp.data.model.space
+package com.vaultionizer.vaultapp.data.model.rest.space
 
 data class SpaceAuthPair(
     val spaceID: Long,

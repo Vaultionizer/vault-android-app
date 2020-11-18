@@ -19,7 +19,7 @@
             app:destination="@id/mainActivity2" />
     </fragment>
     <navigation android:id="@+id/navigation"
-        app:startDestination="@id/registerStepUserFragment">
+        app:startDestination="@id/registerStepHostFragment">
         <fragment
             android:id="@+id/registerStepUserFragment"
             android:name="com.vaultionizer.vaultapp.ui.auth.register.user.RegisterStepUserFragment"
