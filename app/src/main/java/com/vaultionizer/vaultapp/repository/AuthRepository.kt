@@ -1,5 +1,6 @@
 package com.vaultionizer.vaultapp.repository
 
+import android.util.Log
 import com.google.gson.Gson
 import com.vaultionizer.vaultapp.data.db.dao.LocalUserDao
 import com.vaultionizer.vaultapp.data.db.entity.LocalUser
@@ -17,19 +18,16 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
-import java.io.IOException
 import javax.inject.Inject
 
 class AuthRepository @Inject constructor(val userService: UserService, val gson: Gson, val localUserDao: LocalUserDao) {
 
-    var user: LoggedInUser? = null
-        private set
+    companion object {
+        var user: LoggedInUser? = null
+            private set
 
-    val isLoggedIn: Boolean
-        get() = user != null
-
-    init {
-        user = null
+        val isLoggedIn: Boolean
+            get() = user != null
     }
 
     suspend fun login(host: String, username: String, password: String): Flow<ManagedResult<LoggedInUser>> {
@@ -48,7 +46,7 @@ class AuthRepository @Inject constructor(val userService: UserService, val gson:
                     emit(ManagedResult.NetworkError(response.exception))
                 }
                 is ApiResult.Error -> {
-                    emit(ManagedResult.UnknownError(response.exception!!))
+                    emit(ManagedResult.Error(statusCode = response.statusCode))
                 }
             }
         }.flowOn(Dispatchers.IO)
@@ -70,12 +68,12 @@ class AuthRepository @Inject constructor(val userService: UserService, val gson:
                     emit(ManagedResult.NetworkError(response.exception))
                 }
                 is ApiResult.Error -> {
-                    if(response.errorCode == 409) {
+                    if(response.statusCode == 409) {
                         emit(ManagedResult.UserError.UsernameAlreadyInUseError)
-                    } else if(response.errorCode == 400) {
+                    } else if(response.statusCode == 400) {
                         emit(ManagedResult.UserError.ValueConstraintsError)
                     } else {
-                        emit(ManagedResult.UnknownError(response.exception ?: IOException()))
+                        emit(ManagedResult.Error(statusCode = response.statusCode))
                     }
                 }
             }
@@ -95,6 +93,6 @@ class AuthRepository @Inject constructor(val userService: UserService, val gson:
     }
 
     private fun setLoggedInUser(loggedInUser: LoggedInUser) {
-        this.user = loggedInUser
+        user = loggedInUser
     }
 }

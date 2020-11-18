@@ -6,10 +6,8 @@ sealed class ManagedResult<out T : Any> {
      * General
      */
     data class Success<out T : Any>(val data: T) : ManagedResult<T>()
-    data class UnknownError(val exception: Throwable) : ManagedResult<Nothing>()
+    data class Error(val statusCode: Int) : ManagedResult<Nothing>()
     data class NetworkError(val exception: Throwable) : ManagedResult<Nothing>()
-    object PermissionsError : ManagedResult<Nothing>()
-    object NotFoundError : ManagedResult<Nothing>()
 
     /**
      * User errors

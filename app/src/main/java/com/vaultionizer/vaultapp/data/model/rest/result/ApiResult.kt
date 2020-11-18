@@ -10,7 +10,7 @@ sealed class ApiResult<out T : Any> {
      * Shared errors
      */
     data class Success<out T : Any>(val data: T) : ApiResult<T>()
-    data class Error(val exception: Throwable? = null, val errorCode: Int? = -1) : ApiResult<Nothing>()
+    data class Error(val statusCode: Int) : ApiResult<Nothing>()
     data class NetworkError(val exception: Throwable) : ApiResult<Nothing>()
 
 }

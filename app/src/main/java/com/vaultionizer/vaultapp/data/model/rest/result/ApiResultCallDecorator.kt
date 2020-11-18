@@ -22,7 +22,7 @@ class ApiResultCallDecorator<T : Any>(val proxy: Call<T>):
                 if(response.code() in (200 until 300)) {
                     callback.onResponse(this@ApiResultCallDecorator, Response.success(ApiResult.Success(response.body()!!)))
                 } else {
-                    callback.onResponse(this@ApiResultCallDecorator, Response.success(ApiResult.Error(errorCode = response.code())))
+                    callback.onResponse(this@ApiResultCallDecorator, Response.success(ApiResult.Error(statusCode = response.code())))
                 }
             }
 
@@ -30,7 +30,8 @@ class ApiResultCallDecorator<T : Any>(val proxy: Call<T>):
                 if(t is IOException) {
                     callback.onResponse(this@ApiResultCallDecorator, Response.success(ApiResult.NetworkError(t)))
                 } else {
-                    callback.onResponse(this@ApiResultCallDecorator, Response.success(ApiResult.Error(exception = t)))
+                    TODO("Improve error handling")
+                    // callback.onResponse(this@ApiResultCallDecorator, Response.success(ApiResult.Error(statusCode = -1)))
                 }
             }
         })
