@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.annotation.StringRes
 import androidx.fragment.app.Fragment
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,14 +13,16 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 
 import com.vaultionizer.vaultapp.R
+import com.vaultionizer.vaultapp.ui.auth.data.AuthViewModel
 import com.vaultionizer.vaultapp.ui.auth.parts.input.HostInputFragment
 
 class LoginFragment : Fragment() {
 
-    // private lateinit var loginViewModel: LoginViewModel by activityViewModels()
+    private val authViewModel: AuthViewModel by activityViewModels()
 
     override fun onCreateView(
             inflater: LayoutInflater,
@@ -47,10 +50,23 @@ class LoginFragment : Fragment() {
         val loginButton = view.findViewById<Button>(R.id.login)
         loginButton.isEnabled = true
         loginButton.setOnClickListener {
-            val action = LoginFragmentDirections.actionLoginFragmentToMainActivity2()
-            findNavController().navigate(action)
-            activity?.finish()
+            authViewModel.loginWithFormData()
         }
+
+        authViewModel.loginResult.observe(viewLifecycleOwner,
+            Observer<LoginResult> {
+                if(it.error == null) {
+                    val action = LoginFragmentDirections.actionLoginFragmentToMainActivity2()
+                    findNavController().navigate(action)
+                    activity?.finish()
+                } else {
+                    if(requireContext() != null) {
+                        Toast.makeText(requireContext(), it.error!!, Toast.LENGTH_LONG).show()
+                    } else {
+                        Log.e("Vault", "Context null!")
+                    }
+                }
+            })
 
         /*val usernameEditText = view.findViewById<EditText>(R.id.login_username)
         val passwordEditText = view.findViewById<EditText>(R.id.login_password)

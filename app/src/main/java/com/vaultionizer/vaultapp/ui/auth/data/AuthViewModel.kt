@@ -13,6 +13,7 @@ import com.vaultionizer.vaultapp.data.model.rest.result.ManagedResult
 import com.vaultionizer.vaultapp.data.model.rest.user.UserAuthPair
 import com.vaultionizer.vaultapp.repository.AuthRepository
 import com.vaultionizer.vaultapp.repository.MiscRepository
+import com.vaultionizer.vaultapp.ui.auth.login.LoginResult
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
@@ -29,6 +30,9 @@ class AuthViewModel @ViewModelInject constructor(
 
     private val _hostValidationResult = MutableLiveData<HostValidationResult>()
     val hostValidationResult: LiveData<HostValidationResult> = _hostValidationResult
+
+    private val _loginResult = MutableLiveData<LoginResult>()
+    val loginResult: LiveData<LoginResult> = _loginResult
 
     private val authenticationFormData = AuthFormData()
 
@@ -64,6 +68,23 @@ class AuthViewModel @ViewModelInject constructor(
                     }
                     is ManagedResult.UserError.UsernameAlreadyInUseError -> {
                         Log.e("Vault", "Username already in use!")
+                    }
+                }
+            }
+        }
+    }
+
+    fun loginWithFormData() {
+        viewModelScope.launch {
+            val result = authRepository.login(authenticationFormData.host, authenticationFormData.username, authenticationFormData.password)
+
+            result.collect {
+                when(it) {
+                    is ManagedResult.Success -> {
+                        _loginResult.value = LoginResult(null)
+                    }
+                    is ManagedResult.Error -> {
+                        _loginResult.value = LoginResult(error = applicationContext.getString(R.string.host_error_code, it.statusCode))
                     }
                 }
             }
