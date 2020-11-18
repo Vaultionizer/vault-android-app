@@ -28,6 +28,9 @@ class AuthViewModel @ViewModelInject constructor(
     private val _hostFormState = MutableLiveData<HostFormState>()
     val hostFormState: LiveData<HostFormState> = _hostFormState
 
+    private val _userDataFormState = MutableLiveData<UserDataFormState>()
+    val userDataFormState: LiveData<UserDataFormState> = _userDataFormState
+
     private val _hostValidationResult = MutableLiveData<HostValidationResult>()
     val hostValidationResult: LiveData<HostValidationResult> = _hostValidationResult
 
@@ -100,12 +103,27 @@ class AuthViewModel @ViewModelInject constructor(
         }
     }
 
-    fun usernameDataChanged(username: String) {
-        authenticationFormData.username = username
-    }
+    fun userDataChanged(username: String? = null, password: String? = null) {
+        if(username != null) {
+            authenticationFormData.username = username
+        }
 
-    fun passwordDataChanged(password: String) {
-        authenticationFormData.password = password
+        if(password != null) {
+            authenticationFormData.password = password
+        }
+
+        var usernameError: Int? = null
+        var passwordError: Int? = null
+
+        if(username?.length?.compareTo(5) == -1) {
+            usernameError = R.string.username_error_length
+        }
+
+        _userDataFormState.value = UserDataFormState(
+            usernameError = usernameError,
+            passwordError = passwordError,
+            isDataValid = usernameError == null && passwordError == null
+        )
     }
 
     fun authKeyDataChanged(authKey: String) {

@@ -8,6 +8,8 @@ import android.widget.EditText
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Observer
+import com.google.android.material.textfield.TextInputLayout
 import com.vaultionizer.vaultapp.R
 import com.vaultionizer.vaultapp.ui.auth.data.AuthViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -35,13 +37,29 @@ class UserDataInputFragment : Fragment() {
         val usernameEdit = view.findViewById<EditText>(R.id.input_username)
         val passwordEdit = view.findViewById<EditText>(R.id.input_password)
 
+        val usernameLayout = view.findViewById<TextInputLayout>(R.id.input_username_layout)
+        val passwordLayout = view.findViewById<TextInputLayout>(R.id.input_password_layout)
+
         usernameEdit.addTextChangedListener {
-            authViewModel.usernameDataChanged(usernameEdit.text.toString())
+            authViewModel.userDataChanged(username = usernameEdit.text.toString())
         }
 
         passwordEdit.addTextChangedListener {
-            authViewModel.passwordDataChanged(passwordEdit.text.toString())
+            authViewModel.userDataChanged(password = passwordEdit.text.toString())
         }
+
+        authViewModel.userDataFormState.observe(viewLifecycleOwner, Observer {
+            usernameLayout.error = null
+            passwordLayout.error = null
+
+            if(it.usernameError != null) {
+                usernameLayout.error = getString(it.usernameError)
+            }
+
+            if(it.passwordError != null) {
+                passwordLayout.error = getString(it.passwordError)
+            }
+        })
     }
 
 }

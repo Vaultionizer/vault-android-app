@@ -1,4 +1,4 @@
-package com.vaultionizer.vaultapp.ui.auth.register.key
+package com.vaultionizer.vaultapp.ui.auth.register
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment
@@ -9,6 +9,8 @@ import android.widget.Button
 import android.widget.EditText
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Observer
+import androidx.navigation.fragment.findNavController
 import com.vaultionizer.vaultapp.R
 import com.vaultionizer.vaultapp.ui.auth.data.AuthViewModel
 
@@ -36,6 +38,14 @@ class RegisterStepAuthKeyFragment : Fragment() {
         finishButton.setOnClickListener {
             authViewModel.registerWithFormData()
         }
+
+        authViewModel.loginResult.observe(viewLifecycleOwner, Observer {
+            if(it.error == null) {
+                val action =
+                    RegisterStepAuthKeyFragmentDirections.actionRegisterStepAuthKeyFragmentToMainActivity2()
+                findNavController().navigate(action)
+            }
+        })
     }
 
 }

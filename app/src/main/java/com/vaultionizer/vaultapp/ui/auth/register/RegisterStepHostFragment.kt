@@ -1,4 +1,4 @@
-package com.vaultionizer.vaultapp.ui.auth.register.host
+package com.vaultionizer.vaultapp.ui.auth.register
 
 import android.graphics.Color
 import android.os.Bundle
@@ -6,16 +6,9 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.inputmethod.EditorInfo
 import android.widget.Button
-import android.widget.EditText
-import android.widget.TextView
-import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.activityViewModels
-import androidx.fragment.app.findFragment
-import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
-import androidx.lifecycle.observe
 import androidx.navigation.fragment.findNavController
 import com.github.razir.progressbutton.attachTextChangeAnimator
 import com.github.razir.progressbutton.bindProgressButton
@@ -55,7 +48,8 @@ class RegisterStepHostFragment : Fragment() {
         authViewModel.hostValidationResult.observe(viewLifecycleOwner, Observer {
             continueButton.hideProgress(R.string.all_continue)
             if(it.version != null) {
-                val action = RegisterStepHostFragmentDirections.actionRegisterStepHostFragmentToRegisterStepUserFragment3()
+                val action =
+                    RegisterStepHostFragmentDirections.actionRegisterStepHostFragmentToRegisterStepUserFragment3()
                 findNavController().navigate(action)
             } else {
                 continueButton.hideProgress(R.string.all_continue)
