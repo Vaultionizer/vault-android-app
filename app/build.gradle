@@ -5,7 +5,17 @@ apply plugin: "androidx.navigation.safeargs.kotlin"
 apply plugin: 'kotlin-kapt'
 apply plugin: 'dagger.hilt.android.plugin'
 
-
+sonarqube {
+    properties {
+        property "sonar.sources", "src/main/java, src/debug/java"
+        property "sonar.binaries", "build/intermediates/javac/debug/classes"
+        property "sonar.java.binaries", "build/intermediates/javac/debug/classes"
+        property "sonar.tests", "src/test/java, src/androidTest/java"
+        property "sonar.libraries", libraries
+        property "sonar.java.test.libraries", libraries
+        property "sonar.java.test.binaries", "build/intermediates/javac/debug/classes"
+    }
+}
 
 android {
     compileSdkVersion 30
