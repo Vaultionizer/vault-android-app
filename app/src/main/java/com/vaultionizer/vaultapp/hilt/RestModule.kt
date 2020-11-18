@@ -6,6 +6,7 @@ import com.vaultionizer.vaultapp.data.model.rest.result.ApiCallFactory
 import com.vaultionizer.vaultapp.data.model.rest.rf.Element
 import com.vaultionizer.vaultapp.data.model.rest.rf.File
 import com.vaultionizer.vaultapp.data.model.rest.rf.Folder
+import com.vaultionizer.vaultapp.repository.AuthRepository
 import com.vaultionizer.vaultapp.util.external.RuntimeTypeAdapterFactory
 import dagger.Module
 import dagger.Provides
@@ -28,33 +29,12 @@ import retrofit2.converter.gson.GsonConverterFactory
 @InstallIn(ActivityRetainedComponent::class)
 object RestModule {
 
-    var sessionToken: String = ""
-    var sessionTokenTimestamp: Long = -1
-
     var host: String = "v2202006123966120989.bestsrv.de"
         set(value) {
             field = value.toHttpUrl().host
             relativePath = value.toHttpUrl().pathSegments.joinToString("/")
         }
     var relativePath: String = "api/"
-
-    @Provides
-    @ActivityRetainedScoped
-    fun provideOkHttpClient() = OkHttpClient.Builder()
-        .addInterceptor {
-            val request = it.request()
-            if(request.body == null || request.body?.contentType()?.subtype?.contains("json") == false) {
-                return@addInterceptor it.proceed(request.newBuilder().url(injectHostUrl(request)).build())
-            }
-
-            var jsonBody = JSONObject(requestBodyToString(it.request().body))
-            jsonBody.put("auth", JSONObject().apply {
-                put("sessionKey", sessionToken)
-            })
-
-            val requestBody = jsonBody.toString().toRequestBody(request.body!!.contentType())
-            return@addInterceptor it.proceed(request.newBuilder().url(injectHostUrl(request)).post(requestBody).build())
-        }.addInterceptor(HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY }).build()
 
     @Provides
     @ActivityRetainedScoped
@@ -78,6 +58,25 @@ object RestModule {
             .registerTypeAdapterFactory(factory)
             .create()
     }
+
+    @Provides
+    @ActivityRetainedScoped
+    fun provideOkHttpClient() = OkHttpClient.Builder()
+        .addInterceptor {
+            val request = it.request()
+            if(request.body == null || request.body?.contentType()?.subtype?.contains("json") == false) {
+                return@addInterceptor it.proceed(request.newBuilder().url(injectHostUrl(request)).build())
+            }
+
+            var jsonBody = JSONObject(requestBodyToString(it.request().body))
+            jsonBody.put("auth", JSONObject().apply {
+                put("sessionKey", AuthRepository.user?.sessionToken)
+            })
+
+            val requestBody = jsonBody.toString().toRequestBody(request.body!!.contentType())
+            return@addInterceptor it.proceed(request.newBuilder().url(injectHostUrl(request)).post(requestBody).build())
+        }
+        .addInterceptor(HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY }).build()
 
 
     private fun requestBodyToString(body: RequestBody?): String {
