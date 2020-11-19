@@ -1,10 +1,7 @@
 package com.vaultionizer.vaultapp
 
 import com.google.gson.GsonBuilder
-import com.vaultionizer.vaultapp.data.model.rest.rf.Element
-import com.vaultionizer.vaultapp.data.model.rest.rf.File
-import com.vaultionizer.vaultapp.data.model.rest.rf.Folder
-import com.vaultionizer.vaultapp.data.model.rest.rf.ReferenceFile
+import com.vaultionizer.vaultapp.data.model.rest.rf.*
 import com.vaultionizer.vaultapp.util.external.RuntimeTypeAdapterFactory
 import org.junit.Test
 
@@ -32,7 +29,7 @@ class ExampleUnitTest {
 
     @Test
     fun addition_isCorrect() {
-        val factory = RuntimeTypeAdapterFactory.of(Element::class.java, "type")
+        val factory = RuntimeTypeAdapterFactory.of(Element::class.java, "type", true)
             .registerSubtype(File::class.java, "file")
             .registerSubtype(Folder::class.java, "directory")
 
@@ -44,5 +41,6 @@ class ExampleUnitTest {
         assertEquals(refFile?.version, 1)
         assertEquals(refFile?.elements?.size, 1)
         assertEquals(refFile?.elements?.get(0)?.name, "Documents")
+        assertEquals(refFile?.elements?.get(0)?.type, Type.FOLDER)
     }
 }
