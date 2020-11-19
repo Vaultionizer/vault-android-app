@@ -30,7 +30,7 @@ class ApiResultCallDecorator<T : Any>(val proxy: Call<T>):
                 if(t is IOException) {
                     callback.onResponse(this@ApiResultCallDecorator, Response.success(ApiResult.NetworkError(t)))
                 } else {
-                    TODO("Improve error handling")
+                    TODO("Improve error handling ${t.localizedMessage}")
                     // callback.onResponse(this@ApiResultCallDecorator, Response.success(ApiResult.Error(statusCode = -1)))
                 }
             }
