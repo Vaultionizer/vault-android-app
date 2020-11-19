@@ -1,44 +1,42 @@
 package com.vaultionizer.vaultapp.ui.main
 
 import android.os.Bundle
-import android.util.Log
 import android.view.Menu
 import androidx.activity.viewModels
-import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.google.android.material.snackbar.Snackbar
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.navigation.findNavController
+import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
-import androidx.navigation.ui.setupWithNavController
-import androidx.drawerlayout.widget.DrawerLayout
-import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.Toolbar
-import androidx.fragment.app.activityViewModels
-import androidx.navigation.fragment.NavHostFragment
 import com.mikepenz.iconics.typeface.library.fontawesome.FontAwesome
 import com.mikepenz.iconics.typeface.library.googlematerial.GoogleMaterial
 import com.mikepenz.materialdrawer.iconics.iconicsIcon
-import com.mikepenz.materialdrawer.model.*
-import com.mikepenz.materialdrawer.model.interfaces.*
+import com.mikepenz.materialdrawer.model.PrimaryDrawerItem
+import com.mikepenz.materialdrawer.model.ProfileDrawerItem
+import com.mikepenz.materialdrawer.model.SecondaryDrawerItem
+import com.mikepenz.materialdrawer.model.SectionDrawerItem
+import com.mikepenz.materialdrawer.model.interfaces.descriptionRes
+import com.mikepenz.materialdrawer.model.interfaces.descriptionText
+import com.mikepenz.materialdrawer.model.interfaces.nameRes
+import com.mikepenz.materialdrawer.model.interfaces.nameText
 import com.mikepenz.materialdrawer.util.addItems
 import com.mikepenz.materialdrawer.util.setupWithNavController
 import com.mikepenz.materialdrawer.widget.AccountHeaderView
 import com.mikepenz.materialdrawer.widget.MaterialDrawerSliderView
 import com.vaultionizer.vaultapp.R
-import com.vaultionizer.vaultapp.repository.AuthRepository
-import com.vaultionizer.vaultapp.ui.auth.data.AuthViewModel
+import com.vaultionizer.vaultapp.ui.viewmodel.MainActivityViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.*
 import java.util.*
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
 
-    @Inject lateinit var authRepository: AuthRepository
+    val viewModel: MainActivityViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -63,10 +61,6 @@ class MainActivity : AppCompatActivity() {
             dividerBelowHeader = false
         }
 
-        CoroutineScope(Job() + Dispatchers.IO).launch {
-            Log.e("Vault", "MAIN ${authRepository.localUserDao.getAll().size}")
-        }
-
         navView.apply {
             addItems(
                     SectionDrawerItem().apply {
@@ -84,18 +78,27 @@ class MainActivity : AppCompatActivity() {
                     },
                     SectionDrawerItem().apply {
                         nameRes = R.string.menu_section_vaults
-                    },
-                    PrimaryDrawerItem().apply {
-                        iconicsIcon = FontAwesome.Icon.faw_lock
-                        nameText = "Personal"
                     }
             )
         }
+
+        viewModel.userSpaces.observe(this, androidx.lifecycle.Observer {
+            navView.apply {
+                for(space in it) {
+                    addItems(PrimaryDrawerItem().apply {
+                        iconicsIcon = FontAwesome.Icon.faw_lock
+                        nameText = "${space.spaceID}"
+                    })
+                }
+            }
+        })
 
         appBarConfiguration = AppBarConfiguration(setOf(
                 R.id.fileFragment), drawerLayout)
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
+
+        viewModel.updateUserSpaces()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
