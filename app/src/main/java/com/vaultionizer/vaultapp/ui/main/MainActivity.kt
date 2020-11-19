@@ -14,10 +14,7 @@ import androidx.navigation.ui.setupActionBarWithNavController
 import com.mikepenz.iconics.typeface.library.fontawesome.FontAwesome
 import com.mikepenz.iconics.typeface.library.googlematerial.GoogleMaterial
 import com.mikepenz.materialdrawer.iconics.iconicsIcon
-import com.mikepenz.materialdrawer.model.PrimaryDrawerItem
-import com.mikepenz.materialdrawer.model.ProfileDrawerItem
-import com.mikepenz.materialdrawer.model.SecondaryDrawerItem
-import com.mikepenz.materialdrawer.model.SectionDrawerItem
+import com.mikepenz.materialdrawer.model.*
 import com.mikepenz.materialdrawer.model.interfaces.descriptionRes
 import com.mikepenz.materialdrawer.model.interfaces.descriptionText
 import com.mikepenz.materialdrawer.model.interfaces.nameRes
@@ -27,15 +24,18 @@ import com.mikepenz.materialdrawer.util.setupWithNavController
 import com.mikepenz.materialdrawer.widget.AccountHeaderView
 import com.mikepenz.materialdrawer.widget.MaterialDrawerSliderView
 import com.vaultionizer.vaultapp.R
+import com.vaultionizer.vaultapp.repository.AuthRepository
 import com.vaultionizer.vaultapp.ui.viewmodel.MainActivityViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.*
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
 
     private lateinit var appBarConfiguration: AppBarConfiguration
 
+    @Inject lateinit var authRepository: AuthRepository
     val viewModel: MainActivityViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,8 +49,8 @@ class MainActivity : AppCompatActivity() {
         val navController = (supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment).navController
 
         val userProfile = ProfileDrawerItem().apply {
-            nameText = "Max Muster"
-            descriptionText = UUID.randomUUID().toString()
+            nameText = AuthRepository.user?.localUser?.username ?: "Unknown"
+            descriptionText = "User ID: ${AuthRepository.user?.localUser?.userId}"
             icon = null
             identifier = 100
         }
@@ -85,10 +85,14 @@ class MainActivity : AppCompatActivity() {
         viewModel.userSpaces.observe(this, androidx.lifecycle.Observer {
             navView.apply {
                 for(space in it) {
-                    addItems(PrimaryDrawerItem().apply {
-                        iconicsIcon = FontAwesome.Icon.faw_lock
+                    addItems(NavigationDrawerItem(R.id.fileFragment, PrimaryDrawerItem().apply {
+                        iconicsIcon = if(space.creator) {
+                            FontAwesome.Icon.faw_user
+                        } else {
+                            FontAwesome.Icon.faw_share_alt
+                        }
                         nameText = "${space.spaceID}"
-                    })
+                    }))
                 }
             }
         })
