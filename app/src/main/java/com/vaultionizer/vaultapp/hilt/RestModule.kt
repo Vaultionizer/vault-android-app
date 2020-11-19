@@ -1,5 +1,6 @@
 package com.vaultionizer.vaultapp.hilt
 
+import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.vaultionizer.vaultapp.data.model.rest.result.ApiCallFactory
@@ -12,6 +13,7 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.components.ActivityRetainedComponent
+import dagger.hilt.android.components.ApplicationComponent
 import dagger.hilt.android.scopes.ActivityRetainedScoped
 import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrl
@@ -24,9 +26,10 @@ import okio.Buffer
 import org.json.JSONObject
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import javax.inject.Singleton
 
 @Module
-@InstallIn(ActivityRetainedComponent::class)
+@InstallIn(ApplicationComponent::class)
 object RestModule {
 
     var host: String = "v2202006123966120989.bestsrv.de"
@@ -37,7 +40,7 @@ object RestModule {
     var relativePath: String = "api/"
 
     @Provides
-    @ActivityRetainedScoped
+    @Singleton
     fun provideRetrofitBase(): Retrofit {
         return Retrofit.Builder()
             .baseUrl("https://$host/$relativePath")
@@ -48,7 +51,7 @@ object RestModule {
     }
 
     @Provides
-    @ActivityRetainedScoped
+    @Singleton
     fun provideGson(): Gson {
         val factory = RuntimeTypeAdapterFactory.of(Element::class.java, "type")
             .registerSubtype(File::class.java, "file")
@@ -60,7 +63,7 @@ object RestModule {
     }
 
     @Provides
-    @ActivityRetainedScoped
+    @Singleton
     fun provideOkHttpClient() = OkHttpClient.Builder()
         .addInterceptor {
             val request = it.request()
@@ -71,6 +74,8 @@ object RestModule {
             var jsonBody = JSONObject(requestBodyToString(it.request().body))
             jsonBody.put("auth", JSONObject().apply {
                 put("sessionKey", AuthRepository.user?.sessionToken)
+                put("userID", AuthRepository.user?.localUser?.userId)
+                Log.e("Vault", "User: ${AuthRepository.user?.localUser?.userId} Token: ${AuthRepository.user?.sessionToken.toString()}")
             })
 
             val requestBody = jsonBody.toString().toRequestBody(request.body!!.contentType())
@@ -92,8 +97,5 @@ object RestModule {
 
     private fun injectHostUrl(request: Request): HttpUrl =
         request.url.newBuilder().host(host).scheme("https").addPathSegments(relativePath).build()
-
-
-
 
 }
