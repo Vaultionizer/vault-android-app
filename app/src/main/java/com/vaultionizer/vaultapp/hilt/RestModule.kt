@@ -68,8 +68,11 @@ object RestModule {
         .addInterceptor {
             val request = it.request()
             if(request.body == null || request.body?.contentType()?.subtype?.contains("json") == false) {
+                Log.v("Vault", "Different content type...")
                 return@addInterceptor it.proceed(request.newBuilder().url(injectHostUrl(request)).build())
             }
+
+            Log.v("Vault", "Injecting auth object...")
 
             var jsonBody = JSONObject(requestBodyToString(it.request().body))
             jsonBody.put("auth", JSONObject().apply {
@@ -77,20 +80,30 @@ object RestModule {
                 put("userID", AuthRepository.user?.localUser?.userId)
                 Log.e("Vault", "User: ${AuthRepository.user?.localUser?.userId} Token: ${AuthRepository.user?.sessionToken.toString()}")
             })
+            jsonBody.apply {
+                put("sessionKey", AuthRepository.user?.sessionToken)
+                put("userID", AuthRepository.user?.localUser?.userId)
+            }
 
             val requestBody = jsonBody.toString().toRequestBody(request.body!!.contentType())
+
+            Log.v("Vault", "Proceed chain...")
             return@addInterceptor it.proceed(request.newBuilder().url(injectHostUrl(request)).post(requestBody).build())
         }
         .addInterceptor(HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY }).build()
 
 
     private fun requestBodyToString(body: RequestBody?): String {
-        if(body == null) {
-            return ""
+        if(body == null || body.contentLength() == 0L) {
+            return "{}"
         }
 
         val buffer = Buffer()
         body.writeTo(buffer)
+
+        if(buffer.size == 0L) {
+            return "{}"
+        }
 
         return buffer.readUtf8()
     }
