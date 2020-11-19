@@ -1,6 +1,5 @@
 package com.vaultionizer.vaultapp.ui.auth.login
 
-import androidx.lifecycle.ViewModelProvider
 import androidx.annotation.StringRes
 import androidx.fragment.app.Fragment
 import android.os.Bundle

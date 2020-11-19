@@ -6,7 +6,6 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.inputmethod.EditorInfo
 import android.widget.Button
 import android.widget.EditText
 import androidx.core.widget.addTextChangedListener
@@ -16,7 +15,6 @@ import androidx.navigation.fragment.findNavController
 import com.vaultionizer.vaultapp.R
 import com.vaultionizer.vaultapp.ui.auth.data.AuthViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_part_user_data.*
 import retrofit2.Retrofit
 import javax.inject.Inject
 
