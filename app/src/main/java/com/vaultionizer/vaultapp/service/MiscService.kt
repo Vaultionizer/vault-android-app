@@ -11,6 +11,4 @@ interface MiscService {
     @GET("misc/version")
     suspend fun getVersionInfo(): ApiResult<Version>
 
-    @GET("misc/version")
-    fun echoCall(): Call<JsonObject>
 }
