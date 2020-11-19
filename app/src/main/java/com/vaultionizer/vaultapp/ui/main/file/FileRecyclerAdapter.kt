@@ -2,6 +2,7 @@ package com.vaultionizer.vaultapp.ui.main.file
 
 import android.content.Context
 import android.graphics.Typeface
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -12,15 +13,27 @@ import com.mikepenz.iconics.typeface.IIcon
 import com.mikepenz.iconics.typeface.library.fontawesome.FontAwesome
 import com.mikepenz.iconics.view.IconicsImageView
 import com.vaultionizer.vaultapp.R
+import com.vaultionizer.vaultapp.data.model.rest.rf.Element
+import com.vaultionizer.vaultapp.data.model.rest.rf.Folder
+import com.vaultionizer.vaultapp.data.model.rest.rf.ReferenceFile
+import com.vaultionizer.vaultapp.data.model.rest.rf.Type
+import com.vaultionizer.vaultapp.data.model.rest.space.SpaceEntry
+import java.util.*
 
-class FileRecyclerAdapter : RecyclerView.Adapter<FileRecyclerAdapter.FileViewHolder>() {
+class FileRecyclerAdapter(pair: SpaceReferencePair)
+    : RecyclerView.Adapter<FileRecyclerAdapter.FileViewHolder>() {
 
-    data class File(val type: Int, val name: String)
-    private val data = ArrayList<File>().apply {
-        add(File(0, "Photos"))
-        add(File(0, "Homework ;)"))
-        add(File(1, "julien-unitymedia-meme.jpg"))
-    }
+    data class SpaceReferencePair(
+        val referenceFile: ReferenceFile,
+        val spaceEntry: SpaceEntry
+    )
+
+    var dataPair = pair
+        set(value) {
+            field = value
+            notifyDataSetChanged()
+        }
+    private val folderHistory = Stack<Folder>()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FileViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.fragment_file, parent, false)
@@ -29,18 +42,20 @@ class FileRecyclerAdapter : RecyclerView.Adapter<FileRecyclerAdapter.FileViewHol
     }
 
     override fun onBindViewHolder(holder: FileViewHolder, position: Int) {
-        val elem = data[position]
+        val elem = resolveCurrentFiles()[position]
+
+        Log.i("Vault", elem.toString())
 
         holder.fileImageView.icon = IconicsDrawable(holder.context, chooseElementIcon(elem.name, elem.type))
         holder.fileNameView.text = elem.name
 
-        if(elem.type == 0) {
+        if(elem.type == Type.FOLDER) {
             holder.fileNameView.setTypeface(null, Typeface.BOLD)
         }
     }
 
-    private fun chooseElementIcon(name: String, type: Int): IIcon = when(type) {
-        0 -> chooseFolderIcon(name)
+    private fun chooseElementIcon(name: String, type: Type): IIcon = when(type) {
+        Type.FOLDER -> chooseFolderIcon(name)
         else -> chooseFileIcon(name)
     }
 
@@ -60,7 +75,15 @@ class FileRecyclerAdapter : RecyclerView.Adapter<FileRecyclerAdapter.FileViewHol
         return FontAwesome.Icon.faw_folder_open
     }
 
-    override fun getItemCount(): Int = data.size
+    override fun getItemCount(): Int = resolveCurrentFiles().size
+
+    private fun resolveCurrentFiles(): List<Element> {
+        if(folderHistory.empty()) {
+            return dataPair.referenceFile.elements ?: emptyList()
+        }
+
+        return folderHistory.peek().content ?: emptyList()
+    }
 
     data class FileViewHolder(
         val itemView: View,
