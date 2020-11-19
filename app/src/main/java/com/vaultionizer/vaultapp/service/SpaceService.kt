@@ -9,14 +9,14 @@ import retrofit2.http.POST
 
 interface SpaceService {
 
-    @POST("spaces/create")
+    @POST("api/spaces/create")
     suspend fun createSpace(@Body createSpaceRequest: CreateSpaceRequest): ApiResult<SpaceAuthPair>
 
-    @POST("spaces/getAll")
+    @POST("api/spaces/getAll")
     @Headers("Accept: application/json", "Content-Type: application/json")
     suspend fun getAll(): ApiResult<List<SpaceEntry>>
 
-    @POST("spaces/join")
+    @POST("api/spaces/join")
     suspend fun join(@Body joinSpaceRequest: JoinSpaceRequest): ApiResult<Nothing>
 
     // @POST("space/key")

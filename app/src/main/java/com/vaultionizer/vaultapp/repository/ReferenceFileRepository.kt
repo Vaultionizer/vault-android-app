@@ -1,5 +1,6 @@
 package com.vaultionizer.vaultapp.repository
 
+import android.util.Log
 import com.google.gson.Gson
 import com.vaultionizer.vaultapp.data.model.rest.result.ApiResult
 import com.vaultionizer.vaultapp.data.model.rest.result.ManagedResult
@@ -17,6 +18,7 @@ class ReferenceFileRepository @Inject constructor(val referenceFileService: Refe
     private val cachedFiles = mutableMapOf<Long, ReferenceFile>()
 
     suspend fun downloadReferenceFile(spaceId: Long): Flow<ManagedResult<ReferenceFile>> {
+        Log.e("Vault", "DOWNLOAD!")
         return flow {
             val response = referenceFileService.downloadReferenceFile(DownloadReferenceFileRequest(spaceId))
 
@@ -28,6 +30,9 @@ class ReferenceFileRepository @Inject constructor(val referenceFileService: Refe
                 }
                 is ApiResult.Error -> {
                     emit(ManagedResult.Error(response.statusCode))
+                }
+                is ApiResult.NetworkError -> {
+                    emit(ManagedResult.NetworkError(response.exception))
                 }
             }
         }.flowOn(Dispatchers.IO)

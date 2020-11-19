@@ -12,10 +12,10 @@ import retrofit2.http.POST
 
 interface UserService {
 
-    @POST("users/create")
+    @POST("api/users/create")
     suspend fun createUser(@Body createUserRequest: CreateUserRequest): ApiResult<UserAuthPair>
 
-    @POST("users/login")
+    @POST("api/users/login")
     suspend fun loginUser(@Body loginUserRequest: LoginUserRequest): ApiResult<UserAuthPair>
 
 }

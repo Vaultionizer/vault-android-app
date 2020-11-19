@@ -37,14 +37,14 @@ object RestModule {
             field = value.toHttpUrl().host
             relativePath = value.toHttpUrl().pathSegments.joinToString("/")
         }
-    var relativePath: String = "api/"
+    var relativePath: String = ""
 
     @Provides
     @Singleton
-    fun provideRetrofitBase(): Retrofit {
+    fun provideRetrofitBase(gson: Gson): Retrofit {
         return Retrofit.Builder()
-            .baseUrl("https://$host/$relativePath")
-            .addConverterFactory(GsonConverterFactory.create(provideGson()))
+            .baseUrl("https://$host")
+            .addConverterFactory(GsonConverterFactory.create(gson))
             .addCallAdapterFactory(ApiCallFactory())
             .client(provideOkHttpClient())
             .build()
@@ -53,7 +53,7 @@ object RestModule {
     @Provides
     @Singleton
     fun provideGson(): Gson {
-        val factory = RuntimeTypeAdapterFactory.of(Element::class.java, "type")
+        val factory = RuntimeTypeAdapterFactory.of(Element::class.java, "type", true)
             .registerSubtype(File::class.java, "file")
             .registerSubtype(Folder::class.java, "directory")
 
@@ -87,7 +87,7 @@ object RestModule {
 
             val requestBody = jsonBody.toString().toRequestBody(request.body!!.contentType())
 
-            Log.v("Vault", "Proceed chain...")
+            Log.v("Vault", "Proceed chain... $host $relativePath ${injectHostUrl(request).toUri().toString()}")
             return@addInterceptor it.proceed(request.newBuilder().url(injectHostUrl(request)).post(requestBody).build())
         }
         .addInterceptor(HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY }).build()
