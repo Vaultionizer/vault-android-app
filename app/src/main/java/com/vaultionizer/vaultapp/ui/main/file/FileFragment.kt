@@ -8,6 +8,8 @@ import android.view.ViewGroup
 import android.view.animation.AnimationUtils
 import android.widget.ProgressBar
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
+import androidx.activity.addCallback
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
@@ -16,6 +18,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.vaultionizer.vaultapp.R
 import com.vaultionizer.vaultapp.data.model.rest.result.ManagedResult
+import com.vaultionizer.vaultapp.data.model.rest.rf.Folder
 import com.vaultionizer.vaultapp.data.model.rest.rf.ReferenceFile
 import com.vaultionizer.vaultapp.repository.ReferenceFileRepository
 import com.vaultionizer.vaultapp.ui.viewmodel.MainActivityViewModel
@@ -51,7 +54,14 @@ class FileFragment : Fragment() {
                 FileRecyclerAdapter.SpaceReferencePair(
                     referenceFile = it,
                     spaceEntry = viewModel.selectedSpace.value!!
-                ))
+                )
+            ) {
+                // TODO: refactor into ViewModel
+                if (it is Folder) {
+                    fileAdapter.changeDirectory(it)
+                    recyclerView.scheduleLayoutAnimation()
+                }
+            }
 
             recyclerView.visibility = View.VISIBLE
             recyclerView.adapter = fileAdapter
@@ -68,5 +78,11 @@ class FileFragment : Fragment() {
             visibility = View.GONE
             layoutAnimation = AnimationUtils.loadLayoutAnimation(requireContext(), R.anim.layout_animation_fall_down)
         }
+
+        requireActivity().onBackPressedDispatcher.addCallback {
+            fileAdapter.previousDirectory()
+        }
     }
+
+
 }

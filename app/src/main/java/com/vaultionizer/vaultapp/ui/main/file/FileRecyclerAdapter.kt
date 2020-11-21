@@ -18,9 +18,11 @@ import com.vaultionizer.vaultapp.data.model.rest.rf.Folder
 import com.vaultionizer.vaultapp.data.model.rest.rf.ReferenceFile
 import com.vaultionizer.vaultapp.data.model.rest.rf.Type
 import com.vaultionizer.vaultapp.data.model.rest.space.SpaceEntry
+import com.vaultionizer.vaultapp.hilt.RestModule
+import okhttp3.internal.notify
 import java.util.*
 
-class FileRecyclerAdapter(pair: SpaceReferencePair)
+class FileRecyclerAdapter(pair: SpaceReferencePair, private val clickListener: (Element) -> Unit)
     : RecyclerView.Adapter<FileRecyclerAdapter.FileViewHolder>() {
 
     data class SpaceReferencePair(
@@ -28,23 +30,30 @@ class FileRecyclerAdapter(pair: SpaceReferencePair)
         val spaceEntry: SpaceEntry
     )
 
-    var dataPair = pair
+    var dataPair = SpaceReferencePair(
+        ReferenceFile.generateRandom(),
+        pair.spaceEntry
+    )
         set(value) {
-            field = value
+            field = SpaceReferencePair(
+                ReferenceFile.generateRandom(),
+                value.spaceEntry
+            )
             notifyDataSetChanged()
         }
     private val folderHistory = Stack<Folder>()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FileViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.fragment_file, parent, false)
-
         return FileViewHolder(view, parent.context)
     }
 
     override fun onBindViewHolder(holder: FileViewHolder, position: Int) {
         val elem = resolveCurrentFiles()[position]
 
-        Log.i("Vault", elem.toString())
+        if(position == 0) {
+            Log.d("Vault", RestModule.provideGson().toJson(dataPair.referenceFile))
+        }
 
         holder.fileImageView.icon = IconicsDrawable(holder.context, chooseElementIcon(elem.name, elem.type))
         holder.fileNameView.text = elem.name
@@ -52,6 +61,28 @@ class FileRecyclerAdapter(pair: SpaceReferencePair)
         if(elem.type == Type.FOLDER) {
             holder.fileNameView.setTypeface(null, Typeface.BOLD)
         }
+
+        holder.itemView.setOnClickListener {
+            clickListener(elem)
+        }
+    }
+
+    override fun getItemCount(): Int = resolveCurrentFiles().size
+
+    fun changeDirectory(newFolder: Folder) {
+        folderHistory.push(newFolder)
+        notifyDataSetChanged()
+    }
+
+    fun previousDirectory(): Boolean {
+        if(!folderHistory.empty()) {
+            folderHistory.pop()
+            notifyDataSetChanged()
+
+            return true
+        }
+
+        return false
     }
 
     private fun chooseElementIcon(name: String, type: Type): IIcon = when(type) {
@@ -75,8 +106,6 @@ class FileRecyclerAdapter(pair: SpaceReferencePair)
         return FontAwesome.Icon.faw_folder_open
     }
 
-    override fun getItemCount(): Int = resolveCurrentFiles().size
-
     private fun resolveCurrentFiles(): List<Element> {
         if(folderHistory.empty()) {
             return dataPair.referenceFile.elements ?: emptyList()
@@ -86,10 +115,10 @@ class FileRecyclerAdapter(pair: SpaceReferencePair)
     }
 
     data class FileViewHolder(
-        val itemView: View,
+        val view: View,
         val context: Context,
-        val fileImageView: IconicsImageView = itemView.findViewById<IconicsImageView>(R.id.file_image),
-        val fileNameView: TextView = itemView.findViewById<TextView>(R.id.file_name)
-    ) : RecyclerView.ViewHolder(itemView)
+        val fileImageView: IconicsImageView = view.findViewById<IconicsImageView>(R.id.file_image),
+        val fileNameView: TextView = view.findViewById<TextView>(R.id.file_name)
+    ) : RecyclerView.ViewHolder(view)
 
 }
