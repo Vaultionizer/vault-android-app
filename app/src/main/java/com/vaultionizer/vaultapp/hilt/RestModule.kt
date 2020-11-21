@@ -59,6 +59,7 @@ object RestModule {
 
         return GsonBuilder()
             .registerTypeAdapterFactory(factory)
+            .setPrettyPrinting()
             .create()
     }
 
