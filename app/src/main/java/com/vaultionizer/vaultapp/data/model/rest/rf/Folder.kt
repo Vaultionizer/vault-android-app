@@ -5,5 +5,5 @@ data class Folder(
     override val name: String,
 
     val createdAt: String?,
-    val content: List<Element>?
+    var content: MutableList<Element>?
 ) : Element()
