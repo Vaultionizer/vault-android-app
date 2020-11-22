@@ -1,4 +1,4 @@
-package com.vaultionizer.vaultapp
+package com.vaultionizer.vaultapp.model
 
 import com.google.gson.GsonBuilder
 import com.vaultionizer.vaultapp.data.model.rest.rf.*
@@ -12,7 +12,7 @@ import org.junit.Assert.*
  *
  * See [testing documentation](http://d.android.com/tools/testing).
  */
-class ExampleUnitTest {
+class ReferenceFileGsonTest {
 
     val EXAMPLE_REF_FILE =
         """
@@ -28,7 +28,7 @@ class ExampleUnitTest {
             """.trimIndent()
 
     @Test
-    fun addition_isCorrect() {
+    fun testReferenceFileDeserializationFromGson() {
         val factory = RuntimeTypeAdapterFactory.of(Element::class.java, "type", true)
             .registerSubtype(File::class.java, "file")
             .registerSubtype(Folder::class.java, "directory")
