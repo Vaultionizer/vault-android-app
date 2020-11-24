@@ -6,6 +6,16 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <ProgressBar
+        android:id="@+id/progress_space"
+        style="?android:attr/progressBarStyle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="@+id/file_list"
+        app:layout_constraintEnd_toEndOf="@+id/file_list"
+        app:layout_constraintStart_toStartOf="@+id/file_list"
+        app:layout_constraintTop_toTopOf="@+id/file_list" />
+
     <com.mancj.materialsearchbar.MaterialSearchBar
         android:id="@+id/searchView"
         style="@style/MaterialSearchBarLight"

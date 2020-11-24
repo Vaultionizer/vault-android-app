@@ -1,7 +1,7 @@
 package com.vaultionizer.vaultapp.data.model.rest.space
 
-data class GetAllSpacesRequest(
-    val spaceID: Long,
+data class SpaceEntry(
     val creator: Boolean,
-    val isPrivate: Boolean
+    val private: Boolean,
+    val spaceID: Long
 )
