@@ -25,12 +25,10 @@ import com.mikepenz.materialdrawer.util.setupWithNavController
 import com.mikepenz.materialdrawer.widget.AccountHeaderView
 import com.mikepenz.materialdrawer.widget.MaterialDrawerSliderView
 import com.vaultionizer.vaultapp.R
-import com.vaultionizer.vaultapp.data.model.rest.space.SpaceEntry
+import com.vaultionizer.vaultapp.data.model.rest.space.NetworkSpace
 import com.vaultionizer.vaultapp.repository.AuthRepository
 import com.vaultionizer.vaultapp.ui.viewmodel.MainActivityViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import java.util.*
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
@@ -103,7 +101,7 @@ class MainActivity : AppCompatActivity() {
         navView.onDrawerItemClickListener = { v, drawerItem, position ->
             Log.e("Vault", "Trigger drawer click event")
             val copy = drawerItem.tag
-            if(copy is SpaceEntry) {
+            if(copy is NetworkSpace) {
                 Log.i("Vault", "Trigger space click event")
                 viewModel.selectedSpaceChanged(copy)
             }

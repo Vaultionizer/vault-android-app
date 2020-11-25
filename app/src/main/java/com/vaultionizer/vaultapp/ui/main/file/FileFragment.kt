@@ -5,9 +5,7 @@ import android.util.Log
 import android.view.*
 import android.view.animation.AnimationUtils
 import android.widget.ProgressBar
-import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
-import androidx.activity.addCallback
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
@@ -15,13 +13,9 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.vaultionizer.vaultapp.R
-import com.vaultionizer.vaultapp.data.model.rest.result.ManagedResult
-import com.vaultionizer.vaultapp.data.model.rest.rf.Folder
-import com.vaultionizer.vaultapp.data.model.rest.rf.ReferenceFile
-import com.vaultionizer.vaultapp.repository.ReferenceFileRepository
+import com.vaultionizer.vaultapp.data.model.rest.rf.NetworkFolder
 import com.vaultionizer.vaultapp.ui.viewmodel.MainActivityViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import javax.inject.Inject
 
 @AndroidEntryPoint
 class FileFragment : Fragment() {
@@ -69,7 +63,7 @@ class FileFragment : Fragment() {
                 )
             ) {
                 // TODO: refactor into ViewModel
-                if (it is Folder) {
+                if (it is NetworkFolder) {
                     if(viewModel.onDirectoryChange(it) != null) {
                         backPressedCallback.isEnabled = true
                     }

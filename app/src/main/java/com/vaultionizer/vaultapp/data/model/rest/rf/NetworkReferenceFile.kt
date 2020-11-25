@@ -7,37 +7,37 @@ import java.util.*
 import kotlin.random.Random
 import kotlin.random.nextInt
 
-data class ReferenceFile(
+data class NetworkReferenceFile(
         val version: Int,
-        @SerializedName("files") val elements: MutableList<Element>
+        @SerializedName("files") val elements: MutableList<NetworkElement>
 ) {
         companion object {
                 const val CURRENT_VERSION = 1
-                val EMPTY_FILE = ReferenceFile(CURRENT_VERSION, mutableListOf())
+                val EMPTY_FILE = NetworkReferenceFile(CURRENT_VERSION, mutableListOf())
 
-                fun generateRandom(): ReferenceFile {
+                fun generateRandom(): NetworkReferenceFile {
                         val depth = Random.nextInt(2..5)
 
-                        val root = Folder(Type.FOLDER, "", null, null)
+                        val root = NetworkFolder(Type.FOLDER, "", null, null)
                         fillFolder(root, depth)
 
-                        return ReferenceFile(1, root.content!!)
+                        return NetworkReferenceFile(1, root.content!!)
                 }
 
-                fun fillFolder(folder: Folder, depth: Int) {
+                fun fillFolder(folder: NetworkFolder, depth: Int) {
                         if(depth == 0) {
                                 return
                         }
 
                         val loremIpsum = LoremIpsum.getInstance()
                         val amount = Random.nextInt(3, 10)
-                        val content = mutableListOf<Element>()
+                        val content = mutableListOf<NetworkElement>()
 
                         for(i in 0 until amount) {
                                 val type = (Math.random() * 10).toInt()
-                                val element: Element = when(type) {
+                                val element: NetworkElement = when(type) {
                                         in 0..9 -> {
-                                                val child = Folder(
+                                                val child = NetworkFolder(
                                                         name = loremIpsum.getWords(1, 3),
                                                         createdAt = randomDate(),
                                                         content = mutableListOf()
@@ -46,7 +46,7 @@ data class ReferenceFile(
                                                 child
                                         }
                                         else -> {
-                                                File(
+                                                NetworkFile(
                                                         name = loremIpsum.getWords(1),
                                                         size = Random.nextInt(
                                                                 1,

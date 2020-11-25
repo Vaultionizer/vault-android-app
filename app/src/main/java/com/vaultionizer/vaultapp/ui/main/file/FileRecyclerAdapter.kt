@@ -13,33 +13,33 @@ import com.mikepenz.iconics.typeface.IIcon
 import com.mikepenz.iconics.typeface.library.fontawesome.FontAwesome
 import com.mikepenz.iconics.view.IconicsImageView
 import com.vaultionizer.vaultapp.R
-import com.vaultionizer.vaultapp.data.model.rest.rf.Element
-import com.vaultionizer.vaultapp.data.model.rest.rf.ReferenceFile
+import com.vaultionizer.vaultapp.data.model.rest.rf.NetworkElement
+import com.vaultionizer.vaultapp.data.model.rest.rf.NetworkReferenceFile
 import com.vaultionizer.vaultapp.data.model.rest.rf.Type
-import com.vaultionizer.vaultapp.data.model.rest.space.SpaceEntry
+import com.vaultionizer.vaultapp.data.model.rest.space.NetworkSpace
 import com.vaultionizer.vaultapp.hilt.RestModule
 
-class FileRecyclerAdapter(pair: SpaceReferencePair, private val clickListener: (Element) -> Unit)
+class FileRecyclerAdapter(pair: SpaceReferencePair, private val clickListener: (NetworkElement) -> Unit)
     : RecyclerView.Adapter<FileRecyclerAdapter.FileViewHolder>() {
 
     data class SpaceReferencePair(
-        val referenceFile: ReferenceFile,
-        val spaceEntry: SpaceEntry
+        val referenceFile: NetworkReferenceFile,
+        val spaceEntry: NetworkSpace
     )
 
     var dataPair = SpaceReferencePair(
-        ReferenceFile.generateRandom(),
+        NetworkReferenceFile.generateRandom(),
         pair.spaceEntry
     )
         set(value) {
             field = SpaceReferencePair(
-                ReferenceFile.generateRandom(),
+                NetworkReferenceFile.generateRandom(),
                 value.spaceEntry
             )
             notifyDataSetChanged()
         }
 
-    private var currentElements: List<Element> = pair.referenceFile.elements
+    private var currentElements: List<NetworkElement> = pair.referenceFile.elements
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FileViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.fragment_file, parent, false)
@@ -67,7 +67,7 @@ class FileRecyclerAdapter(pair: SpaceReferencePair, private val clickListener: (
 
     override fun getItemCount(): Int = currentElements.size
 
-    fun changeCurrentElements(element: List<Element>) {
+    fun changeCurrentElements(element: List<NetworkElement>) {
         currentElements = element
         notifyDataSetChanged()
     }

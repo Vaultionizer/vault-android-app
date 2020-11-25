@@ -2,7 +2,7 @@ package com.vaultionizer.vaultapp.repository
 
 import com.vaultionizer.vaultapp.data.model.rest.result.ApiResult
 import com.vaultionizer.vaultapp.data.model.rest.result.ManagedResult
-import com.vaultionizer.vaultapp.data.model.rest.space.SpaceEntry
+import com.vaultionizer.vaultapp.data.model.rest.space.NetworkSpace
 import com.vaultionizer.vaultapp.service.SpaceService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -13,9 +13,9 @@ import javax.inject.Inject
 
 class SpaceRepository @Inject constructor(val spaceService: SpaceService) {
 
-    private val spaceCache = mutableMapOf<Long, SpaceEntry>()
+    private val spaceCache = mutableMapOf<Long, NetworkSpace>()
 
-    suspend fun getAllSpaces(): Flow<ManagedResult<List<SpaceEntry>>> {
+    suspend fun getAllSpaces(): Flow<ManagedResult<List<NetworkSpace>>> {
         return flow {
             val response = spaceService.getAll()
 

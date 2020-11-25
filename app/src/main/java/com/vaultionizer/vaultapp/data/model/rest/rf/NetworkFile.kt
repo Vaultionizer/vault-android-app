@@ -1,6 +1,6 @@
 package com.vaultionizer.vaultapp.data.model.rest.rf
 
-data class File(
+data class NetworkFile(
     override val type: Type = Type.FILE,
     override val name: String,
     val crc: String,
@@ -8,4 +8,4 @@ data class File(
     val id: Long,
     val createdAt: String,
     val updatedAt: String
-) : Element()
+) : NetworkElement()

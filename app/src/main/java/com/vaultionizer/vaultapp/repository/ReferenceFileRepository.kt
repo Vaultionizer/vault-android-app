@@ -5,7 +5,7 @@ import com.google.gson.Gson
 import com.vaultionizer.vaultapp.data.model.rest.result.ApiResult
 import com.vaultionizer.vaultapp.data.model.rest.result.ManagedResult
 import com.vaultionizer.vaultapp.data.model.rest.rf.DownloadReferenceFileRequest
-import com.vaultionizer.vaultapp.data.model.rest.rf.ReferenceFile
+import com.vaultionizer.vaultapp.data.model.rest.rf.NetworkReferenceFile
 import com.vaultionizer.vaultapp.service.ReferenceFileService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -15,9 +15,9 @@ import javax.inject.Inject
 
 class ReferenceFileRepository @Inject constructor(val referenceFileService: ReferenceFileService, val gson: Gson) {
 
-    private val cachedFiles = mutableMapOf<Long, ReferenceFile>()
+    private val cachedFiles = mutableMapOf<Long, NetworkReferenceFile>()
 
-    suspend fun downloadReferenceFile(spaceId: Long): Flow<ManagedResult<ReferenceFile>> {
+    suspend fun downloadReferenceFile(spaceId: Long): Flow<ManagedResult<NetworkReferenceFile>> {
         Log.e("Vault", "DOWNLOAD!")
         return flow {
             val response = referenceFileService.downloadReferenceFile(DownloadReferenceFileRequest(spaceId))

@@ -6,12 +6,12 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.vaultionizer.vaultapp.R
-import com.vaultionizer.vaultapp.data.model.rest.rf.Folder
+import com.vaultionizer.vaultapp.data.model.rest.rf.NetworkFolder
 import java.util.*
 
 class PathRecyclerAdapter: RecyclerView.Adapter<PathRecyclerAdapter.PathViewHolder>() {
 
-    var folderList = LinkedList<Folder>()
+    var folderList = LinkedList<NetworkFolder>()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PathViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.tree_path_item, parent, false)
@@ -25,7 +25,7 @@ class PathRecyclerAdapter: RecyclerView.Adapter<PathRecyclerAdapter.PathViewHold
 
     override fun getItemCount(): Int = folderList.size
 
-    fun changeHierarchy(folders: LinkedList<Folder>) {
+    fun changeHierarchy(folders: LinkedList<NetworkFolder>) {
         folderList = folders
         notifyDataSetChanged()
     }

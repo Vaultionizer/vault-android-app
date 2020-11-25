@@ -4,17 +4,15 @@ import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.vaultionizer.vaultapp.data.model.rest.result.ApiCallFactory
-import com.vaultionizer.vaultapp.data.model.rest.rf.Element
-import com.vaultionizer.vaultapp.data.model.rest.rf.File
-import com.vaultionizer.vaultapp.data.model.rest.rf.Folder
+import com.vaultionizer.vaultapp.data.model.rest.rf.NetworkElement
+import com.vaultionizer.vaultapp.data.model.rest.rf.NetworkFile
+import com.vaultionizer.vaultapp.data.model.rest.rf.NetworkFolder
 import com.vaultionizer.vaultapp.repository.AuthRepository
 import com.vaultionizer.vaultapp.util.external.RuntimeTypeAdapterFactory
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.components.ActivityRetainedComponent
 import dagger.hilt.android.components.ApplicationComponent
-import dagger.hilt.android.scopes.ActivityRetainedScoped
 import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.OkHttpClient
@@ -53,9 +51,9 @@ object RestModule {
     @Provides
     @Singleton
     fun provideGson(): Gson {
-        val factory = RuntimeTypeAdapterFactory.of(Element::class.java, "type", true)
-            .registerSubtype(File::class.java, "file")
-            .registerSubtype(Folder::class.java, "directory")
+        val factory = RuntimeTypeAdapterFactory.of(NetworkElement::class.java, "type", true)
+            .registerSubtype(NetworkFile::class.java, "file")
+            .registerSubtype(NetworkFolder::class.java, "directory")
 
         return GsonBuilder()
             .registerTypeAdapterFactory(factory)
