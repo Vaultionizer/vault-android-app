@@ -10,6 +10,9 @@ data class LocalUser(
     @ColumnInfo(name = "user_id")
     val userId: Long,
 
+    @ColumnInfo(name = "remote_user_id")
+    val remoteUserId: Long,
+
     @ColumnInfo(name = "user_name")
     val username: String,
 
