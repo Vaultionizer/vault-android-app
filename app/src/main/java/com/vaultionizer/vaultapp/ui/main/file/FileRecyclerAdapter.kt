@@ -14,13 +14,10 @@ import com.mikepenz.iconics.typeface.library.fontawesome.FontAwesome
 import com.mikepenz.iconics.view.IconicsImageView
 import com.vaultionizer.vaultapp.R
 import com.vaultionizer.vaultapp.data.model.rest.rf.Element
-import com.vaultionizer.vaultapp.data.model.rest.rf.Folder
 import com.vaultionizer.vaultapp.data.model.rest.rf.ReferenceFile
 import com.vaultionizer.vaultapp.data.model.rest.rf.Type
 import com.vaultionizer.vaultapp.data.model.rest.space.SpaceEntry
 import com.vaultionizer.vaultapp.hilt.RestModule
-import okhttp3.internal.notify
-import java.util.*
 
 class FileRecyclerAdapter(pair: SpaceReferencePair, private val clickListener: (Element) -> Unit)
     : RecyclerView.Adapter<FileRecyclerAdapter.FileViewHolder>() {
@@ -41,7 +38,8 @@ class FileRecyclerAdapter(pair: SpaceReferencePair, private val clickListener: (
             )
             notifyDataSetChanged()
         }
-    private val folderHistory = Stack<Folder>()
+
+    private var currentElements: List<Element> = pair.referenceFile.elements
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FileViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.fragment_file, parent, false)
@@ -49,7 +47,7 @@ class FileRecyclerAdapter(pair: SpaceReferencePair, private val clickListener: (
     }
 
     override fun onBindViewHolder(holder: FileViewHolder, position: Int) {
-        val elem = resolveCurrentFiles()[position]
+        val elem = currentElements[position]
 
         if(position == 0) {
             Log.d("Vault", RestModule.provideGson().toJson(dataPair.referenceFile))
@@ -67,22 +65,11 @@ class FileRecyclerAdapter(pair: SpaceReferencePair, private val clickListener: (
         }
     }
 
-    override fun getItemCount(): Int = resolveCurrentFiles().size
+    override fun getItemCount(): Int = currentElements.size
 
-    fun changeDirectory(newFolder: Folder) {
-        folderHistory.push(newFolder)
+    fun changeCurrentElements(element: List<Element>) {
+        currentElements = element
         notifyDataSetChanged()
-    }
-
-    fun previousDirectory(): Boolean {
-        if(!folderHistory.empty()) {
-            folderHistory.pop()
-            notifyDataSetChanged()
-
-            return true
-        }
-
-        return false
     }
 
     private fun chooseElementIcon(name: String, type: Type): IIcon = when(type) {
@@ -106,13 +93,6 @@ class FileRecyclerAdapter(pair: SpaceReferencePair, private val clickListener: (
         return FontAwesome.Icon.faw_folder_open
     }
 
-    private fun resolveCurrentFiles(): List<Element> {
-        if(folderHistory.empty()) {
-            return dataPair.referenceFile.elements ?: emptyList()
-        }
-
-        return folderHistory.peek().content ?: emptyList()
-    }
 
     data class FileViewHolder(
         val view: View,

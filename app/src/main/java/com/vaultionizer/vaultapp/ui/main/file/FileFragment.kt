@@ -2,9 +2,7 @@ package com.vaultionizer.vaultapp.ui.main.file
 
 import android.os.Bundle
 import android.util.Log
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.view.animation.AnimationUtils
 import android.widget.ProgressBar
 import android.widget.Toast
@@ -30,8 +28,13 @@ class FileFragment : Fragment() {
 
     val viewModel: MainActivityViewModel by activityViewModels()
 
-    lateinit var recyclerView: RecyclerView
-    lateinit var fileAdapter: FileRecyclerAdapter
+    private lateinit var recyclerView: RecyclerView
+    private var fileAdapter: FileRecyclerAdapter? = null
+
+    private lateinit var pathRecyclerView: RecyclerView
+    private lateinit var pathRecyclerAdapter: PathRecyclerAdapter
+
+    private lateinit var backPressedCallback: OnBackPressedCallback
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -43,13 +46,22 @@ class FileFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        setHasOptionsMenu(true)
 
         Log.d("Vault", "FileFragment created!")
 
         val progressBar = view.findViewById<ProgressBar>(R.id.progress_space)
         progressBar.visibility = View.VISIBLE
 
+        backPressedCallback = object : OnBackPressedCallback(false) {
+            override fun handleOnBackPressed() {
+                viewModel.onDirectoryChange(null)
+            }
+        }
+        requireActivity().onBackPressedDispatcher.addCallback(backPressedCallback)
+
         viewModel.currentReferenceFile.observe(viewLifecycleOwner, Observer {
+
             fileAdapter = FileRecyclerAdapter(
                 FileRecyclerAdapter.SpaceReferencePair(
                     referenceFile = it,
@@ -58,17 +70,29 @@ class FileFragment : Fragment() {
             ) {
                 // TODO: refactor into ViewModel
                 if (it is Folder) {
-                    fileAdapter.changeDirectory(it)
-                    recyclerView.scheduleLayoutAnimation()
+                    if(viewModel.onDirectoryChange(it) != null) {
+                        backPressedCallback.isEnabled = true
+                    }
                 }
             }
 
             recyclerView.visibility = View.VISIBLE
             recyclerView.adapter = fileAdapter
-            fileAdapter.notifyDataSetChanged()
+            fileAdapter?.notifyDataSetChanged()
             recyclerView.scheduleLayoutAnimation()
 
             progressBar.visibility = View.GONE
+        })
+
+        viewModel.folderHierarchy.observe(viewLifecycleOwner, Observer {
+            if(it.isEmpty()) {
+                backPressedCallback.isEnabled = false
+                fileAdapter?.changeCurrentElements(viewModel.currentReferenceFile.value!!.elements)
+            } else {
+                fileAdapter?.changeCurrentElements(it.last.content?.toList() ?: emptyList())
+            }
+            recyclerView.scheduleLayoutAnimation()
+            pathRecyclerAdapter.changeHierarchy(it)
         })
 
         recyclerView = view.findViewById<RecyclerView>(R.id.file_list)
@@ -79,10 +103,34 @@ class FileFragment : Fragment() {
             layoutAnimation = AnimationUtils.loadLayoutAnimation(requireContext(), R.anim.layout_animation_fall_down)
         }
 
-        requireActivity().onBackPressedDispatcher.addCallback {
-            fileAdapter.previousDirectory()
+        pathRecyclerAdapter = PathRecyclerAdapter()
+        pathRecyclerView = view.findViewById<RecyclerView>(R.id.path_list)
+        pathRecyclerView.apply {
+            layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+            adapter = pathRecyclerAdapter
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        requireActivity().invalidateOptionsMenu()
+    }
+
+    override fun onPrepareOptionsMenu(menu: Menu) {
+        super.onPrepareOptionsMenu(menu)
+
+        menu.clear()
+        requireActivity().menuInflater.inflate(R.menu.file_menu, menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean =
+        when(item.itemId) {
+            R.id.action_space_settings -> {
+                true
+            }
+            else -> {
+                super.onOptionsItemSelected(item)
+            }
+        }
 
 }

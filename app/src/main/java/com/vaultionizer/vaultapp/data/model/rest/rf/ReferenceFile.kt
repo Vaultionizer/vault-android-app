@@ -36,7 +36,7 @@ data class ReferenceFile(
                         for(i in 0 until amount) {
                                 val type = (Math.random() * 10).toInt()
                                 val element: Element = when(type) {
-                                        in 0..3 -> {
+                                        in 0..9 -> {
                                                 val child = Folder(
                                                         name = loremIpsum.getWords(1, 3),
                                                         createdAt = randomDate(),
