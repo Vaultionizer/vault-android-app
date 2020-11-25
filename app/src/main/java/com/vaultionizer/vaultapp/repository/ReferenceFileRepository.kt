@@ -4,7 +4,7 @@ import android.util.Log
 import com.google.gson.Gson
 import com.vaultionizer.vaultapp.data.model.rest.result.ApiResult
 import com.vaultionizer.vaultapp.data.model.rest.result.ManagedResult
-import com.vaultionizer.vaultapp.data.model.rest.rf.DownloadReferenceFileRequest
+import com.vaultionizer.vaultapp.data.model.rest.request.DownloadReferenceFileRequest
 import com.vaultionizer.vaultapp.data.model.rest.rf.NetworkReferenceFile
 import com.vaultionizer.vaultapp.service.ReferenceFileService
 import kotlinx.coroutines.Dispatchers

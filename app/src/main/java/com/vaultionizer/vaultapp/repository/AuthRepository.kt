@@ -6,9 +6,9 @@ import com.vaultionizer.vaultapp.data.db.entity.LocalUser
 import com.vaultionizer.vaultapp.data.model.rest.result.ApiResult
 import com.vaultionizer.vaultapp.data.model.rest.result.ManagedResult
 import com.vaultionizer.vaultapp.data.model.rest.rf.NetworkReferenceFile
-import com.vaultionizer.vaultapp.data.model.rest.user.CreateUserRequest
+import com.vaultionizer.vaultapp.data.model.rest.request.CreateUserRequest
 import com.vaultionizer.vaultapp.data.model.rest.user.LoggedInUser
-import com.vaultionizer.vaultapp.data.model.rest.user.LoginUserRequest
+import com.vaultionizer.vaultapp.data.model.rest.request.LoginUserRequest
 import com.vaultionizer.vaultapp.data.model.rest.user.NetworkUserAuthPair
 import com.vaultionizer.vaultapp.service.UserService
 import com.vaultionizer.vaultapp.hilt.RestModule

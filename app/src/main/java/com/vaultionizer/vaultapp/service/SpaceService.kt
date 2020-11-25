@@ -1,5 +1,7 @@
 package com.vaultionizer.vaultapp.service
 
+import com.vaultionizer.vaultapp.data.model.rest.request.CreateSpaceRequest
+import com.vaultionizer.vaultapp.data.model.rest.request.JoinSpaceRequest
 import com.vaultionizer.vaultapp.data.model.rest.result.ApiResult
 import com.vaultionizer.vaultapp.data.model.rest.space.*
 import retrofit2.http.Body
