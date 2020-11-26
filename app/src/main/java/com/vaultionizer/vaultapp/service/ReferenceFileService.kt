@@ -1,11 +1,10 @@
 package com.vaultionizer.vaultapp.service
 
 import com.vaultionizer.vaultapp.data.model.rest.result.ApiResult
-import com.vaultionizer.vaultapp.data.model.rest.rf.DownloadReferenceFileRequest
-import com.vaultionizer.vaultapp.data.model.rest.rf.ReferenceFile
-import com.vaultionizer.vaultapp.data.model.rest.rf.UploadReferenceFileRequest
+import com.vaultionizer.vaultapp.data.model.rest.refFile.DownloadReferenceFileRequest
+import com.vaultionizer.vaultapp.data.model.rest.refFile.ReferenceFile
+import com.vaultionizer.vaultapp.data.model.rest.refFile.UploadReferenceFileRequest
 import retrofit2.http.Body
-import retrofit2.http.GET
 import retrofit2.http.POST
 
 interface ReferenceFileService {

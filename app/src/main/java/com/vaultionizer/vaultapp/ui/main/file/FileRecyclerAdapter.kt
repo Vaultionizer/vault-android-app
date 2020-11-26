@@ -13,13 +13,12 @@ import com.mikepenz.iconics.typeface.IIcon
 import com.mikepenz.iconics.typeface.library.fontawesome.FontAwesome
 import com.mikepenz.iconics.view.IconicsImageView
 import com.vaultionizer.vaultapp.R
-import com.vaultionizer.vaultapp.data.model.rest.rf.Element
-import com.vaultionizer.vaultapp.data.model.rest.rf.Folder
-import com.vaultionizer.vaultapp.data.model.rest.rf.ReferenceFile
-import com.vaultionizer.vaultapp.data.model.rest.rf.Type
+import com.vaultionizer.vaultapp.data.model.rest.refFile.Element
+import com.vaultionizer.vaultapp.data.model.rest.refFile.Folder
+import com.vaultionizer.vaultapp.data.model.rest.refFile.ReferenceFile
+import com.vaultionizer.vaultapp.data.model.rest.refFile.Type
 import com.vaultionizer.vaultapp.data.model.rest.space.SpaceEntry
 import com.vaultionizer.vaultapp.hilt.RestModule
-import okhttp3.internal.notify
 import java.util.*
 
 class FileRecyclerAdapter(pair: SpaceReferencePair, private val clickListener: (Element) -> Unit)
