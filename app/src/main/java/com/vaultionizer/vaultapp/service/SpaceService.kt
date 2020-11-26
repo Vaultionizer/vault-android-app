@@ -3,10 +3,7 @@ package com.vaultionizer.vaultapp.service
 import com.vaultionizer.vaultapp.data.model.rest.result.ApiResult
 import com.vaultionizer.vaultapp.data.model.rest.space.*
 import retrofit2.Call
-import retrofit2.http.Body
-import retrofit2.http.DELETE
-import retrofit2.http.Headers
-import retrofit2.http.POST
+import retrofit2.http.*
 import java.util.*
 
 interface SpaceService {
@@ -25,6 +22,7 @@ interface SpaceService {
     suspend fun getAuthKey(@Body getAuthKeyReq: GetAuthKeyRequest): Call<SpaceAuthPair>
 
     @DELETE("api/space/delete/{spaceID}")
-    suspend fun deleteSpace(@Body objects: Objects)             //TODO @Johannes
+    @Headers("Accept: application/json", "Content-Type: application/json")
+    suspend fun deleteSpace(@Path("spaceID") spaceID : Long)
 
 }
