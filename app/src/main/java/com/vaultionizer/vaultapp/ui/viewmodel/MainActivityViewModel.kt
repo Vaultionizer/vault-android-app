@@ -4,7 +4,7 @@ import android.util.Log
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.*
 import com.vaultionizer.vaultapp.data.model.rest.result.ManagedResult
-import com.vaultionizer.vaultapp.data.model.rest.rf.ReferenceFile
+import com.vaultionizer.vaultapp.data.model.rest.refFile.ReferenceFile
 import com.vaultionizer.vaultapp.data.model.rest.space.SpaceEntry
 import com.vaultionizer.vaultapp.repository.ReferenceFileRepository
 import com.vaultionizer.vaultapp.repository.SpaceRepository
