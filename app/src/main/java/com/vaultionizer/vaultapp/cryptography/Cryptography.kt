@@ -15,8 +15,8 @@ const val PROVIDER = "AndroidKeyStore"
 
 class Cryptography {
 
-    fun getKeyBySpaceID(spaceID : Long) : SecretKey{
-        val keyStore : KeyStore = KeyStore.getInstance("AndroidKeyStore")
+    fun getKey(spaceID : Long) : SecretKey{
+        val keyStore : KeyStore = KeyStore.getInstance(PROVIDER)
         keyStore.load(null)
 
         val secretKeyEntry : KeyStore.SecretKeyEntry = keyStore.getEntry("$KEY_PREFIX$spaceID", null) as KeyStore.SecretKeyEntry
@@ -32,6 +32,7 @@ class Cryptography {
             }
             if (cryptoMode == CryptoMode.CBC){
                 if (cryptoPadding == CryptoPadding.NONE){
+
                     return AesCbcNopadding().generateKey("$KEY_PREFIX$spaceID")
                 }
             }
@@ -76,7 +77,7 @@ class Cryptography {
     }
 
     fun getCryptoClass(secretKey: SecretKey) : CryptoClass?{
-        val factory: SecretKeyFactory = SecretKeyFactory.getInstance(secretKey.algorithm, "AndroidKeyStore")
+        val factory: SecretKeyFactory = SecretKeyFactory.getInstance(secretKey.algorithm, PROVIDER)
         val keyInfo: KeyInfo = factory.getKeySpec(secretKey, KeyInfo::class.java) as KeyInfo
 
         keyInfo.blockModes

@@ -1,12 +1,11 @@
 package com.vaultionizer.vaultapp.repository
 
-import android.util.Log
 import com.google.gson.Gson
 import com.vaultionizer.vaultapp.data.db.dao.LocalUserDao
 import com.vaultionizer.vaultapp.data.db.entity.LocalUser
 import com.vaultionizer.vaultapp.data.model.rest.result.ApiResult
 import com.vaultionizer.vaultapp.data.model.rest.result.ManagedResult
-import com.vaultionizer.vaultapp.data.model.rest.rf.ReferenceFile
+import com.vaultionizer.vaultapp.data.model.rest.refFile.ReferenceFile
 import com.vaultionizer.vaultapp.data.model.rest.user.CreateUserRequest
 import com.vaultionizer.vaultapp.data.model.rest.user.LoggedInUser
 import com.vaultionizer.vaultapp.data.model.rest.user.LoginUserRequest

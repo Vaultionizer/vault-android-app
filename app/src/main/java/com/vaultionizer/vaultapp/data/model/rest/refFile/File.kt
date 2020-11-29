@@ -1,4 +1,4 @@
-package com.vaultionizer.vaultapp.data.model.rest.rf
+package com.vaultionizer.vaultapp.data.model.rest.refFile
 
 data class File(
     override val type: Type = Type.FILE,
