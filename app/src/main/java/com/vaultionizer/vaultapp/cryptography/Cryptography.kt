@@ -1,10 +1,12 @@
 package com.vaultionizer.vaultapp.cryptography
 
 import android.security.keystore.KeyInfo
+import android.util.Log
 import com.vaultionizer.vaultapp.cryptography.crypto.CryptoMode
 import com.vaultionizer.vaultapp.cryptography.crypto.CryptoPadding
 import com.vaultionizer.vaultapp.cryptography.crypto.CryptoType
 import java.security.KeyStore
+import java.security.KeyStoreException
 import javax.crypto.SecretKey
 import javax.crypto.SecretKeyFactory
 
@@ -21,20 +23,31 @@ class Cryptography {
         return secretKeyEntry.secretKey
     }
 
-    fun createKey(keystoreAlias : String, cryptoType: CryptoType, cryptoMode : CryptoMode, cryptoPadding : CryptoPadding) : SecretKey?{
+    fun createKey(spaceID: Long, cryptoType: CryptoType, cryptoMode : CryptoMode, cryptoPadding : CryptoPadding) : SecretKey?{
         if (cryptoType == CryptoType.AES){
             if (cryptoMode == CryptoMode.GCM){
                 if (cryptoPadding == CryptoPadding.NONE){
-                    return AesGcmNopadding().generateKey(keystoreAlias)
+                    return AesGcmNopadding().generateKey("$KEY_PREFIX$spaceID")
                 }
             }
             if (cryptoMode == CryptoMode.CBC){
                 if (cryptoPadding == CryptoPadding.NONE){
-                    return AesCbcNopadding().generateKey(keystoreAlias)
+                    return AesCbcNopadding().generateKey("$KEY_PREFIX$spaceID")
                 }
             }
         }
         return null
+    }
+
+    fun deleteKey(spaceID : Long) : Boolean{
+        val keyStore : KeyStore = KeyStore.getInstance(PROVIDER)
+        try {
+            keyStore.deleteEntry("$KEY_PREFIX$spaceID")
+        } catch (e : KeyStoreException) {
+            Log.e("CryptoError", "The key with $spaceID could not be deleted cause it was not found in $PROVIDER")
+            return false
+        }
+        return true
     }
 
     fun padder(input : ByteArray) : ByteArray? {
