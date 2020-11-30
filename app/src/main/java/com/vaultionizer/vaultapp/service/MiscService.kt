@@ -6,7 +6,7 @@ import retrofit2.http.GET
 
 interface MiscService {
 
-    @GET("misc/version")
+    @GET("api/misc/version")
     suspend fun getVersionInfo(): ApiResult<NetworkVersion>
 
 }

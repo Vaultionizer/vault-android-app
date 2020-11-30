@@ -17,7 +17,7 @@ class MiscRepository @Inject constructor(val retrofit: Retrofit) {
 
     suspend fun pingHost(host: String): Flow<ManagedResult<NetworkVersion>> {
         return flow {
-            val temp = retrofit.newBuilder().baseUrl("https://$host/api/").client(OkHttpClient()).build()
+            val temp = retrofit.newBuilder().baseUrl("https://$host/").client(OkHttpClient()).build()
             Log.e("Vault", temp.baseUrl().toString())
 
             val response = temp.create(MiscService::class.java).getVersionInfo()
