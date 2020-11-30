@@ -6,7 +6,7 @@
     <string name="app_name">Vaultionizer</string>
     <string name="all_host">Host</string>
     <string name="all_password">Password</string>
-    <string name="all_example_url">For example https://example.com</string>
+    <string name="all_example_url">For example: foobar.com</string>
     <string name="all_next_step">Next step</string>
     <string name="all_user">User</string>
     <string name="all_user_hint">For example donald@trump.shit or donald.trump</string>
@@ -32,7 +32,7 @@
 
     <string name="username_error_length">The username is too short!</string>
 
-    <string name="host_error_syntax">Please specify host with format https://&lt;host&gt;:&lt;port&gt;</string>
+    <string name="host_error_syntax">Please specify host with format &lt;host&gt;:&lt;port&gt;</string>
     <string name="host_error_network">An unexpected error occurred</string>
     <string name="host_error_code">Host responded with error code %1$d</string>
     <string name="title_activity_main">MainActivity</string>
