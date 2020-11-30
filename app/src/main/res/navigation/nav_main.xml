@@ -3,9 +3,14 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/mobile_navigation"
-    app:startDestination="@id/fileFragment">
+    app:startDestination="@id/keyManagementFragment">
     <fragment
         android:id="@+id/fileFragment"
         android:name="com.vaultionizer.vaultapp.ui.main.file.FileFragment"
         android:label="FileFragment" />
+    <fragment
+        android:id="@+id/keyManagementFragment"
+        android:name="com.vaultionizer.vaultapp.ui.main.keys.KeyManagementFragment"
+        android:label="fragment_key_management"
+        tools:layout="@layout/fragment_key_management" />
 </navigation>
