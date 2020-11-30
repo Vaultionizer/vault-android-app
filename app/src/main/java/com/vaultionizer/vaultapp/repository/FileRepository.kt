@@ -6,10 +6,10 @@ import com.vaultionizer.vaultapp.data.model.domain.VNFile
 import com.vaultionizer.vaultapp.data.model.domain.VNSpace
 import com.vaultionizer.vaultapp.data.model.rest.result.ApiResult
 import com.vaultionizer.vaultapp.data.model.rest.result.ManagedResult
-import com.vaultionizer.vaultapp.data.model.rest.rf.NetworkElement
-import com.vaultionizer.vaultapp.data.model.rest.rf.NetworkFile
-import com.vaultionizer.vaultapp.data.model.rest.rf.NetworkFolder
-import com.vaultionizer.vaultapp.data.model.rest.rf.NetworkReferenceFile
+import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkElement
+import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkFile
+import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkFolder
+import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkReferenceFile
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.collect

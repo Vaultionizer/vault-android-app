@@ -4,9 +4,9 @@ import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.vaultionizer.vaultapp.data.model.rest.result.ApiCallFactory
-import com.vaultionizer.vaultapp.data.model.rest.rf.NetworkElement
-import com.vaultionizer.vaultapp.data.model.rest.rf.NetworkFile
-import com.vaultionizer.vaultapp.data.model.rest.rf.NetworkFolder
+import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkElement
+import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkFile
+import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkFolder
 import com.vaultionizer.vaultapp.repository.AuthRepository
 import com.vaultionizer.vaultapp.util.external.RuntimeTypeAdapterFactory
 import dagger.Module
@@ -57,7 +57,6 @@ object RestModule {
 
         return GsonBuilder()
             .registerTypeAdapterFactory(factory)
-            //.setPrettyPrinting()
             .create()
     }
 

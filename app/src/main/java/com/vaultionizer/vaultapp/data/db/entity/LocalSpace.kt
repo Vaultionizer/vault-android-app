@@ -24,4 +24,5 @@ data class LocalSpace(
 
     @ColumnInfo(name = "last_access")
     var lastAccess: Long
+
 )

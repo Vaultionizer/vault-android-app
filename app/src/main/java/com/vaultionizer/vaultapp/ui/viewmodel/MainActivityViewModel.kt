@@ -6,10 +6,6 @@ import androidx.lifecycle.*
 import com.vaultionizer.vaultapp.data.model.domain.VNFile
 import com.vaultionizer.vaultapp.data.model.domain.VNSpace
 import com.vaultionizer.vaultapp.data.model.rest.result.ManagedResult
-import com.vaultionizer.vaultapp.data.model.rest.rf.NetworkElement
-import com.vaultionizer.vaultapp.data.model.rest.rf.NetworkFolder
-import com.vaultionizer.vaultapp.data.model.rest.rf.NetworkReferenceFile
-import com.vaultionizer.vaultapp.data.model.rest.space.NetworkSpace
 import com.vaultionizer.vaultapp.repository.FileRepository
 import com.vaultionizer.vaultapp.repository.ReferenceFileRepository
 import com.vaultionizer.vaultapp.repository.SpaceRepository

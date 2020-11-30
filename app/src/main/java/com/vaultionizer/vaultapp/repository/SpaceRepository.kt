@@ -11,7 +11,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
-import okhttp3.internal.toImmutableMap
 import javax.inject.Inject
 
 class SpaceRepository @Inject constructor(val spaceService: SpaceService, val localSpaceDao: LocalSpaceDao) {
@@ -57,5 +56,4 @@ class SpaceRepository @Inject constructor(val spaceService: SpaceService, val lo
             networkSpace.private
         )
     }
-
 }

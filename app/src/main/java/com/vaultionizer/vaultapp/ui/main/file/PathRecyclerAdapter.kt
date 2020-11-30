@@ -7,7 +7,6 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.vaultionizer.vaultapp.R
 import com.vaultionizer.vaultapp.data.model.domain.VNFile
-import com.vaultionizer.vaultapp.data.model.rest.rf.NetworkFolder
 import java.util.*
 
 class PathRecyclerAdapter: RecyclerView.Adapter<PathRecyclerAdapter.PathViewHolder>() {

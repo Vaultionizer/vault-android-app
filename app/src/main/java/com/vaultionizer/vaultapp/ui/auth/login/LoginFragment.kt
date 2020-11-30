@@ -1,10 +1,8 @@
 package com.vaultionizer.vaultapp.ui.auth.login
 
 import android.graphics.Color
-import androidx.annotation.StringRes
 import androidx.fragment.app.Fragment
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -18,17 +16,14 @@ import androidx.navigation.fragment.findNavController
 import com.github.razir.progressbutton.attachTextChangeAnimator
 import com.github.razir.progressbutton.hideProgress
 import com.github.razir.progressbutton.showProgress
-
 import com.vaultionizer.vaultapp.R
 import com.vaultionizer.vaultapp.data.db.dao.LocalUserDao
-import com.vaultionizer.vaultapp.service.UserService
 import com.vaultionizer.vaultapp.ui.auth.data.AuthViewModel
 import com.vaultionizer.vaultapp.ui.auth.parts.input.HostInputFragment
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint

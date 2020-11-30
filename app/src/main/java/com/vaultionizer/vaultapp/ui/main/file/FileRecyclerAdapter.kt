@@ -14,11 +14,6 @@ import com.mikepenz.iconics.typeface.library.fontawesome.FontAwesome
 import com.mikepenz.iconics.view.IconicsImageView
 import com.vaultionizer.vaultapp.R
 import com.vaultionizer.vaultapp.data.model.domain.VNFile
-import com.vaultionizer.vaultapp.data.model.rest.rf.NetworkElement
-import com.vaultionizer.vaultapp.data.model.rest.rf.NetworkReferenceFile
-import com.vaultionizer.vaultapp.data.model.rest.rf.Type
-import com.vaultionizer.vaultapp.data.model.rest.space.NetworkSpace
-import com.vaultionizer.vaultapp.hilt.RestModule
 
 class FileRecyclerAdapter(private val clickListener: (VNFile) -> Unit)
     : RecyclerView.Adapter<FileRecyclerAdapter.FileViewHolder>() {
@@ -82,7 +77,6 @@ class FileRecyclerAdapter(private val clickListener: (VNFile) -> Unit)
     private fun chooseFolderIcon(name: String): IIcon {
         return FontAwesome.Icon.faw_folder_open
     }
-
 
     data class FileViewHolder(
         val view: View,

@@ -1,11 +1,12 @@
 package com.vaultionizer.vaultapp.repository
 
+import android.util.Log
 import com.google.gson.Gson
 import com.vaultionizer.vaultapp.data.db.dao.LocalUserDao
 import com.vaultionizer.vaultapp.data.db.entity.LocalUser
 import com.vaultionizer.vaultapp.data.model.rest.result.ApiResult
 import com.vaultionizer.vaultapp.data.model.rest.result.ManagedResult
-import com.vaultionizer.vaultapp.data.model.rest.rf.NetworkReferenceFile
+import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkReferenceFile
 import com.vaultionizer.vaultapp.data.model.rest.request.CreateUserRequest
 import com.vaultionizer.vaultapp.data.model.rest.user.LoggedInUser
 import com.vaultionizer.vaultapp.data.model.rest.request.LoginUserRequest
@@ -55,7 +56,8 @@ class AuthRepository @Inject constructor(val userService: UserService, val gson:
         RestModule.host = "https://$host"
 
         return flow {
-            val response = userService.createUser(CreateUserRequest(password.hashSha512(), gson.toJson(NetworkReferenceFile.EMPTY_FILE), username))
+            val response = userService.createUser(CreateUserRequest(password.hashSha512(), gson.toJson(
+                NetworkReferenceFile.EMPTY_FILE), username))
 
             when(response) {
                 is ApiResult.Success -> {
@@ -85,6 +87,8 @@ class AuthRepository @Inject constructor(val userService: UserService, val gson:
         }
 
         val localUser = localUserDao.getUserByRemoteId(authPair.userID, host)
+        Log.e("Vault", "Found user ${localUser?.toString()}")
+
         if(localUser != null) {
             localUser.lastLogin = System.currentTimeMillis()
             setLoggedInUser(LoggedInUser(localUser, authPair.sessionKey, authPair.websocketToken))

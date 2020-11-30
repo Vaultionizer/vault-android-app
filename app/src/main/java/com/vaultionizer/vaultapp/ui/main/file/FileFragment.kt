@@ -13,7 +13,6 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.vaultionizer.vaultapp.R
-import com.vaultionizer.vaultapp.data.model.rest.rf.NetworkFolder
 import com.vaultionizer.vaultapp.ui.viewmodel.MainActivityViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -22,8 +21,8 @@ class FileFragment : Fragment() {
 
     val viewModel: MainActivityViewModel by activityViewModels()
 
-    private lateinit var recyclerView: RecyclerView
-    private var fileAdapter: FileRecyclerAdapter? = null
+    lateinit var recyclerView: RecyclerView
+    lateinit var fileAdapter: FileRecyclerAdapter
 
     private lateinit var pathRecyclerView: RecyclerView
     private lateinit var pathRecyclerAdapter: PathRecyclerAdapter

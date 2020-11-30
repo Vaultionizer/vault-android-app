@@ -1,13 +1,12 @@
 package com.vaultionizer.vaultapp.repository
 
-import android.util.Log
 import com.google.gson.Gson
 import com.vaultionizer.vaultapp.data.db.dao.LocalSpaceDao
 import com.vaultionizer.vaultapp.data.model.domain.VNSpace
 import com.vaultionizer.vaultapp.data.model.rest.result.ApiResult
 import com.vaultionizer.vaultapp.data.model.rest.result.ManagedResult
+import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkReferenceFile
 import com.vaultionizer.vaultapp.data.model.rest.request.DownloadReferenceFileRequest
-import com.vaultionizer.vaultapp.data.model.rest.rf.NetworkReferenceFile
 import com.vaultionizer.vaultapp.service.ReferenceFileService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -41,5 +40,4 @@ class ReferenceFileRepository @Inject constructor(val referenceFileService: Refe
             }
         }.flowOn(Dispatchers.IO)
     }
-
 }

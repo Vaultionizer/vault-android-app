@@ -1,9 +1,7 @@
-package com.vaultionizer.vaultapp.data.model.rest.rf
+package com.vaultionizer.vaultapp.data.model.rest.refFile
 
 import com.google.gson.annotations.SerializedName
 import com.thedeanda.lorem.LoremIpsum
-import java.text.SimpleDateFormat
-import java.util.*
 import kotlin.random.Random
 import kotlin.random.nextInt
 

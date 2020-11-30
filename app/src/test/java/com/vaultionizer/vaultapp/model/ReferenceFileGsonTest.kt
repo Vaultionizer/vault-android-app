@@ -1,7 +1,7 @@
 package com.vaultionizer.vaultapp.model
 
 import com.google.gson.GsonBuilder
-import com.vaultionizer.vaultapp.data.model.rest.rf.*
+import com.vaultionizer.vaultapp.data.model.rest.refFile.*
 import com.vaultionizer.vaultapp.util.external.RuntimeTypeAdapterFactory
 import org.junit.Test
 
