@@ -12,13 +12,15 @@ data class NetworkReferenceFile(
         @SerializedName("files") val elements: MutableList<NetworkElement>
 ) {
         companion object {
-                const val CURRENT_VERSION = 1
+                private const val CURRENT_VERSION = 1
+                var GLOBAL_FOLDER_ID_COUNTER: Long = -1
+
                 val EMPTY_FILE = NetworkReferenceFile(CURRENT_VERSION, mutableListOf())
 
                 fun generateRandom(): NetworkReferenceFile {
-                        val depth = Random.nextInt(2..5)
+                        val depth = Random.nextInt(1..5)
 
-                        val root = NetworkFolder(Type.FOLDER, "", null, null)
+                        val root = NetworkFolder(Type.FOLDER, "", GLOBAL_FOLDER_ID_COUNTER--, null, null)
                         fillFolder(root, depth)
 
                         return NetworkReferenceFile(1, root.content!!)
@@ -36,11 +38,12 @@ data class NetworkReferenceFile(
                         for(i in 0 until amount) {
                                 val type = (Math.random() * 10).toInt()
                                 val element: NetworkElement = when(type) {
-                                        in 0..9 -> {
+                                        in 0..2 -> {
                                                 val child = NetworkFolder(
                                                         name = loremIpsum.getWords(1, 3),
                                                         createdAt = randomDate(),
-                                                        content = mutableListOf()
+                                                        content = mutableListOf(),
+                                                        id = GLOBAL_FOLDER_ID_COUNTER--
                                                 )
                                                 fillFolder(child, depth - 1)
                                                 child
@@ -52,7 +55,7 @@ data class NetworkReferenceFile(
                                                                 1,
                                                                 1000000
                                                         ).toLong(),
-                                                        crc = "",
+                                                        crc = "Nice CRC",
                                                         id = Random.nextInt(
                                                                 0,
                                                                 Integer.MAX_VALUE
@@ -69,22 +72,8 @@ data class NetworkReferenceFile(
                         folder.content = content
                 }
 
-                fun randomDate(): String {
-                        val dfDateTime =
-                                SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
-                        val year: Int = Random.nextInt(
-                                1900,
-                                2013
-                        )
-                        val month: Int = Random.nextInt(0, 11)
-
-                        val gc = GregorianCalendar(year, month, 1)
-                        val day: Int =
-                                 Random.nextInt(1, gc.getActualMaximum(GregorianCalendar.DAY_OF_MONTH))
-
-                        gc.set(year, month, day)
-
-                        return dfDateTime.format(gc.getTime())
+                fun randomDate(): Long {
+                        return System.currentTimeMillis() - (Math.random() * 1000 * 60 * 60 * 24 * 30).toLong()
                 }
         }
 }
