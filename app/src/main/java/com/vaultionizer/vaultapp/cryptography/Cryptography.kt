@@ -1,7 +1,6 @@
 package com.vaultionizer.vaultapp.cryptography
 
 import android.security.keystore.KeyInfo
-import android.util.Log
 import com.vaultionizer.vaultapp.cryptography.crypto.CryptoMode
 import com.vaultionizer.vaultapp.cryptography.crypto.CryptoPadding
 import com.vaultionizer.vaultapp.cryptography.crypto.CryptoType
@@ -27,13 +26,12 @@ class Cryptography {
         if (cryptoType == CryptoType.AES){
             if (cryptoMode == CryptoMode.GCM){
                 if (cryptoPadding == CryptoPadding.NONE){
-                    return AesGcmNopadding().generateKey("$KEY_PREFIX$spaceID")
+                    return AesGcmNopadding().generateKey(PROVIDER+spaceID)
                 }
             }
             if (cryptoMode == CryptoMode.CBC){
                 if (cryptoPadding == CryptoPadding.NONE){
-
-                    return AesCbcNopadding().generateKey("$KEY_PREFIX$spaceID")
+                    return AesCbcNopadding().generateKey(PROVIDER+spaceID)
                 }
             }
         }
@@ -44,8 +42,7 @@ class Cryptography {
         val keyStore : KeyStore = KeyStore.getInstance(PROVIDER)
         try {
             keyStore.deleteEntry("$KEY_PREFIX$spaceID")
-        } catch (e : KeyStoreException) {
-            Log.e("CryptoError", "The key with $spaceID could not be deleted cause it was not found in $PROVIDER")
+        } catch (e : KeyStoreException ) {
             return false
         }
         return true
