@@ -6,7 +6,7 @@ import androidx.room.PrimaryKey
 
 @Entity
 data class LocalUser(
-    @PrimaryKey(autoGenerate = false)
+    @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "user_id")
     val userId: Long,
 

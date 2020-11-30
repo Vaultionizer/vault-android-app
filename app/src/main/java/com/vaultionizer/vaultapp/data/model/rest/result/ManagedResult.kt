@@ -22,4 +22,7 @@ sealed class ManagedResult<out T : Any> {
         data class OutdatedVaultServerError(var foundVersion: String) : MiscError<Nothing>()
     }
 
+    sealed class RefFileError<out T : Any> : ManagedResult<T>() {
+        object RefFileChecksumError : RefFileError<Nothing>()
+    }
 }

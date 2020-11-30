@@ -8,7 +8,7 @@ import androidx.room.PrimaryKey
 data class LocalSpace(
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "space_id")
-    val spaceId: Long,
+    var spaceId: Long,
 
     @ColumnInfo(name = "remote_space_id")
     val remoteSpaceId: Long,
@@ -17,11 +17,11 @@ data class LocalSpace(
     val userId: Long,
 
     @ColumnInfo(name = "name")
-    val name: String,
+    var name: String?,
 
     @ColumnInfo(name = "reference_file")
-    val referenceFile: String,
+    var referenceFile: String?,
 
     @ColumnInfo(name = "last_access")
-    val lastAccess: Long
+    var lastAccess: Long
 )
