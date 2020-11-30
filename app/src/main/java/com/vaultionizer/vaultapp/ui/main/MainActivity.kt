@@ -12,6 +12,7 @@ import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
+import com.google.gson.Gson
 import com.mikepenz.iconics.typeface.library.fontawesome.FontAwesome
 import com.mikepenz.iconics.typeface.library.googlematerial.GoogleMaterial
 import com.mikepenz.materialdrawer.iconics.iconicsIcon
@@ -25,10 +26,14 @@ import com.mikepenz.materialdrawer.util.setupWithNavController
 import com.mikepenz.materialdrawer.widget.AccountHeaderView
 import com.mikepenz.materialdrawer.widget.MaterialDrawerSliderView
 import com.vaultionizer.vaultapp.R
+import com.vaultionizer.vaultapp.data.model.domain.VNSpace
+import com.vaultionizer.vaultapp.data.model.rest.rf.NetworkReferenceFile
 import com.vaultionizer.vaultapp.data.model.rest.space.NetworkSpace
 import com.vaultionizer.vaultapp.repository.AuthRepository
 import com.vaultionizer.vaultapp.ui.viewmodel.MainActivityViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.*
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
@@ -99,10 +104,10 @@ class MainActivity : AppCompatActivity() {
 
         val preserved = navView.onDrawerItemClickListener!!
         navView.onDrawerItemClickListener = { v, drawerItem, position ->
-            Log.e("Vault", "Trigger drawer click event")
             val copy = drawerItem.tag
-            if(copy is NetworkSpace) {
-                Log.i("Vault", "Trigger space click event")
+
+            if(copy is VNSpace) {
+                actionBar?.title = "Space ${copy.remoteId}"
                 viewModel.selectedSpaceChanged(copy)
             }
 
@@ -114,16 +119,18 @@ class MainActivity : AppCompatActivity() {
                 for(space in it) {
                     addItems(NavigationDrawerItem(R.id.fileFragment,
                         PrimaryDrawerItem().apply {
-                            iconicsIcon = if(space.creator) {
+                            iconicsIcon = if(space.owner) {
                                 FontAwesome.Icon.faw_user
                             } else {
                                 FontAwesome.Icon.faw_share_alt
                             }
 
                             identifier = nextIdentifier()
-                            nameText = "${space.spaceID}"
+                            nameText = "Space #${space.remoteId}"
                             isSelectable = false
-                    }.apply {
+
+                            viewModel.selectedSpaceChanged(space)
+                        }.apply {
                             identifier = nextIdentifier()
                             tag = space
                             isSelectable = false

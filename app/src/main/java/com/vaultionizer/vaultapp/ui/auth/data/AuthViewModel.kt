@@ -39,6 +39,11 @@ class AuthViewModel @ViewModelInject constructor(
     private val authenticationFormData = AuthFormData()
 
     fun validateHost(host: String) {
+        if(host.isEmpty()) {
+            _hostValidationResult.value = HostValidationResult(null)
+            _hostFormState.value = HostFormState(null, false)
+            return
+        }
         viewModelScope.launch {
             val ping = miscRepository.pingHost(host).first()
 
@@ -67,6 +72,7 @@ class AuthViewModel @ViewModelInject constructor(
                 when(it) {
                     is ManagedResult.Success -> {
                         Log.e("Vault", "HELLO ${it.data.localUser.userId} with ${it.data.sessionToken}")
+                        _loginResult.value = LoginResult(null)
                     }
                     is ManagedResult.UserError.UsernameAlreadyInUseError -> {
                         Log.e("Vault", "Username already in use!")
@@ -78,6 +84,7 @@ class AuthViewModel @ViewModelInject constructor(
 
     fun loginWithFormData() {
         viewModelScope.launch {
+            Log.e("Vauklt", "Login with ${authenticationFormData.host}")
             val result = authRepository.login(authenticationFormData.host, authenticationFormData.username, authenticationFormData.password)
 
             result.collect {
@@ -86,7 +93,9 @@ class AuthViewModel @ViewModelInject constructor(
                         _loginResult.value = LoginResult(null)
                     }
                     is ManagedResult.Error -> {
-                        _loginResult.value = LoginResult(error = applicationContext.getString(R.string.host_error_code, it.statusCode))
+                        _loginResult.value = LoginResult("Invalid credentials!")
+                    }
+                    is ManagedResult.NetworkError -> {
                     }
                 }
             }
@@ -95,8 +104,10 @@ class AuthViewModel @ViewModelInject constructor(
 
     fun hostDataChanged(host: String) {
         if(!isHostSyntaxValid(host)) {
+            Log.e("Vault", "Invalid host")
             _hostFormState.value = HostFormState(hostError = applicationContext.resources.getString(R.string.host_error_syntax))
         } else {
+            Log.e("Vault", "Change host to $host")
             authenticationFormData.host = host
             _hostFormState.value = HostFormState(hostError = null, hostValid = true)
         }
@@ -114,14 +125,24 @@ class AuthViewModel @ViewModelInject constructor(
         var usernameError: Int? = null
         var passwordError: Int? = null
 
-        if(username?.length?.compareTo(5) == -1) {
+        if(authenticationFormData.username?.length?.compareTo(5) == -1 && !authenticationFormData.username?.isEmpty()) {
             usernameError = R.string.username_error_length
+            Log.e("Vault", "Username too short!")
+        }
+
+        if(authenticationFormData.password?.length?.compareTo(6) == -1 && !authenticationFormData.password?.isEmpty()) {
+            passwordError = R.string.invalid_password
+            Log.e("Vault", "Password too short!")
+        }
+
+        password.let {
+            Log.e("Vault", "Password ${password?.length}")
         }
 
         _userDataFormState.value = UserDataFormState(
             usernameError = usernameError,
             passwordError = passwordError,
-            isDataValid = usernameError == null && passwordError == null
+            isDataValid = usernameError == null && passwordError == null && authenticationFormData.username != null && authenticationFormData.password != null
         )
     }
 

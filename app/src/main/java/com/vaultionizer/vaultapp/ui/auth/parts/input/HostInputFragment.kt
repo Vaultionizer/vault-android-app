@@ -2,6 +2,7 @@ package com.vaultionizer.vaultapp.ui.auth.parts.input
 
 import android.graphics.drawable.Animatable
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -41,6 +42,7 @@ class HostInputFragment : Fragment() {
             val editLayout = requireView().findViewById<TextInputLayout>(R.id.input_host_layout)
 
             if(!it.hostValid) {
+                Log.e("Vault", "Host not valid!")
                 editLayout.error = it.hostError
                 editLayout.endIconDrawable = null
             } else {
@@ -61,11 +63,11 @@ class HostInputFragment : Fragment() {
         val editText = requireView().findViewById<EditText>(R.id.input_host)
         val editLayout = requireView().findViewById<TextInputLayout>(R.id.input_host_layout)
 
-        authViewModel.validateHost(editText.text.toString())
-
         if(triggerAnimation) {
             editLayout.endIconDrawable = requireContext().getProgressBarDrawable()
             (editLayout.endIconDrawable as Animatable).start()
         }
+
+        authViewModel.validateHost(editText.text.toString())
     }
 }

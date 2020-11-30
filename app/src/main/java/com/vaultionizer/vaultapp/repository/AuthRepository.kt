@@ -80,11 +80,11 @@ class AuthRepository @Inject constructor(val userService: UserService, val gson:
     }
 
     private fun updateLocalUser(username: String, host: String, authPair: NetworkUserAuthPair) {
-        if(localUserDao.getUserById(authPair.userID) == null) {
+        if(localUserDao.getUserByRemoteId(authPair.userID, host) == null) {
             localUserDao.createUser(LocalUser(0, authPair.userID, username, host, System.currentTimeMillis()))
         }
 
-        val localUser = localUserDao.getUserById(authPair.userID)
+        val localUser = localUserDao.getUserByRemoteId(authPair.userID, host)
         if(localUser != null) {
             localUser.lastLogin = System.currentTimeMillis()
             setLoggedInUser(LoggedInUser(localUser, authPair.sessionKey, authPair.websocketToken))

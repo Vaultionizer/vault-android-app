@@ -13,33 +13,21 @@ import com.mikepenz.iconics.typeface.IIcon
 import com.mikepenz.iconics.typeface.library.fontawesome.FontAwesome
 import com.mikepenz.iconics.view.IconicsImageView
 import com.vaultionizer.vaultapp.R
+import com.vaultionizer.vaultapp.data.model.domain.VNFile
 import com.vaultionizer.vaultapp.data.model.rest.rf.NetworkElement
 import com.vaultionizer.vaultapp.data.model.rest.rf.NetworkReferenceFile
 import com.vaultionizer.vaultapp.data.model.rest.rf.Type
 import com.vaultionizer.vaultapp.data.model.rest.space.NetworkSpace
 import com.vaultionizer.vaultapp.hilt.RestModule
 
-class FileRecyclerAdapter(pair: SpaceReferencePair, private val clickListener: (NetworkElement) -> Unit)
+class FileRecyclerAdapter(private val clickListener: (VNFile) -> Unit)
     : RecyclerView.Adapter<FileRecyclerAdapter.FileViewHolder>() {
 
-    data class SpaceReferencePair(
-        val referenceFile: NetworkReferenceFile,
-        val spaceEntry: NetworkSpace
-    )
-
-    var dataPair = SpaceReferencePair(
-        NetworkReferenceFile.generateRandom(),
-        pair.spaceEntry
-    )
+    var currentElements = listOf<VNFile>()
         set(value) {
-            field = SpaceReferencePair(
-                NetworkReferenceFile.generateRandom(),
-                value.spaceEntry
-            )
+            field = value
             notifyDataSetChanged()
         }
-
-    private var currentElements: List<NetworkElement> = pair.referenceFile.elements
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FileViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.fragment_file, parent, false)
@@ -49,15 +37,22 @@ class FileRecyclerAdapter(pair: SpaceReferencePair, private val clickListener: (
     override fun onBindViewHolder(holder: FileViewHolder, position: Int) {
         val elem = currentElements[position]
 
-        if(position == 0) {
-            Log.d("Vault", RestModule.provideGson().toJson(dataPair.referenceFile))
-        }
+        holder.fileImageView.icon = IconicsDrawable(holder.context, chooseElementIcon(elem.name, elem.isFolder))
+        holder.fileDownloaded.visibility =
+            if(elem.isDownloaded(holder.view.context)) {
+                View.VISIBLE
+                Log.e("Vault", "Visible")
+            } else {
+                Log.e("Vault", "Invisible")
+                View.INVISIBLE
+            }
 
-        holder.fileImageView.icon = IconicsDrawable(holder.context, chooseElementIcon(elem.name, elem.type))
         holder.fileNameView.text = elem.name
 
-        if(elem.type == Type.FOLDER) {
+        if(elem.isFolder) {
             holder.fileNameView.setTypeface(null, Typeface.BOLD)
+        } else {
+            holder.fileNameView.typeface = null
         }
 
         holder.itemView.setOnClickListener {
@@ -67,15 +62,10 @@ class FileRecyclerAdapter(pair: SpaceReferencePair, private val clickListener: (
 
     override fun getItemCount(): Int = currentElements.size
 
-    fun changeCurrentElements(element: List<NetworkElement>) {
-        currentElements = element
-        notifyDataSetChanged()
-    }
-
-    private fun chooseElementIcon(name: String, type: Type): IIcon = when(type) {
-        Type.FOLDER -> chooseFolderIcon(name)
-        else -> chooseFileIcon(name)
-    }
+    private fun chooseElementIcon(name: String, isFolder: Boolean): IIcon = if(isFolder) {
+        chooseFolderIcon(name)
+        }
+        else chooseFileIcon(name)
 
     private fun chooseFileIcon(name: String): IIcon {
         val type = name.split(".").run {
@@ -98,7 +88,8 @@ class FileRecyclerAdapter(pair: SpaceReferencePair, private val clickListener: (
         val view: View,
         val context: Context,
         val fileImageView: IconicsImageView = view.findViewById<IconicsImageView>(R.id.file_image),
-        val fileNameView: TextView = view.findViewById<TextView>(R.id.file_name)
+        val fileNameView: TextView = view.findViewById<TextView>(R.id.file_name),
+        val fileDownloaded: IconicsImageView = view.findViewById<IconicsImageView>(R.id.file_downloaded),
     ) : RecyclerView.ViewHolder(view)
 
 }

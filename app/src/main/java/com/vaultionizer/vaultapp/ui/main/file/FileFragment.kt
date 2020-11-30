@@ -47,27 +47,32 @@ class FileFragment : Fragment() {
         val progressBar = view.findViewById<ProgressBar>(R.id.progress_space)
         progressBar.visibility = View.VISIBLE
 
-        backPressedCallback = object : OnBackPressedCallback(false) {
+        backPressedCallback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 viewModel.onDirectoryChange(null)
+
+                pathRecyclerAdapter.folderList.removeLast()
+                pathRecyclerAdapter.notifyDataSetChanged()
             }
         }
         requireActivity().onBackPressedDispatcher.addCallback(backPressedCallback)
 
-        viewModel.currentReferenceFile.observe(viewLifecycleOwner, Observer {
+        viewModel.shownElements.observe(viewLifecycleOwner, Observer {
 
             fileAdapter = FileRecyclerAdapter(
-                FileRecyclerAdapter.SpaceReferencePair(
-                    referenceFile = it,
-                    spaceEntry = viewModel.selectedSpace.value!!
-                )
             ) {
                 // TODO: refactor into ViewModel
-                if (it is NetworkFolder) {
-                    if(viewModel.onDirectoryChange(it) != null) {
+                if (it.isFolder) {
+                    if(!viewModel.onDirectoryChange(it)) {
                         backPressedCallback.isEnabled = true
                     }
+
+                    pathRecyclerAdapter.folderList.add(it)
+                    pathRecyclerAdapter.notifyDataSetChanged()
+                    Log.d("Vault", "Directory change requested")
                 }
+            }.apply {
+                currentElements = it
             }
 
             recyclerView.visibility = View.VISIBLE
@@ -78,7 +83,7 @@ class FileFragment : Fragment() {
             progressBar.visibility = View.GONE
         })
 
-        viewModel.folderHierarchy.observe(viewLifecycleOwner, Observer {
+        /* viewModel.folderHierarchy.observe(viewLifecycleOwner, Observer {
             if(it.isEmpty()) {
                 backPressedCallback.isEnabled = false
                 fileAdapter?.changeCurrentElements(viewModel.currentReferenceFile.value!!.elements)
@@ -87,7 +92,7 @@ class FileFragment : Fragment() {
             }
             recyclerView.scheduleLayoutAnimation()
             pathRecyclerAdapter.changeHierarchy(it)
-        })
+        }) */
 
         recyclerView = view.findViewById<RecyclerView>(R.id.file_list)
         recyclerView.apply {

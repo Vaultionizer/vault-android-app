@@ -7,5 +7,5 @@
     <fragment
         android:id="@+id/fileFragment"
         android:name="com.vaultionizer.vaultapp.ui.main.file.FileFragment"
-        android:label="FileFragment" />
+        android:label="Files" />
 </navigation>
