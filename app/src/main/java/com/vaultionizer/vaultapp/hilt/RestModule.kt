@@ -57,7 +57,7 @@ object RestModule {
 
         return GsonBuilder()
             .registerTypeAdapterFactory(factory)
-            .setPrettyPrinting()
+            //.setPrettyPrinting()
             .create()
     }
 
@@ -76,13 +76,9 @@ object RestModule {
             var jsonBody = JSONObject(requestBodyToString(it.request().body))
             jsonBody.put("auth", JSONObject().apply {
                 put("sessionKey", AuthRepository.user?.sessionToken)
-                put("userID", AuthRepository.user?.localUser?.userId)
-                Log.e("Vault", "User: ${AuthRepository.user?.localUser?.userId} Token: ${AuthRepository.user?.sessionToken.toString()}")
+                put("userID", AuthRepository.user?.localUser?.remoteUserId)
+                Log.e("Vault", "User: ${AuthRepository.user?.localUser?.remoteUserId} Token: ${AuthRepository.user?.sessionToken.toString()}")
             })
-            jsonBody.apply {
-                put("sessionKey", AuthRepository.user?.sessionToken)
-                put("userID", AuthRepository.user?.localUser?.userId)
-            }
 
             val requestBody = jsonBody.toString().toRequestBody(request.body!!.contentType())
 
