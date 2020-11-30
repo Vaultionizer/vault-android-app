@@ -6,27 +6,23 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <ProgressBar
-        android:id="@+id/progress_space"
-        style="?android:attr/progressBarStyle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="@+id/file_list"
-        app:layout_constraintEnd_toEndOf="@+id/file_list"
-        app:layout_constraintStart_toStartOf="@+id/file_list"
-        app:layout_constraintTop_toTopOf="@+id/file_list" />
-
-    <com.mancj.materialsearchbar.MaterialSearchBar
-        android:id="@+id/searchView"
-        style="@style/MaterialSearchBarLight"
-        app:mt_speechMode="true"
-        app:mt_placeholder="Search all your files"
-        app:mt_hint="For example: vacation.png"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/path_list"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
         android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
+        android:scrollbars="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ProgressBar
+        android:id="@+id/progress_space"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -43,5 +39,5 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/searchView" />
+        app:layout_constraintTop_toBottomOf="@+id/path_list" />
 </androidx.constraintlayout.widget.ConstraintLayout>

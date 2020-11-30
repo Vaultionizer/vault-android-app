@@ -7,7 +7,6 @@ import android.widget.Button
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.vaultionizer.vaultapp.R
-import com.vaultionizer.vaultapp.data.model.rest.refFile.Element
 
 class KeyManagementAdapter(private val dataSet: Array<String>, private val clickListener: (KeyObj) -> Unit) :
     RecyclerView.Adapter<KeyManagementAdapter.ViewHolder>() {

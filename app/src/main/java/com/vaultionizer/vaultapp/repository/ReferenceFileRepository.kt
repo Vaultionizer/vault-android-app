@@ -1,11 +1,12 @@
 package com.vaultionizer.vaultapp.repository
 
-import android.util.Log
 import com.google.gson.Gson
+import com.vaultionizer.vaultapp.data.db.dao.LocalSpaceDao
+import com.vaultionizer.vaultapp.data.model.domain.VNSpace
 import com.vaultionizer.vaultapp.data.model.rest.result.ApiResult
 import com.vaultionizer.vaultapp.data.model.rest.result.ManagedResult
-import com.vaultionizer.vaultapp.data.model.rest.refFile.DownloadReferenceFileRequest
-import com.vaultionizer.vaultapp.data.model.rest.refFile.ReferenceFile
+import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkReferenceFile
+import com.vaultionizer.vaultapp.data.model.rest.request.DownloadReferenceFileRequest
 import com.vaultionizer.vaultapp.service.ReferenceFileService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -13,20 +14,22 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import javax.inject.Inject
 
-class ReferenceFileRepository @Inject constructor(val referenceFileService: ReferenceFileService, val gson: Gson) {
+class ReferenceFileRepository @Inject constructor(val referenceFileService: ReferenceFileService, val gson: Gson, val localSpaceDao: LocalSpaceDao) {
 
-    private val cachedFiles = mutableMapOf<Long, ReferenceFile>()
 
-    suspend fun downloadReferenceFile(spaceId: Long): Flow<ManagedResult<ReferenceFile>> {
-        Log.e("Vault", "DOWNLOAD!")
+    suspend fun downloadReferenceFile(space: VNSpace): Flow<ManagedResult<NetworkReferenceFile>> {
         return flow {
-            val response = referenceFileService.downloadReferenceFile(DownloadReferenceFileRequest(spaceId))
+            val response = referenceFileService.downloadReferenceFile(DownloadReferenceFileRequest(space.remoteId))
 
             when(response) {
                 is ApiResult.Success -> {
-                    emit(ManagedResult.Success(response.data))
+                    val localSpace = localSpaceDao.getSpaceById(space.id)
+                    localSpace?.let {
+                        it.referenceFile = gson.toJson(response.data)
+                        localSpaceDao.updateSpaces(localSpace)
+                    }
 
-                    cachedFiles[spaceId] = response.data
+                    emit(ManagedResult.Success(response.data))
                 }
                 is ApiResult.Error -> {
                     emit(ManagedResult.Error(response.statusCode))
@@ -37,11 +40,4 @@ class ReferenceFileRepository @Inject constructor(val referenceFileService: Refe
             }
         }.flowOn(Dispatchers.IO)
     }
-
-    suspend fun uploadReferenceFile(spaceId: Long) {
-        TODO()
-    }
-
-    fun getCachedReferenceFile(spaceId: Long) = cachedFiles[spaceId]
-
 }

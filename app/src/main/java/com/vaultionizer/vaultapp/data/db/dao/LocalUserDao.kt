@@ -12,8 +12,8 @@ interface LocalUserDao {
     @Query("SELECT * FROM LocalUser")
     fun getAll(): List<LocalUser>
 
-    @Query("SELECT * FROM LocalUser WHERE user_name = :username")
-    fun getUserByName(username: String): LocalUser?
+    @Query("SELECT * FROM LocalUser WHERE remote_user_id = :remoteId AND endpoint = :endpoint")
+    fun getUserByRemoteId(remoteId: Long, endpoint: String): LocalUser?
 
     @Query("SELECT * FROM LocalUser WHERE user_id = :id")
     fun getUserById(id: Long): LocalUser?
@@ -22,7 +22,7 @@ interface LocalUserDao {
     fun getLastLoggedInUser(): LocalUser?
 
     @Insert
-    fun createUser(localUser: LocalUser)
+    fun createUser(localUser: LocalUser): Long
 
     @Update
     fun updateUsers(vararg users: LocalUser)

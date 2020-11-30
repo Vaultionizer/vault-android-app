@@ -47,10 +47,10 @@
           "type": "number"
         },
         "createdAt": {
-          "type": "string"
+          "type": "number"
         },
         "updatedAt": {
-          "type": "string"
+          "type": "number"
         }
       },
       "required": [ "type", "crc", "name", "id", "createdAt", "updatedAt", "size" ],
@@ -59,6 +59,9 @@
     "folder": {
       "type": "object",
       "properties": {
+        "id": {
+          "type": "number"
+        },
         "type": {
           "type": "string",
           "const": "directory"
@@ -67,7 +70,7 @@
           "type": "string"
         },
         "createdAt": {
-          "type": "string"
+          "type": "number"
         },
         "content": {
           "type": "array",
@@ -76,7 +79,7 @@
           }
         }
       },
-      "required": [ "type", "name" ],
+      "required": [ "type", "name", "id" ],
       "additionalProperties": false
     }
   }

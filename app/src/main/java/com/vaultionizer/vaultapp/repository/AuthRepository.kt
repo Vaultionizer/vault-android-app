@@ -1,15 +1,16 @@
 package com.vaultionizer.vaultapp.repository
 
+import android.util.Log
 import com.google.gson.Gson
 import com.vaultionizer.vaultapp.data.db.dao.LocalUserDao
 import com.vaultionizer.vaultapp.data.db.entity.LocalUser
 import com.vaultionizer.vaultapp.data.model.rest.result.ApiResult
 import com.vaultionizer.vaultapp.data.model.rest.result.ManagedResult
-import com.vaultionizer.vaultapp.data.model.rest.refFile.ReferenceFile
-import com.vaultionizer.vaultapp.data.model.rest.user.CreateUserRequest
+import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkReferenceFile
+import com.vaultionizer.vaultapp.data.model.rest.request.CreateUserRequest
 import com.vaultionizer.vaultapp.data.model.rest.user.LoggedInUser
-import com.vaultionizer.vaultapp.data.model.rest.user.LoginUserRequest
-import com.vaultionizer.vaultapp.data.model.rest.user.UserAuthPair
+import com.vaultionizer.vaultapp.data.model.rest.request.LoginUserRequest
+import com.vaultionizer.vaultapp.data.model.rest.user.NetworkUserAuthPair
 import com.vaultionizer.vaultapp.service.UserService
 import com.vaultionizer.vaultapp.hilt.RestModule
 import com.vaultionizer.vaultapp.util.extension.hashSha512
@@ -55,7 +56,8 @@ class AuthRepository @Inject constructor(val userService: UserService, val gson:
         RestModule.host = "https://$host"
 
         return flow {
-            val response = userService.createUser(CreateUserRequest(password.hashSha512(), gson.toJson(ReferenceFile.EMPTY_FILE), username))
+            val response = userService.createUser(CreateUserRequest(password.hashSha512(), gson.toJson(
+                NetworkReferenceFile.EMPTY_FILE), username))
 
             when(response) {
                 is ApiResult.Success -> {
@@ -79,12 +81,14 @@ class AuthRepository @Inject constructor(val userService: UserService, val gson:
         }.flowOn(Dispatchers.IO)
     }
 
-    private fun updateLocalUser(username: String, host: String, authPair: UserAuthPair) {
-        if(localUserDao.getUserById(authPair.userID) == null) {
-            localUserDao.createUser(LocalUser(authPair.userID, username, host, System.currentTimeMillis()))
+    private fun updateLocalUser(username: String, host: String, authPair: NetworkUserAuthPair) {
+        if(localUserDao.getUserByRemoteId(authPair.userID, host) == null) {
+            localUserDao.createUser(LocalUser(0, authPair.userID, username, host, System.currentTimeMillis()))
         }
 
-        val localUser = localUserDao.getUserById(authPair.userID)
+        val localUser = localUserDao.getUserByRemoteId(authPair.userID, host)
+        Log.e("Vault", "Found user ${localUser?.toString()}")
+
         if(localUser != null) {
             localUser.lastLogin = System.currentTimeMillis()
             setLoggedInUser(LoggedInUser(localUser, authPair.sessionKey, authPair.websocketToken))

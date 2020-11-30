@@ -6,9 +6,12 @@ import androidx.room.PrimaryKey
 
 @Entity
 data class LocalUser(
-    @PrimaryKey(autoGenerate = false)
+    @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "user_id")
     val userId: Long,
+
+    @ColumnInfo(name = "remote_user_id")
+    val remoteUserId: Long,
 
     @ColumnInfo(name = "user_name")
     val username: String,

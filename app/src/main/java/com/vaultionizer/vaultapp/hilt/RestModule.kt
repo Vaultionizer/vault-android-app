@@ -4,9 +4,9 @@ import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.vaultionizer.vaultapp.data.model.rest.result.ApiCallFactory
-import com.vaultionizer.vaultapp.data.model.rest.refFile.Element
-import com.vaultionizer.vaultapp.data.model.rest.refFile.File
-import com.vaultionizer.vaultapp.data.model.rest.refFile.Folder
+import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkElement
+import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkFile
+import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkFolder
 import com.vaultionizer.vaultapp.repository.AuthRepository
 import com.vaultionizer.vaultapp.util.external.RuntimeTypeAdapterFactory
 import dagger.Module
@@ -51,13 +51,12 @@ object RestModule {
     @Provides
     @Singleton
     fun provideGson(): Gson {
-        val factory = RuntimeTypeAdapterFactory.of(Element::class.java, "type", true)
-            .registerSubtype(File::class.java, "file")
-            .registerSubtype(Folder::class.java, "directory")
+        val factory = RuntimeTypeAdapterFactory.of(NetworkElement::class.java, "type", true)
+            .registerSubtype(NetworkFile::class.java, "file")
+            .registerSubtype(NetworkFolder::class.java, "directory")
 
         return GsonBuilder()
             .registerTypeAdapterFactory(factory)
-            .setPrettyPrinting()
             .create()
     }
 
@@ -76,13 +75,9 @@ object RestModule {
             var jsonBody = JSONObject(requestBodyToString(it.request().body))
             jsonBody.put("auth", JSONObject().apply {
                 put("sessionKey", AuthRepository.user?.sessionToken)
-                put("userID", AuthRepository.user?.localUser?.userId)
-                Log.e("Vault", "User: ${AuthRepository.user?.localUser?.userId} Token: ${AuthRepository.user?.sessionToken.toString()}")
+                put("userID", AuthRepository.user?.localUser?.remoteUserId)
+                Log.e("Vault", "User: ${AuthRepository.user?.localUser?.remoteUserId} Token: ${AuthRepository.user?.sessionToken.toString()}")
             })
-            jsonBody.apply {
-                put("sessionKey", AuthRepository.user?.sessionToken)
-                put("userID", AuthRepository.user?.localUser?.userId)
-            }
 
             val requestBody = jsonBody.toString().toRequestBody(request.body!!.contentType())
 

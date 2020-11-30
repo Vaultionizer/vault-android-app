@@ -1,6 +1,6 @@
 package com.vaultionizer.vaultapp.data.model.rest.user
 
-data class UserAuthPair (
+data class NetworkUserAuthPair (
     val userID: Long,
     val sessionKey: String,
     val websocketToken: String

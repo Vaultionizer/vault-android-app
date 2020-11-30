@@ -1,7 +1,7 @@
 package com.vaultionizer.vaultapp.repository
 
 import android.util.Log
-import com.vaultionizer.vaultapp.data.model.rest.misc.Version
+import com.vaultionizer.vaultapp.data.model.rest.misc.NetworkVersion
 import com.vaultionizer.vaultapp.data.model.rest.result.ApiResult
 import com.vaultionizer.vaultapp.data.model.rest.result.ManagedResult
 import com.vaultionizer.vaultapp.service.MiscService
@@ -15,9 +15,9 @@ import javax.inject.Inject
 
 class MiscRepository @Inject constructor(val retrofit: Retrofit) {
 
-    suspend fun pingHost(host: String): Flow<ManagedResult<Version>> {
+    suspend fun pingHost(host: String): Flow<ManagedResult<NetworkVersion>> {
         return flow {
-            val temp = retrofit.newBuilder().baseUrl("https://$host/api/").client(OkHttpClient()).build()
+            val temp = retrofit.newBuilder().baseUrl("https://$host/").client(OkHttpClient()).build()
             Log.e("Vault", temp.baseUrl().toString())
 
             val response = temp.create(MiscService::class.java).getVersionInfo()

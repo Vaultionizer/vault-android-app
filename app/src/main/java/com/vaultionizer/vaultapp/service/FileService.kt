@@ -2,7 +2,9 @@ package com.vaultionizer.vaultapp.service
 
 import retrofit2.http.Body
 import retrofit2.http.POST
-import com.vaultionizer.vaultapp.data.model.rest.file.*
+import com.vaultionizer.vaultapp.data.model.rest.request.DeleteFileRequest
+import com.vaultionizer.vaultapp.data.model.rest.request.DownloadFileRequest
+import com.vaultionizer.vaultapp.data.model.rest.request.UploadFileRequest
 import com.vaultionizer.vaultapp.data.model.rest.result.ApiResult
 import retrofit2.http.PUT
 

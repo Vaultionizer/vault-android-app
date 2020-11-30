@@ -49,17 +49,20 @@ class UserDataInputFragment : Fragment() {
         }
 
         authViewModel.userDataFormState.observe(viewLifecycleOwner, Observer {
-            usernameLayout.error = null
-            passwordLayout.error = null
-
-            if(it.usernameError != null) {
-                usernameLayout.error = getString(it.usernameError)
-            }
-
-            if(it.passwordError != null) {
-                passwordLayout.error = getString(it.passwordError)
+            if(!it.isDataValid) {
+                usernameLayout.error = getNullableResourceString(it.usernameError)
+                passwordLayout.error = getNullableResourceString(it.passwordError)
+            } else {
+                usernameLayout.error = null
+                passwordLayout.error = null
             }
         })
+    }
+
+    private fun getNullableResourceString(id: Int?): String? {
+        if(id == null) return null
+
+        return getString(id)
     }
 
 }

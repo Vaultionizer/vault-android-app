@@ -3,6 +3,8 @@ package com.vaultionizer.vaultapp.hilt
 import android.content.Context
 import androidx.room.Room
 import com.vaultionizer.vaultapp.data.db.VaultionizerLocalDatabase
+import com.vaultionizer.vaultapp.data.db.dao.LocalFileDao
+import com.vaultionizer.vaultapp.data.db.dao.LocalSpaceDao
 import com.vaultionizer.vaultapp.data.db.dao.LocalUserDao
 import dagger.Module
 import dagger.Provides
@@ -20,5 +22,11 @@ object DatabaseModule {
 
     @Provides
     fun provideUserDao(database: VaultionizerLocalDatabase): LocalUserDao = database.localUserDao()
+
+    @Provides
+    fun provideSpaceDao(database: VaultionizerLocalDatabase): LocalSpaceDao = database.localSpaceDao()
+
+    @Provides
+    fun provideFileDao(database: VaultionizerLocalDatabase): LocalFileDao = database.localFileDao()
 
 }

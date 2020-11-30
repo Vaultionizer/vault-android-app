@@ -1,5 +1,6 @@
 package com.vaultionizer.vaultapp.ui.auth.register
 
+import android.graphics.Color
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -11,6 +12,9 @@ import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
+import com.github.razir.progressbutton.attachTextChangeAnimator
+import com.github.razir.progressbutton.hideProgress
+import com.github.razir.progressbutton.showProgress
 import com.vaultionizer.vaultapp.R
 import com.vaultionizer.vaultapp.ui.auth.data.AuthViewModel
 
@@ -35,11 +39,17 @@ class RegisterStepAuthKeyFragment : Fragment() {
         }
 
         val finishButton = view.findViewById<Button>(R.id.button_finish)
+        finishButton.attachTextChangeAnimator()
         finishButton.setOnClickListener {
+            finishButton.showProgress {
+                buttonTextRes = R.string.register_step_auth_key_finish_progress
+                progressColor = Color.WHITE
+            }
             authViewModel.registerWithFormData()
         }
 
         authViewModel.loginResult.observe(viewLifecycleOwner, Observer {
+            finishButton.hideProgress(R.string.register_step_auth_key_finish)
             if(it.error == null) {
                 val action =
                     RegisterStepAuthKeyFragmentDirections.actionRegisterStepAuthKeyFragmentToMainActivity2()
