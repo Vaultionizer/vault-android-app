@@ -1,8 +1,10 @@
 package com.vaultionizer.vaultapp.ui.main
 
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
+import android.view.MenuItem
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
@@ -12,6 +14,11 @@ import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
+import androidx.preference.Preference
+import com.chillibits.simplesettings.clicklistener.LibsClickListener
+import com.chillibits.simplesettings.clicklistener.WebsiteClickListener
+import com.chillibits.simplesettings.core.SimpleSettings
+import com.chillibits.simplesettings.core.SimpleSettingsConfig
 import com.mikepenz.iconics.typeface.library.fontawesome.FontAwesome
 import com.mikepenz.iconics.typeface.library.googlematerial.GoogleMaterial
 import com.mikepenz.materialdrawer.iconics.iconicsIcon
@@ -32,7 +39,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.*
 
 @AndroidEntryPoint
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), SimpleSettingsConfig.PreferenceCallback {
 
     // Config
     private lateinit var appBarConfiguration: AppBarConfiguration
@@ -77,6 +84,7 @@ class MainActivity : AppCompatActivity() {
                         isSelectable = false
                         nameRes = R.string.menu_settings
                         iconicsIcon = GoogleMaterial.Icon.gmd_settings
+                        setOnClickListener { showSettingsScreen() }
                         descriptionRes = R.string.menu_settings_description
                     },
                     PrimaryDrawerItem().apply {
@@ -144,6 +152,13 @@ class MainActivity : AppCompatActivity() {
         return true
     }
 
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when(item.itemId) {
+            R.id.action_space_settings -> showSettingsScreen()
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
     override fun onSupportNavigateUp(): Boolean {
         val navController = findNavController(R.id.nav_host_fragment)
         return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
@@ -151,5 +166,25 @@ class MainActivity : AppCompatActivity() {
 
     private fun nextIdentifier(): Long {
         return itemIdentifier++
+    }
+
+    private fun showSettingsScreen() {
+        val config = SimpleSettingsConfig().apply {
+            showResetOption = true
+            preferenceCallback = this@MainActivity
+            iconSpaceReservedByDefault = false
+        }
+        SimpleSettings(this, config).show(R.xml.preferences)
+    }
+
+    override fun onPreferenceClick(
+        context: Context,
+        key: String
+    ): Preference.OnPreferenceClickListener? {
+        return when(key) {
+            "preference" -> WebsiteClickListener(this, "https://www.vaulionizer.com")
+            "libs" -> LibsClickListener(this)
+            else -> super.onPreferenceClick(context, key)
+        }
     }
 }
