@@ -1,21 +1,8 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
-apply plugin: "androidx.navigation.safeargs.kotlin"
-apply plugin: 'kotlin-kapt'
-apply plugin: 'dagger.hilt.android.plugin'
 
-sonarqube {
-    properties {
-        property "sonar.sources", "src/main/java, src/debug/java"
-        property "sonar.binaries", "build/intermediates/javac/debug/classes"
-        property "sonar.java.binaries", "build/intermediates/javac/debug/classes"
-        property "sonar.tests", "src/test/java, src/androidTest/java"
-        property "sonar.libraries", libraries
-        property "sonar.java.test.libraries", libraries
-        property "sonar.java.test.binaries", "build/intermediates/javac/debug/classes"
-    }
-}
+
 
 android {
     compileSdkVersion 30
@@ -23,19 +10,12 @@ android {
 
     defaultConfig {
         applicationId "com.vaultionizer.vaultapp"
-        minSdkVersion 23
+        minSdkVersion 16
         targetSdkVersion 30
         versionCode 1
         versionName "1.0"
 
-        //testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        testInstrumentationRunner getInstrumentation()
-    }
-
-    sourceSets {
-        androidTest {
-            assets.srcDirs = ['src/androidTest/assets']
-        }
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
@@ -62,58 +42,11 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.0.1'
     implementation 'androidx.navigation:navigation-fragment-ktx:2.3.0'
     implementation 'androidx.navigation:navigation-ui-ktx:2.3.0'
-    implementation 'androidx.annotation:annotation:1.1.0'
-    implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.2.0'
-    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.2.0'
-    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
-    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
-    implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
-    implementation "com.squareup.okhttp3:okhttp:4.9.0"
-    implementation "com.squareup.okhttp3:logging-interceptor:4.9.0"
-    implementation 'com.github.razir.progressbutton:progressbutton:2.1.0'
-
-    // Material drawer
-    implementation "com.mikepenz:materialdrawer:8.1.8"
-
-    //required support lib modules
-    implementation "androidx.recyclerview:recyclerview:1.2.0-alpha06"
-
-    // Add for NavController support
-    implementation "com.mikepenz:materialdrawer-nav:8.1.8"
-
-    // Add for Android-Iconics support
-    implementation "com.mikepenz:materialdrawer-iconics:8.1.8"
-
-    implementation "com.mikepenz:iconics-core:5.0.3"
-    implementation 'com.mikepenz:google-material-typeface:3.0.1.4.original-kotlin@aar'
-    implementation 'com.mikepenz:fontawesome-typeface:5.9.0.0-kotlin@aar'
-    implementation "com.mikepenz:iconics-views:5.0.3"
-
-    implementation 'com.github.mancj:MaterialSearchBar:0.8.5'
-
-    implementation 'androidx.hilt:hilt-lifecycle-viewmodel:1.0.0-alpha01'
-    implementation "com.google.dagger:hilt-android:2.28-alpha"
-    kapt "com.google.dagger:hilt-android-compiler:2.28-alpha"
-    kapt 'androidx.hilt:hilt-compiler:1.0.0-alpha01'
-
-    implementation 'com.thedeanda:lorem:2.1'
-
-    // ROOM
-    def room_version = "2.2.5"
-    implementation "androidx.room:room-runtime:$room_version"
-    kapt "androidx.room:room-compiler:$room_version"
-    implementation "androidx.room:room-ktx:$room_version"
-
-
     testImplementation 'junit:junit:4.12'
-    testImplementation "androidx.room:room-testing:$room_version"
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
-    androidTestImplementation 'info.cukes:cucumber-android:1.2.5@jar'
+    testImplementation 'io.cucumber:cucumber-java:6.8.1'
+    testImplementation 'io.cucumber:cucumber-junit:6.8.1'
+    androidTestImplementation 'info.cukes:cucumber-android:1.2.5'
     androidTestImplementation 'info.cukes:cucumber-picocontainer:1.2.5'
-    androidTestImplementation 'com.android.support:support-annotations:26.1.0'
-}
-
-def getInstrumentation() {
-    project.hasProperty("cucumber") ? "com.vaultionizer.vaultapp.cucumber.runner.CucumberTestRunner" : "androidx.test.runner.AndroidJUnitRunner"
 }
