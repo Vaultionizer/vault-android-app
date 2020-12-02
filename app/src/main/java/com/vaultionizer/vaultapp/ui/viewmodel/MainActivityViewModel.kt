@@ -79,39 +79,28 @@ class MainActivityViewModel @ViewModelInject constructor(val spaceRepository: Sp
         updateCurrentFiles()
     }
 
-    fun onDirectoryChange(newFolder: VNFile?): Boolean {
-        val dirCopy = _currentDirectory.value
-        if(newFolder == null) {
-            if(dirCopy != null) {
-                if(currentDirectory.value?.parentId != null) {
-                    viewModelScope.launch {
-                        val elements = fileRepository.getSpaceFiles(selectedSpace.value!!)
-                        elements.collect {
-                            when(it) {
-                                is ManagedResult.Success -> {
-                                    _currentDirectory.value = it.data[dirCopy.parentId]
-                                    updateCurrentFiles()
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        } else {
-            viewModelScope.launch {
-                val elements = fileRepository.getSpaceFiles(selectedSpace.value!!)
-                elements.collect {
-                    when(it) {
-                        is ManagedResult.Success -> {
+    fun onDirectoryChange(newFolder: VNFile?) {
+        Log.d("Vault", "Change")
+        if(_selectedSpace.value == null) return
+        if(_currentDirectory.value == null && newFolder == null) return
+
+        viewModelScope.launch {
+            val elements = fileRepository.getSpaceFiles(selectedSpace.value!!)
+
+            elements.collect {
+                when(it) {
+                    is ManagedResult.Success -> {
+                        if(newFolder == null) {
+                            _currentDirectory.value = it.data[_currentDirectory.value!!.parentId]
+                        } else {
                             _currentDirectory.value = it.data[newFolder.localId]
-                            updateCurrentFiles()
                         }
+
+                        updateCurrentFiles()
                     }
                 }
             }
         }
-
-        return true
     }
 
     fun onSearchQuery(query: String) {
