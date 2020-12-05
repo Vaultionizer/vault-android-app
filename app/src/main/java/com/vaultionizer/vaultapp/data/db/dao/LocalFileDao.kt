@@ -1,6 +1,7 @@
 package com.vaultionizer.vaultapp.data.db.dao
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import com.vaultionizer.vaultapp.data.db.entity.LocalFile
@@ -16,5 +17,8 @@ interface LocalFileDao {
 
     @Insert
     fun createFile(localFile: LocalFile): Long
+
+    @Delete
+    fun deleteFiles(vararg files: LocalFile)
 
 }

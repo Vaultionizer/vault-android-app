@@ -34,7 +34,7 @@ class FileRecyclerAdapter(private val clickListener: (VNFile) -> Unit)
 
         holder.fileImageView.icon = IconicsDrawable(holder.context, chooseElementIcon(elem.name, elem.isFolder))
         holder.fileDownloaded.visibility =
-            if(elem.isDownloaded(holder.view.context)) {
+            if(elem.isDownloaded(holder.view.context) || elem.state == VNFile.State.AVAILABLE_OFFLINE) {
                 View.VISIBLE
                 Log.e("Vault", "Visible")
             } else {
@@ -42,7 +42,7 @@ class FileRecyclerAdapter(private val clickListener: (VNFile) -> Unit)
                 View.INVISIBLE
             }
 
-        holder.fileNameView.text = elem.name
+        holder.fileNameView.text = "${elem.name} | ${elem.parent?.localId}"
 
         if(elem.isFolder) {
             holder.fileNameView.setTypeface(null, Typeface.BOLD)

@@ -15,17 +15,24 @@ import androidx.core.net.toFile
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
+import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.vaultionizer.vaultapp.R
+import com.vaultionizer.vaultapp.service.FileExchangeService
 import com.vaultionizer.vaultapp.ui.viewmodel.MainActivityViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_file_list.*
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import java.io.BufferedReader
 import java.io.File
 import java.io.InputStreamReader
+import javax.inject.Inject
+
+private const val OPEN_FILE_INTENT_RC = 0
 
 @AndroidEntryPoint
 class FileFragment : Fragment() {
@@ -73,9 +80,7 @@ class FileFragment : Fragment() {
             ) {
                 // TODO: refactor into ViewModel
                 if (it.isFolder) {
-                    /*if(viewModel.onDirectoryChange(it)) {
-                        backPressedCallback.isEnabled = true
-                    }*/backPressedCallback.isEnabled = true
+                    backPressedCallback.isEnabled = true // TODO(jatsqi): Refactor
                     viewModel.onDirectoryChange(it)
 
                     pathRecyclerAdapter.folderList.add(it)
@@ -98,7 +103,7 @@ class FileFragment : Fragment() {
         uploadButton.setOnClickListener {
             val intent = Intent(Intent.ACTION_GET_CONTENT)
             intent.type = "*/*"
-            startActivityForResult(intent, 1)
+            startActivityForResult(intent, OPEN_FILE_INTENT_RC)
         }
 
         recyclerView = view.findViewById<RecyclerView>(R.id.file_list)
@@ -140,22 +145,10 @@ class FileFragment : Fragment() {
         }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        if (requestCode == 1
+        if (requestCode == OPEN_FILE_INTENT_RC
             && resultCode == Activity.RESULT_OK) {
             data?.data?.also { uri ->
-                val resolver = requireActivity().applicationContext.contentResolver
-                resolver.openInputStream(uri)?.use {
-                    BufferedReader(InputStreamReader(it)).use {
-                        var line: String? = it.readLine()
-                        val builder = StringBuilder()
-                        while(line != null) {
-                            builder.append(line)
-                            line = it.readLine()
-                        }
-
-                        Log.e("Vault", uri.toString() + "##" + uri.path + "##" + uri.lastPathSegment ?: "???")
-                    }
-                }
+                viewModel.requestUpload(uri, requireContext())
             }
         }
     }
