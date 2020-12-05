@@ -1,20 +1,38 @@
 package com.vaultionizer.vaultapp.ui.main.file
 
+import android.Manifest
+import android.app.Activity
+import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import android.view.*
 import android.view.animation.AnimationUtils
 import android.widget.ProgressBar
 import androidx.activity.OnBackPressedCallback
+import androidx.core.content.ContextCompat
+import androidx.core.net.toFile
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
+import androidx.lifecycle.viewModelScope
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.vaultionizer.vaultapp.R
+import com.vaultionizer.vaultapp.service.FileExchangeService
 import com.vaultionizer.vaultapp.ui.viewmodel.MainActivityViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.android.synthetic.main.fragment_file_list.*
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
+import java.io.BufferedReader
+import java.io.File
+import java.io.InputStreamReader
+import javax.inject.Inject
+
+private const val OPEN_FILE_INTENT_RC = 0
 
 @AndroidEntryPoint
 class FileFragment : Fragment() {
@@ -62,9 +80,8 @@ class FileFragment : Fragment() {
             ) {
                 // TODO: refactor into ViewModel
                 if (it.isFolder) {
-                    if(!viewModel.onDirectoryChange(it)) {
-                        backPressedCallback.isEnabled = true
-                    }
+                    backPressedCallback.isEnabled = true // TODO(jatsqi): Refactor
+                    viewModel.onDirectoryChange(it)
 
                     pathRecyclerAdapter.folderList.add(it)
                     pathRecyclerAdapter.notifyDataSetChanged()
@@ -82,21 +99,17 @@ class FileFragment : Fragment() {
             progressBar.visibility = View.GONE
         })
 
-        /* viewModel.folderHierarchy.observe(viewLifecycleOwner, Observer {
-            if(it.isEmpty()) {
-                backPressedCallback.isEnabled = false
-                fileAdapter?.changeCurrentElements(viewModel.currentReferenceFile.value!!.elements)
-            } else {
-                fileAdapter?.changeCurrentElements(it.last.content?.toList() ?: emptyList())
-            }
-            recyclerView.scheduleLayoutAnimation()
-            pathRecyclerAdapter.changeHierarchy(it)
-        }) */
+        val uploadButton = view.findViewById<FloatingActionButton>(R.id.upload)
+        uploadButton.setOnClickListener {
+            val intent = Intent(Intent.ACTION_GET_CONTENT)
+            intent.type = "*/*"
+            startActivityForResult(intent, OPEN_FILE_INTENT_RC)
+        }
 
         recyclerView = view.findViewById<RecyclerView>(R.id.file_list)
         recyclerView.apply {
             layoutManager = LinearLayoutManager(this@FileFragment.requireContext())
-            addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
+            // addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
             visibility = View.GONE
             layoutAnimation = AnimationUtils.loadLayoutAnimation(requireContext(), R.anim.layout_animation_fall_down)
         }
@@ -131,4 +144,12 @@ class FileFragment : Fragment() {
             }
         }
 
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        if (requestCode == OPEN_FILE_INTENT_RC
+            && resultCode == Activity.RESULT_OK) {
+            data?.data?.also { uri ->
+                viewModel.requestUpload(uri, requireContext())
+            }
+        }
+    }
 }

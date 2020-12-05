@@ -11,12 +11,12 @@ import retrofit2.http.PUT
 interface FileService {
 
     @POST("api/file/upload")
-        suspend fun uploadFile(@Body uploadFileReq : UploadFileRequest) : ApiResult<Long>
+    suspend fun uploadFile(@Body uploadFileReq : UploadFileRequest) : ApiResult<Long>
 
     @PUT("api/file/download")
-        suspend fun downloadFile(@Body downloadFileReq : DownloadFileRequest)
+    suspend fun downloadFile(@Body downloadFileReq : DownloadFileRequest)
 
     @PUT("api/file/delete")                                                 //TODO will be changed to delete in the future 11/26/2020
-        suspend fun deleteFile(@Body deleteFileReq: DeleteFileRequest)
+    suspend fun deleteFile(@Body deleteFileReq: DeleteFileRequest)
 
 }

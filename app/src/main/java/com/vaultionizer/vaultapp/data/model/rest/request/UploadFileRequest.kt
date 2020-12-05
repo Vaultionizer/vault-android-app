@@ -1,6 +1,6 @@
 package com.vaultionizer.vaultapp.data.model.rest.request
 
 data class UploadFileRequest(
-    val amountOfFiles : Long,
+    val amountFiles : Long,
     val spaceID : Long
 )

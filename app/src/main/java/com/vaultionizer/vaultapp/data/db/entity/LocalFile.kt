@@ -16,4 +16,12 @@ data class LocalFile(
 
     @ColumnInfo(name = "remote_file_id")
     val remoteFileId: Long
-)
+) {
+
+    enum class TransferStatus {
+        COMPLETED,
+        UPLOADING,
+        DOWNLOADING
+    }
+
+}

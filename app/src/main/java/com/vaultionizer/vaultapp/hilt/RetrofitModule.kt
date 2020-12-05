@@ -1,15 +1,14 @@
 package com.vaultionizer.vaultapp.hilt
 
-import com.vaultionizer.vaultapp.service.MiscService
-import com.vaultionizer.vaultapp.service.ReferenceFileService
-import com.vaultionizer.vaultapp.service.SpaceService
-import com.vaultionizer.vaultapp.service.UserService
+import com.google.gson.Gson
+import com.vaultionizer.vaultapp.repository.AuthRepository
+import com.vaultionizer.vaultapp.service.*
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.components.ActivityComponent
 import dagger.hilt.android.components.ApplicationComponent
 import retrofit2.Retrofit
+import javax.inject.Singleton
 
 @Module
 @InstallIn(ApplicationComponent::class)
@@ -26,5 +25,12 @@ object RetrofitModule {
 
     @Provides
     fun provideReferenceFileService(retrofit: Retrofit) = retrofit.create(ReferenceFileService::class.java)
+
+    @Provides
+    fun provideFileService(retrofit: Retrofit) = retrofit.create(FileService::class.java)
+
+    @Provides
+    @Singleton
+    fun provideFileExchangeService(authRepository: AuthRepository, fileService: FileService, gson: Gson) = FileExchangeService(authRepository, fileService, gson)
 
 }

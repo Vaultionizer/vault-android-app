@@ -88,6 +88,7 @@ class AuthViewModel @ViewModelInject constructor(
             val result = authRepository.login(authenticationFormData.host, authenticationFormData.username, authenticationFormData.password)
 
             result.collect {
+                Log.d("Vault", it.javaClass.toString())
                 when(it) {
                     is ManagedResult.Success -> {
                         _loginResult.value = LoginResult(null)
@@ -96,6 +97,7 @@ class AuthViewModel @ViewModelInject constructor(
                         _loginResult.value = LoginResult("Invalid credentials!")
                     }
                     is ManagedResult.NetworkError -> {
+                        Log.d("Vault", it.exception.localizedMessage)
                     }
                 }
             }
