@@ -4,16 +4,19 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.ImageButton
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.vaultionizer.vaultapp.R
+import com.vaultionizer.vaultapp.data.model.domain.VNSpace
+import com.vaultionizer.vaultapp.util.Constants
 
-class KeyManagementAdapter(private val dataSet: Array<String>, private val clickListener: (KeyObj) -> Unit) :
+class KeyManagementAdapter(private val dataSet: List<VNSpace>, private val clickListener: (VNSpace) -> Unit) :
     RecyclerView.Adapter<KeyManagementAdapter.ViewHolder>() {
 
         class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
             val textView: TextView
-            val deleteButton : Button
+            val deleteButton : ImageButton
 
             init {
                 // Define click listener for the ViewHolder's View.
@@ -21,10 +24,6 @@ class KeyManagementAdapter(private val dataSet: Array<String>, private val click
                 deleteButton = view.findViewById(R.id.key_delete_button)
             }
         }
-
-        data class KeyObj(
-            val spaceID : Long
-        )
 
         // Create new views (invoked by the layout manager)
         override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): ViewHolder {
@@ -40,9 +39,9 @@ class KeyManagementAdapter(private val dataSet: Array<String>, private val click
 
             // Get element from your dataset at this position and replace the
             // contents of the view with that element
-            viewHolder.textView.text = dataSet[position]
+            viewHolder.textView.text = "Keyname: ${Constants.VN_KEY_PREFIX}${dataSet[position].name?:dataSet[position].id}"
             viewHolder.deleteButton.setOnClickListener{
-                clickListener(KeyObj(0))                //TODO needs to be changed to givben spaceID
+                clickListener(dataSet[position])
             }
         }
 
