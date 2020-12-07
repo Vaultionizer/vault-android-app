@@ -92,6 +92,7 @@ dependencies {
 
     // WebSocket
     implementation 'com.github.NaikSoftware:StompProtocolAndroid:1.6.6'
+    implementation 'com.nambimobile.widgets:expandable-fab:1.0.2'
 
     implementation "com.mikepenz:iconics-core:5.0.3"
     implementation 'com.mikepenz:google-material-typeface:3.0.1.4.original-kotlin@aar'

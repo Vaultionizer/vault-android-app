@@ -10,7 +10,7 @@ import retrofit2.http.*
 interface SpaceService {
 
     @POST("api/spaces/create")
-    suspend fun createSpace(@Body createSpaceReq: CreateSpaceRequest): ApiResult<NetworkSpaceAuthPair>
+    suspend fun createSpace(@Body createSpaceReq: CreateSpaceRequest): ApiResult<Long>
 
     @POST("api/spaces/getAll")
     @Headers("Accept: application/json", "Content-Type: application/json")
@@ -24,6 +24,6 @@ interface SpaceService {
 
     @DELETE("api/space/delete/{spaceID}")
     @Headers("Accept: application/json", "Content-Type: application/json")
-    suspend fun deleteSpace(@Path("spaceID") spaceID : Long)
+    suspend fun deleteSpace(@Path("spaceID") spaceID : Long): ApiResult<Nothing>
 
 }

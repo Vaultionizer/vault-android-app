@@ -13,4 +13,12 @@
         android:name="com.vaultionizer.vaultapp.ui.main.keys.KeyManagementFragment"
         android:label="fragment_key_management"
         tools:layout="@layout/fragment_key_management" />
+    <fragment
+        android:id="@+id/createSpaceFragment"
+        android:name="com.vaultionizer.vaultapp.ui.main.space.CreateSpaceFragment"
+        android:label="Create new Space" >
+        <action
+            android:id="@+id/action_createSpaceFragment_to_fileFragment"
+            app:destination="@id/fileFragment" />
+    </fragment>
 </navigation>

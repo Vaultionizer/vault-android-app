@@ -14,6 +14,7 @@ import com.mikepenz.iconics.typeface.library.fontawesome.FontAwesome
 import com.mikepenz.iconics.view.IconicsImageView
 import com.vaultionizer.vaultapp.R
 import com.vaultionizer.vaultapp.data.model.domain.VNFile
+import java.text.DateFormat
 
 class FileRecyclerAdapter(private val clickListener: (VNFile) -> Unit)
     : RecyclerView.Adapter<FileRecyclerAdapter.FileViewHolder>() {
@@ -42,7 +43,10 @@ class FileRecyclerAdapter(private val clickListener: (VNFile) -> Unit)
                 View.INVISIBLE
             }
 
-        holder.fileNameView.text = "${elem.name} | ${elem.parent?.localId}"
+        Log.e("Vault", "POS ${position} SIZE ${currentElements.size}")
+
+        holder.fileNameView.text = "${elem.name}"
+        holder.fileDate.text = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(elem.lastUpdated ?: elem.createdAt!!)
 
         if(elem.isFolder) {
             holder.fileNameView.setTypeface(null, Typeface.BOLD)
@@ -84,6 +88,7 @@ class FileRecyclerAdapter(private val clickListener: (VNFile) -> Unit)
         val fileImageView: IconicsImageView = view.findViewById<IconicsImageView>(R.id.file_image),
         val fileNameView: TextView = view.findViewById<TextView>(R.id.file_name),
         val fileDownloaded: IconicsImageView = view.findViewById<IconicsImageView>(R.id.file_downloaded),
+        val fileDate: TextView = view.findViewById(R.id.file_date)
     ) : RecyclerView.ViewHolder(view)
 
 }

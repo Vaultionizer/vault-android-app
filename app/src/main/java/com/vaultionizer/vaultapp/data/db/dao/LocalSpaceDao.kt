@@ -29,4 +29,7 @@ interface LocalSpaceDao {
     @Update
     fun updateSpaces(vararg space: LocalSpace)
 
+    @Delete
+    fun deleteSpaces(vararg spaces: LocalSpace)
+
 }

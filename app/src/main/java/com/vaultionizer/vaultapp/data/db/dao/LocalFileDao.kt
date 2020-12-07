@@ -21,4 +21,7 @@ interface LocalFileDao {
     @Delete
     fun deleteFiles(vararg files: LocalFile)
 
+    @Query("DELETE FROM LocalFile WHERE space_id = :spaceId")
+    fun deleteFilesBySpace(spaceId: Long)
+
 }

@@ -1,8 +1,13 @@
 package com.vaultionizer.vaultapp.repository
 
+import com.google.gson.Gson
+import com.thedeanda.lorem.LoremIpsum
+import com.vaultionizer.vaultapp.data.db.dao.LocalFileDao
 import com.vaultionizer.vaultapp.data.db.dao.LocalSpaceDao
 import com.vaultionizer.vaultapp.data.db.entity.LocalSpace
 import com.vaultionizer.vaultapp.data.model.domain.VNSpace
+import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkReferenceFile
+import com.vaultionizer.vaultapp.data.model.rest.request.CreateSpaceRequest
 import com.vaultionizer.vaultapp.data.model.rest.result.ApiResult
 import com.vaultionizer.vaultapp.data.model.rest.result.ManagedResult
 import com.vaultionizer.vaultapp.data.model.rest.space.NetworkSpace
@@ -13,7 +18,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import javax.inject.Inject
 
-class SpaceRepository @Inject constructor(val spaceService: SpaceService, val localSpaceDao: LocalSpaceDao) {
+class SpaceRepository @Inject constructor(val spaceService: SpaceService, val localSpaceDao: LocalSpaceDao, val localFileDao: LocalFileDao, val gson: Gson) {
 
     suspend fun getAllSpaces(): Flow<ManagedResult<List<VNSpace>>> {
         return flow {
@@ -32,14 +37,44 @@ class SpaceRepository @Inject constructor(val spaceService: SpaceService, val lo
         }.flowOn(Dispatchers.IO)
     }
 
-    private fun persistNetworkSpace(networkSpace: NetworkSpace): VNSpace {
-        var space = localSpaceDao.getSpaceByRemoteId(AuthRepository.user!!.localUser.userId, networkSpace.spaceID)
+    suspend fun createSpace(name: String, isPrivate: Boolean): Flow<ManagedResult<VNSpace>> {
+        return flow {
+            // TODO(jatsqi) Replace LoremIpsum with real authKey
+            val response = spaceService.createSpace(CreateSpaceRequest(LoremIpsum.getInstance().getWords(20), isPrivate, gson.toJson(NetworkReferenceFile.EMPTY_FILE)))
+
+            when(response) {
+                is ApiResult.Success -> {
+                    val persisted = persistNetworkSpace(response.data, isPrivate, name, null) // TODO(jatsqi) Replace null with actual reference file
+
+                    emit(ManagedResult.Success(persisted))
+                }
+            }
+        }.flowOn(Dispatchers.IO)
+    }
+
+    suspend fun deleteSpace(space: VNSpace): Flow<ManagedResult<VNSpace>> {
+        return flow {
+            val response = spaceService.deleteSpace(space.remoteId)
+
+            when(response) {
+                is ApiResult.Success -> {
+                    localFileDao.deleteFilesBySpace(space.id)
+                    localSpaceDao.deleteSpaces(localSpaceDao.getSpaceById(space.id)!!)
+
+                    emit(ManagedResult.Success(space))
+                }
+            }
+        }
+    }
+
+    private fun persistNetworkSpace(remoteSpaceId: Long, isPrivate: Boolean, name: String?, refFile: String?): VNSpace {
+        var space = localSpaceDao.getSpaceByRemoteId(AuthRepository.user!!.localUser.userId, remoteSpaceId)
         if(space == null) {
             space = LocalSpace(
                 0,
-                networkSpace.spaceID,
+                remoteSpaceId,
                 AuthRepository.user!!.localUser.userId,
-                null,
+                name,
                 null,
                 0
             )
@@ -53,7 +88,9 @@ class SpaceRepository @Inject constructor(val spaceService: SpaceService, val lo
             space.userId,
             space.name,
             space.lastAccess,
-            networkSpace.private
+            isPrivate
         )
     }
+
+    private fun persistNetworkSpace(networkSpace: NetworkSpace): VNSpace = persistNetworkSpace(networkSpace.spaceID, networkSpace.private, null, null)
 }
