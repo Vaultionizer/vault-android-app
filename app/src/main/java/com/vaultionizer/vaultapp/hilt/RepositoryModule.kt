@@ -32,7 +32,7 @@ object RepositoryModule {
 
     @Provides
     @Singleton
-    fun provideSpaceRepository(spaceService: SpaceService, localSpaceDao: LocalSpaceDao) = SpaceRepository(spaceService, localSpaceDao)
+    fun provideSpaceRepository(spaceService: SpaceService, localSpaceDao: LocalSpaceDao, localFileDao: LocalFileDao, gson: Gson) = SpaceRepository(spaceService, localSpaceDao, localFileDao, gson)
 
     @Provides
     @Singleton

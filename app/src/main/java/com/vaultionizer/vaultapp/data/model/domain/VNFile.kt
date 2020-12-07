@@ -25,9 +25,9 @@ class VNFile(
     var remoteId: Long? = null
         private set
 
-    var content = mutableListOf<VNFile>()
+    var content: MutableList<VNFile>? = null
     val isFolder: Boolean
-        get() = content.isNotEmpty() && remoteId == null
+        get() = content != null && remoteId == null
 
     // ==== Meta ====
     var lastUpdated: Long? = null
@@ -36,7 +36,7 @@ class VNFile(
     var state: State? = State.AVAILABLE_REMOTE
 
     // TODO(jatsqi) Refactor constructors
-    constructor(name: String, space: VNSpace, parent: VNFile?, localId: Long? = null, remoteId: Long? = null, content: MutableList<VNFile> = mutableListOf()) : this(name, space, parent) {
+    constructor(name: String, space: VNSpace, parent: VNFile?, localId: Long? = null, remoteId: Long? = null, content: MutableList<VNFile>? = null) : this(name, space, parent) {
         this.localId = localId
         this.remoteId = remoteId
         this.content = content
@@ -57,7 +57,7 @@ class VNFile(
                 name = name,
                 id = localId!!,
                 createdAt = createdAt,
-                content = content.map { it.mapToNetwork() }.toMutableList()
+                content = content?.map { it.mapToNetwork() }?.toMutableList()
             )
         } else { // TODO(jatsqi) Pass correct values to constructor (crc, ...)
             return NetworkFile(

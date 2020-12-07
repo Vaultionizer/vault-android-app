@@ -21,7 +21,7 @@ class Cryptography {
         return secretKeyEntry.secretKey
     }
 
-    fun createKey(spaceID: Long, cryptoType: CryptoType, cryptoMode : CryptoMode, cryptoPadding : CryptoPadding) : SecretKey?{
+    fun createKey(spaceID: Long, cryptoType: CryptoType, cryptoMode : CryptoMode, cryptoPadding : CryptoPadding) : SecretKey? {
         if (cryptoType == CryptoType.AES){
             if (cryptoMode == CryptoMode.GCM){
                 if (cryptoPadding == CryptoPadding.NONE){

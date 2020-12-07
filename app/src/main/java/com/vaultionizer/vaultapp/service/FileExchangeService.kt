@@ -27,6 +27,7 @@ import ua.naiksoftware.stomp.dto.LifecycleEvent
 import ua.naiksoftware.stomp.dto.StompCommand
 import ua.naiksoftware.stomp.dto.StompHeader
 import ua.naiksoftware.stomp.dto.StompMessage
+import java.nio.charset.Charset
 import javax.inject.Inject
 
 class FileExchangeService @Inject constructor(
@@ -36,7 +37,7 @@ class FileExchangeService @Inject constructor(
 ) {
 
     companion object {
-        const val WEB_SOCKET_URL_TEMPLATE = "https://%s:443/gs-guide-websocket"
+        const val WEB_SOCKET_URL_TEMPLATE = "https://%s:443/wss/websocket"
     }
 
     private lateinit var stompClient: StompClient
@@ -53,6 +54,10 @@ class FileExchangeService @Inject constructor(
                     val fileId = response.data
                     Log.e("Vault", "Responded with sace Index ${fileId}")
 
+                    while(!stompClient.isConnected) {
+
+                    }
+
                     val dis = stompClient.send(
                         StompMessage(
                             StompCommand.SEND,
@@ -67,7 +72,7 @@ class FileExchangeService @Inject constructor(
                                 StompHeader("sessionKey", AuthRepository.user!!.sessionToken)
                             ),
                             JSONObject().apply {
-                                put("content", data.toString())
+                                put("content", Base64.encodeToString(data, Base64.NO_WRAP))
                             }.toString()
                         )
                     ).compose(applySchedulers()).subscribe({
@@ -94,6 +99,8 @@ class FileExchangeService @Inject constructor(
                 String.format(WEB_SOCKET_URL_TEMPLATE, AuthRepository.user?.localUser?.endpoint)
             )
 
+            Log.e("Vault", "Connedting to ${String.format(WEB_SOCKET_URL_TEMPLATE, AuthRepository.user?.localUser?.endpoint)}")
+
             Log.e("Vault", "URL ${String.format(WEB_SOCKET_URL_TEMPLATE, AuthRepository.user?.localUser?.endpoint)}")
 
             stompClient.withClientHeartbeat(1000).withServerHeartbeat(1000)
@@ -110,7 +117,7 @@ class FileExchangeService @Inject constructor(
                             Log.e("Vault", "Stomp connection error", it.getException());
                         }
                         LifecycleEvent.Type.CLOSED -> {
-                            Log.e("Vault", "Closed", it.exception)
+                            Log.e("Vault", "Closed ${it.message}", it.exception)
                         }
                         LifecycleEvent.Type.FAILED_SERVER_HEARTBEAT -> {
                             Log.e("Vault", "Heartbeat")

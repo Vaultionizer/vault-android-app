@@ -50,7 +50,7 @@ class MainActivityViewModel @ViewModelInject constructor(
 
     private fun updateCurrentFiles() {
         viewModelScope.launch {
-            if(selectedSpace.value == null) {
+            if(_selectedSpace.value == null) {
                 return@launch
             }
 
@@ -84,8 +84,30 @@ class MainActivityViewModel @ViewModelInject constructor(
         }
     }
 
+    fun requestFolder(name: String) {
+        if(_selectedSpace.value != null && _currentDirectory.value != null) {
+            viewModelScope.launch {
+                fileRepository.uploadFolder(_selectedSpace.value!!, name, _currentDirectory.value!!).collect()
+                updateCurrentFiles()
+            }
+        }
+    }
+
+    fun requestSpaceDeletion() {
+        viewModelScope.launch {
+            spaceRepository.deleteSpace(_selectedSpace.value!!).collect {
+                when(it) {
+                    is ManagedResult.Success -> {
+                        fileRepository.cacheEvict(it.data.id)
+                    }
+                }
+            }
+        }
+    }
+
     fun selectedSpaceChanged(space: VNSpace) {
         Log.e("Vault", "Change space...")
+        _currentDirectory.value = null
         _selectedSpace.value = space
         updateCurrentFiles()
     }
@@ -113,8 +135,29 @@ class MainActivityViewModel @ViewModelInject constructor(
         updateCurrentFiles()
     }
 
-    fun onSearchQuery(query: String) {
+    fun onSearchQuery(query: String?) {
+        if(query == null || query.isEmpty()) {
+            updateCurrentFiles()
+            return
+        }
+        if(_currentDirectory.value != null) {
+            val list = mutableListOf<VNFile>()
+            buildSearchList(query, _currentDirectory.value!!, list)
 
+            _shownElements.value = list
+        }
+    }
+
+    private fun buildSearchList(query: String, file: VNFile, list: MutableList<VNFile>) {
+        if(file.isFolder) {
+            file.content?.forEach {
+                if(it.name.contains(query)) {
+                    list.add(it)
+
+                    if(it.isFolder) buildSearchList(query, it, list)
+                }
+            }
+        }
     }
 
     // https://stackoverflow.com/questions/5568874/how-to-extract-the-file-name-from-uri-returned-from-intent-action-get-content

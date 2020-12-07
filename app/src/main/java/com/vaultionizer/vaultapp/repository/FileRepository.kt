@@ -27,6 +27,7 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
+import kotlin.math.min
 
 class FileRepository @Inject constructor(
     val applicationContext: Context,
@@ -42,6 +43,7 @@ class FileRepository @Inject constructor(
     Maps localSpaceId to Root folder of file tree
      */
     private val cache = mutableMapOf<Long, VNFile>()
+    private val minimumIdCache = mutableMapOf<Long, Long>()
 
     suspend fun getFileTree(space: VNSpace): Flow<ManagedResult<VNFile>> {
         return flow {
@@ -56,14 +58,21 @@ class FileRepository @Inject constructor(
                     is ManagedResult.Success -> {
                         val localFiles = localSpaceDao.getSpaceWithFiles(space.id).files.map { it.remoteFileId to it }.toMap()
 
+                        Log.e("Vault", "GOT ${localFiles.size} DB ${localSpaceDao.getSpaceWithFiles(space.id).files.size}")
+                        localFiles.forEach {
+                            Log.e("Vault", "FOUND ENTRY FOR SPACE: ${space.id} ${it.key} with ${it.value}")
+                        }
+
                         val root = VNFile(
                             name = "/",
                             space = space,
                             parent = null,
-                            localId = NetworkReferenceFile.GLOBAL_FOLDER_ID_COUNTER--
+                            localId = -1,
+                            content = mutableListOf()
                         )
 
                         cache[space.id] = root
+                        minimumIdCache[space.id] = -1
                         buildTree(it.data.elements, localFiles, root, space, applicationContext)
                         emit(ManagedResult.Success(root))
                     }
@@ -77,11 +86,15 @@ class FileRepository @Inject constructor(
 
     private fun buildTree(elements: List<NetworkElement>?, localFiles: Map<Long, LocalFile>, parent: VNFile, space: VNSpace, ctx: Context) {
         elements?.forEach {
+            if(minimumIdCache[space.id]!! > it.id) minimumIdCache[space.id] = it.id
+
             if(it is NetworkFolder) {
-                val folder = VNFile(it.name, space, parent, localId = it.id)
+                val folder = VNFile(it.name, space, parent, localId = it.id, content = mutableListOf()).apply {
+                    createdAt = it.createdAt
+                }
                 buildTree(it.content, localFiles, folder, space, ctx)
 
-                parent.content.add(folder)
+                parent.content!!.add(folder)
             } else if(it is NetworkFile) {
                 val add = VNFile(
                             it.name,
@@ -93,13 +106,14 @@ class FileRepository @Inject constructor(
                 add.lastUpdated = it.updatedAt
 
                 if(!add.isDownloaded(ctx) && add.localId != null) {
+                    Log.e("Vault", "LocalID ${add.localId} localFiles ${localFiles[add.localId]}")
                     localFileDao.deleteFiles(localFiles[add.localId]!!)
                     add.localId = null
 
                     Log.e("Vault", "Delete local mismatch!")
                 }
 
-                parent.content.add(add)
+                parent.content!!.add(add)
             }
         }
     }
@@ -139,7 +153,33 @@ class FileRepository @Inject constructor(
         }.flowOn(Dispatchers.IO)
     }
 
+    suspend fun uploadFolder(space: VNSpace, name: String, parent: VNFile): Flow<VNFile> {
+        return flow {
+            if(!minimumIdCache.containsKey(space.id)) {
+                minimumIdCache[space.id] = -2
+            } else {
+                minimumIdCache[space.id] = minimumIdCache[space.id]!! - 1
+            }
+
+            Log.e("Vault", "MIN ID ${minimumIdCache[space.id]!!}")
+            val folder = VNFile(name, space, parent, minimumIdCache[space.id]!!, null, mutableListOf()).apply {
+                lastUpdated = System.currentTimeMillis()
+                createdAt = System.currentTimeMillis()
+            }
+            parent.content!!.add(folder)
+
+            resyncRefFile(space) // TODO(jatsqi) Error handling
+            emit(folder)
+        }
+    }
+
+    fun cacheEvict(spaceId: Long) {
+        cache.remove(spaceId)
+        minimumIdCache.remove(spaceId)
+    }
+
     private suspend fun resyncRefFile(space: VNSpace) {
+        if(!cache.containsKey(space.id)) return
         val root = cache[space.id]!!.mapToNetwork() as NetworkFolder
 
         val referenceFile = NetworkReferenceFile(

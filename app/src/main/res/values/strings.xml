@@ -56,6 +56,10 @@
     <string name="menu_keys_description">Create and delete cryptographic keys</string>
 
     <string name="menu_section_vaults">Your spaces</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    
+    <string name="create_space_name">Name</string>
+    <string name="create_space_shared_vault">Shared vault</string>
+    <string name="create_space_create">Create space</string>
+    <string name="create_space_name_error">Space name be at least 4 characters long</string>
+    <string name="create_space_progress">Creating space</string>
 </resources>
