@@ -11,7 +11,7 @@
     <fragment
         android:id="@+id/keyManagementFragment"
         android:name="com.vaultionizer.vaultapp.ui.main.keys.KeyManagementFragment"
-        android:label="fragment_key_management"
+        android:label="Key Management"
         tools:layout="@layout/fragment_key_management" />
     <fragment
         android:id="@+id/createSpaceFragment"
