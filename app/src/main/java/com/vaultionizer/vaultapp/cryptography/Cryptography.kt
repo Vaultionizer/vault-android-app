@@ -25,6 +25,7 @@ class Cryptography {
         if (cryptoType == CryptoType.AES){
             if (cryptoMode == CryptoMode.GCM){
                 if (cryptoPadding == CryptoPadding.NONE){
+                    Log.e("Vault", "Generate key with ${Constants.VN_KEY_PREFIX}$spaceID")
                     return AesGcmNopadding().generateKey("${Constants.VN_KEY_PREFIX}$spaceID")
                 }
             }
@@ -40,13 +41,22 @@ class Cryptography {
 
     fun deleteKey(spaceID : Long) : Boolean{
         val keyStore : KeyStore = KeyStore.getInstance(Constants.VN_KEYSTORE_PROVIDER)
+        keyStore.load(null)
         try {
+            Log.e("Vault", "${Constants.VN_KEY_PREFIX}$spaceID")
             keyStore.deleteEntry("${Constants.VN_KEY_PREFIX}$spaceID")
         } catch (e : KeyStoreException) {
-            Log.e(Constants.VN_TAG, "The key with $spaceID could not be deleted cause it was not found in ${Constants.VN_KEYSTORE_PROVIDER}")
+            Log.e(Constants.VN_TAG, "The key with $spaceID could not be deleted cause it was not found in ${Constants.VN_KEYSTORE_PROVIDER}", e)
             return false
         }
         return true
+    }
+
+    fun isKeyAvailable(spaceID: Long): Boolean {
+        val keyStore : KeyStore = KeyStore.getInstance(Constants.VN_KEYSTORE_PROVIDER)
+        keyStore.load(null)
+
+        return keyStore.containsAlias("${Constants.VN_KEY_PREFIX}$spaceID")
     }
 
     fun padder(input : ByteArray) : ByteArray? {
