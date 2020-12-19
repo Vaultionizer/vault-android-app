@@ -67,7 +67,7 @@ object RestModule {
         .addInterceptor {
             val request = it.request()
             if(request.body == null || request.body?.contentType()?.subtype?.contains("json") == false) {
-                Log.v("Vault", "Different content type...")
+                Log.v("Vault", "Different content type... ${request.body?.contentType()} ${request.method}")
                 return@addInterceptor it.proceed(request.newBuilder().url(injectHostUrl(request)).build())
             }
 
