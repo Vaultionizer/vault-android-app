@@ -56,7 +56,7 @@ class CreateSpaceFragment : Fragment() {
                 buttonTextRes = R.string.create_space_progress
                 progressColor = Color.WHITE
             }
-            viewModel.createSpace(spaceNameEdit.text.toString(), spaceShared.isChecked, spinner.selectedItem.toString())
+            viewModel.createSpace(spaceNameEdit.text.toString(), !spaceShared.isChecked, spinner.selectedItem.toString())
         }
 
         spaceNameEdit.addTextChangedListener {
