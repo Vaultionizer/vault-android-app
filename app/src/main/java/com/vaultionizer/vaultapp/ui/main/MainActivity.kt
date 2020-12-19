@@ -70,7 +70,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         appBarConfiguration = AppBarConfiguration(setOf(
-            R.id.fileFragment, R.id.createSpaceFragment), drawerLayout)
+            R.id.fileFragment, R.id.createSpaceFragment, R.id.keyManagementFragment), drawerLayout)
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
 
@@ -157,12 +157,13 @@ class MainActivity : AppCompatActivity() {
                     iconicsIcon = GoogleMaterial.Icon.gmd_settings
                     descriptionRes = R.string.menu_settings_description
                 },
-                PrimaryDrawerItem().apply {
-                    identifier = nextIdentifier()
-                    nameRes = R.string.menu_keys
-                    iconicsIcon = GoogleMaterial.Icon.gmd_vpn_key
-                    descriptionRes = R.string.menu_keys_description
-                },
+                NavigationDrawerItem(R.id.keyManagementFragment, PrimaryDrawerItem().apply {
+                        identifier = nextIdentifier()
+                        nameRes = R.string.menu_keys
+                        iconicsIcon = GoogleMaterial.Icon.gmd_vpn_key
+                        descriptionRes = R.string.menu_keys_description
+                    }
+                ),
                 SectionDrawerItem().apply {
                     identifier = nextIdentifier()
                     nameRes = R.string.menu_section_vaults

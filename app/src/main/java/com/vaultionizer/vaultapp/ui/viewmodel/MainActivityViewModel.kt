@@ -94,11 +94,19 @@ class MainActivityViewModel @ViewModelInject constructor(
     }
 
     fun requestSpaceDeletion() {
+        if(_userSpaces.value?.size?.minus(1) == 0) return
         viewModelScope.launch {
             spaceRepository.deleteSpace(_selectedSpace.value!!).collect {
                 when(it) {
                     is ManagedResult.Success -> {
+                        val spaces = _userSpaces.value!!.toMutableList()
+                        spaces.remove(it)
+
                         fileRepository.cacheEvict(it.data.id)
+                        _selectedSpace.value = spaces[0]
+                        _currentDirectory.value = null
+                        updateUserSpaces()
+                        updateCurrentFiles()
                     }
                 }
             }
@@ -110,10 +118,6 @@ class MainActivityViewModel @ViewModelInject constructor(
         _currentDirectory.value = null
         _selectedSpace.value = space
         updateCurrentFiles()
-    }
-
-    fun requestNewSpace() {
-
     }
 
     fun onDirectoryChange(newFolder: VNFile?) {
@@ -142,7 +146,7 @@ class MainActivityViewModel @ViewModelInject constructor(
         }
         if(_currentDirectory.value != null) {
             val list = mutableListOf<VNFile>()
-            buildSearchList(query, _currentDirectory.value!!, list)
+            buildSearchList(query.toLowerCase(), _currentDirectory.value!!, list)
 
             _shownElements.value = list
         }
@@ -151,11 +155,13 @@ class MainActivityViewModel @ViewModelInject constructor(
     private fun buildSearchList(query: String, file: VNFile, list: MutableList<VNFile>) {
         if(file.isFolder) {
             file.content?.forEach {
-                if(it.name.contains(query)) {
-                    list.add(it)
+                Log.e("Vault", it.name)
 
-                    if(it.isFolder) buildSearchList(query, it, list)
+                if(it.name.toLowerCase().contains(query)) {
+                    list.add(it)
                 }
+
+                if(it.isFolder) buildSearchList(query, it, list)
             }
         }
     }

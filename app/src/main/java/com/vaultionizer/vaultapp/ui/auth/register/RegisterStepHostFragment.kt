@@ -47,6 +47,7 @@ class RegisterStepHostFragment : Fragment() {
 
         authViewModel.hostValidationResult.observe(viewLifecycleOwner, Observer {
             continueButton.hideProgress(R.string.all_continue)
+            if(it == null) return@Observer
             if(it.version != null) {
                 val action =
                     RegisterStepHostFragmentDirections.actionRegisterStepHostFragmentToRegisterStepUserFragment3()

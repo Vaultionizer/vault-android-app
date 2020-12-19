@@ -51,6 +51,7 @@ class RegisterStepAuthKeyFragment : Fragment() {
 
         authViewModel.loginResult.observe(viewLifecycleOwner, Observer {
             finishButton.hideProgress(R.string.register_step_auth_key_finish)
+            if(it == null) return@Observer
             if(it.error == null) {
                 val action =
                     RegisterStepAuthKeyFragmentDirections.actionRegisterStepAuthKeyFragmentToMainActivity2()

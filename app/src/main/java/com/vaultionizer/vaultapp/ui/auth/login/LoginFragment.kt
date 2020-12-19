@@ -16,6 +16,8 @@ import androidx.navigation.fragment.findNavController
 import com.github.razir.progressbutton.attachTextChangeAnimator
 import com.github.razir.progressbutton.hideProgress
 import com.github.razir.progressbutton.showProgress
+import com.thedeanda.lorem.Lorem
+import com.thedeanda.lorem.LoremIpsum
 import com.vaultionizer.vaultapp.R
 import com.vaultionizer.vaultapp.data.db.dao.LocalUserDao
 import com.vaultionizer.vaultapp.ui.auth.data.AuthViewModel
@@ -40,10 +42,9 @@ class LoginFragment : Fragment() {
         return inflater.inflate(R.layout.fragment_login, container, false)
     }
 
-    private val uiScope = CoroutineScope(Dispatchers.IO + Job())
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        authViewModel.resetState()
 
         val hostInputFragment = childFragmentManager.findFragmentById(R.id.fragment_part_host_login) as HostInputFragment
         val editText = view.findViewById<EditText>(R.id.input_host)
@@ -73,8 +74,8 @@ class LoginFragment : Fragment() {
             authViewModel.loginWithFormData()
         }
 
-        authViewModel.loginResult.observe(viewLifecycleOwner,
-            Observer<LoginResult> {
+        authViewModel.loginResult.observe(viewLifecycleOwner, {
+            if(it == null) return@observe
                 if(it.error == null) {
                     val action = LoginFragmentDirections.actionLoginFragmentToMainActivity2()
                     findNavController().navigate(action)
