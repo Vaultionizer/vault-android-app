@@ -34,11 +34,26 @@ class KeyManagementFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val list = view.findViewById<RecyclerView>(R.id.list_key)
-        viewModel.userSpaces.observe(viewLifecycleOwner){
-            list.adapter = KeyManagementAdapter(viewModel.userSpaces.value!!, {Cryptography().deleteKey(it.id)})
-            list.visibility = View.VISIBLE
-        }
+
         list.layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
-        list.visibility = View.GONE
+        list.adapter = KeyManagementAdapter {
+            Cryptography().deleteKey(it.id)
+
+            val adapter = list.adapter
+            if(adapter != null) {
+                if(adapter is KeyManagementAdapter) {
+                    adapter.updateSpaces(viewModel.userSpaces.value!!.filter { Cryptography().isKeyAvailable(it.id) }.toMutableList())
+                }
+            }
+        }
+
+        viewModel.userSpaces.observe(viewLifecycleOwner){
+            val adapter = list.adapter
+            if(adapter != null) {
+                if(adapter is KeyManagementAdapter) {
+                    adapter.updateSpaces(it.filter { Cryptography().isKeyAvailable(it.id) }.toMutableList())
+                }
+            }
+        }
     }
 }
