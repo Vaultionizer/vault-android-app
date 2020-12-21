@@ -1,5 +1,8 @@
 package com.vaultionizer.vaultapp.data.model.rest.result
 
+/**
+ * The single purpose of this class is to increase code readability
+ */
 sealed class ManagedResult<out T : Any> {
 
     /**
