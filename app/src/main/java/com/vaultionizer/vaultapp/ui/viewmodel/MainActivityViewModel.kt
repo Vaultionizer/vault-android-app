@@ -7,14 +7,18 @@ import android.net.Uri
 import android.provider.OpenableColumns
 import android.util.Log
 import androidx.hilt.lifecycle.ViewModelInject
-import androidx.lifecycle.*
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.vaultionizer.vaultapp.R
 import com.vaultionizer.vaultapp.data.model.domain.VNFile
 import com.vaultionizer.vaultapp.data.model.domain.VNSpace
 import com.vaultionizer.vaultapp.data.model.rest.result.ManagedResult
 import com.vaultionizer.vaultapp.repository.FileRepository
 import com.vaultionizer.vaultapp.repository.SpaceRepository
+import com.vaultionizer.vaultapp.ui.main.file.FileDialogState
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.util.*
 
@@ -35,6 +39,9 @@ class MainActivityViewModel @ViewModelInject constructor(
 
     private val _currentDirectory = MutableLiveData<VNFile>()
     val currentDirectory: LiveData<VNFile> = _currentDirectory
+
+    private val _fileDialogState = MutableLiveData<FileDialogState>()
+    val fileDialogState: LiveData<FileDialogState> = _fileDialogState
 
     fun updateUserSpaces() {
         viewModelScope.launch {
@@ -79,6 +86,8 @@ class MainActivityViewModel @ViewModelInject constructor(
 
                 fileRepository.uploadFile(selectedSpace.value!!, _currentDirectory.value!!, content, getFileName(uri, resolver) ?: "?? Unknown ??", context).collect {
                     updateCurrentFiles()
+
+                    _fileDialogState.value = FileDialogState(isValid = true)
                 }
             }
         }
@@ -87,8 +96,34 @@ class MainActivityViewModel @ViewModelInject constructor(
     fun requestFolder(name: String) {
         if(_selectedSpace.value != null && _currentDirectory.value != null) {
             viewModelScope.launch {
-                fileRepository.uploadFolder(_selectedSpace.value!!, name, _currentDirectory.value!!).collect()
-                updateCurrentFiles()
+                fileRepository.uploadFolder(_selectedSpace.value!!, name, _currentDirectory.value!!).collect {
+                    when(it) {
+                        is ManagedResult.Success -> {
+                            updateCurrentFiles()
+                            _fileDialogState.value = FileDialogState(isValid = true)
+                        }
+                        else -> {
+                            _fileDialogState.value = FileDialogState(fileError = R.string.host_error_network)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    fun requestDeletion(file: VNFile) {
+        viewModelScope.launch {
+            fileRepository.deleteFile(file).collect {
+                when(it) {
+                    is ManagedResult.Success -> {
+                        updateCurrentFiles()
+
+                        _fileDialogState.value = FileDialogState(isValid = true)
+                    }
+                    else -> { // TODO(jatsqi) Error handling
+                        _fileDialogState.value = FileDialogState(fileError = R.string.host_error_network)
+                    }
+                }
             }
         }
     }
@@ -107,6 +142,8 @@ class MainActivityViewModel @ViewModelInject constructor(
                         _currentDirectory.value = null
                         updateUserSpaces()
                         updateCurrentFiles()
+
+                        _fileDialogState.value = FileDialogState(isValid = true)
                     }
                 }
             }

@@ -1,5 +1,6 @@
 package com.vaultionizer.vaultapp.repository
 
+import android.util.Log
 import com.google.gson.Gson
 import com.vaultionizer.vaultapp.data.db.dao.LocalSpaceDao
 import com.vaultionizer.vaultapp.data.model.domain.VNSpace
@@ -43,19 +44,23 @@ class ReferenceFileRepository @Inject constructor(val referenceFileService: Refe
 
     suspend fun uploadReferenceFile(referenceFile: NetworkReferenceFile, space: VNSpace): Flow<ManagedResult<NetworkReferenceFile>> {
         return flow {
-            val response = referenceFileService.uploadReferenceFile(UploadReferenceFileRequest(gson.toJson(referenceFile), space.remoteId))
-            emit(ManagedResult.Success(referenceFile))
-            /*when(response) {
+            val response = referenceFileService.uploadReferenceFile(
+                UploadReferenceFileRequest(
+                    gson.toJson(referenceFile), space.remoteId
+                )
+            )
+            when (response) {
                 is ApiResult.Success -> {
-                    emit(ManagedResult.Success(response.data))
+                    emit(ManagedResult.Success(referenceFile))
                 }
                 is ApiResult.Error -> {
-                    emit(ManagedResult.Error(response.statusCode))
+                    emit(ManagedResult.RefFileError.RefFileUploadError)
                 }
                 is ApiResult.NetworkError -> {
+                    Log.e("Vault", "Network error from upload ${response.exception.localizedMessage}")
                     emit(ManagedResult.NetworkError(response.exception))
-                }*/
+                }
+            }
         }.flowOn(Dispatchers.IO)
     }
-
 }

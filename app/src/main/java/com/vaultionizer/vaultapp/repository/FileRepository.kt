@@ -21,10 +21,7 @@ import com.vaultionizer.vaultapp.util.Constants
 import com.vaultionizer.vaultapp.util.writeFileToInternal
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.runBlocking
 import javax.inject.Inject
 import kotlin.math.min
@@ -146,14 +143,14 @@ class FileRepository @Inject constructor(
                     writeFileToInternal(context, "${localFileId}.${Constants.VN_FILE_SUFFIX}", data)
                     parent?.content?.add(newFile)
 
-                    resyncRefFile(space)
+                    resyncRefFile(space).collect() // TODO(jatsqi): Error handling
                     emit(newFile)
                 }
             }
         }.flowOn(Dispatchers.IO)
     }
 
-    suspend fun uploadFolder(space: VNSpace, name: String, parent: VNFile): Flow<VNFile> {
+    suspend fun uploadFolder(space: VNSpace, name: String, parent: VNFile): Flow<ManagedResult<VNFile>> {
         return flow {
             if(!minimumIdCache.containsKey(space.id)) {
                 minimumIdCache[space.id] = -2
@@ -168,8 +165,36 @@ class FileRepository @Inject constructor(
             }
             parent.content!!.add(folder)
 
-            resyncRefFile(space) // TODO(jatsqi) Error handling
-            emit(folder)
+            resyncRefFile(space).collect {
+                when(it) {
+                    is ManagedResult.Success -> {
+                        emit(ManagedResult.Success(folder))
+                    }
+                    else -> {
+                        parent.content!!.remove(folder)
+                        emit(ManagedResult.Error(400)) // TODO(jatsqi): Error handling
+                    }
+                }
+            }
+        }.flowOn(Dispatchers.IO)
+    }
+
+    suspend fun deleteFile(file: VNFile): Flow<ManagedResult<VNFile>> {
+        return flow {
+            if(file.parent != null) {
+                file.parent.content?.remove(file)
+                resyncRefFile(file.space).collect {
+                    when(it) {
+                        is ManagedResult.Success -> {
+                            emit(ManagedResult.Success(file))
+                        }
+                        else -> {
+                            Log.e("Vault", it.javaClass.name)
+                            emit(ManagedResult.Error(400)) // TODO(jatsqi): Error handling
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -178,17 +203,23 @@ class FileRepository @Inject constructor(
         minimumIdCache.remove(spaceId)
     }
 
-    private suspend fun resyncRefFile(space: VNSpace) {
-        if(!cache.containsKey(space.id)) return
-        val root = cache[space.id]!!.mapToNetwork() as NetworkFolder
+    private suspend fun resyncRefFile(space: VNSpace): Flow<ManagedResult<NetworkReferenceFile>> {
+        return flow {
+            if(!cache.containsKey(space.id)) {
+                emit(ManagedResult.ConsistencyError)
+                return@flow
+            }
 
-        val referenceFile = NetworkReferenceFile(
-            1,
-            root.content ?: mutableListOf()
-        )
+            val root = cache[space.id]!!.mapToNetwork() as NetworkFolder
 
-        Log.e("Vault", "SYNC")
-        referenceFileRepository.uploadReferenceFile(referenceFile, space).collect()
+            val referenceFile = NetworkReferenceFile(
+                1,
+                root.content ?: mutableListOf()
+            )
+
+            Log.e("Vault", "SYNC")
+            emit(referenceFileRepository.uploadReferenceFile(referenceFile, space).first())
+        }.flowOn(Dispatchers.IO)
     }
 
 }

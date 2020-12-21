@@ -52,11 +52,7 @@ class FileExchangeService @Inject constructor(
             when(response) {
                 is ApiResult.Success -> {
                     val fileId = response.data
-                    Log.e("Vault", "Responded with sace Index ${fileId}")
-
-                    while(!stompClient.isConnected) {
-
-                    }
+                    Log.e("Vault", "Responded with save Index ${fileId}")
 
                     val dis = stompClient.send(
                         StompMessage(
@@ -99,8 +95,7 @@ class FileExchangeService @Inject constructor(
                 String.format(WEB_SOCKET_URL_TEMPLATE, AuthRepository.user?.localUser?.endpoint)
             )
 
-            Log.e("Vault", "Connedting to ${String.format(WEB_SOCKET_URL_TEMPLATE, AuthRepository.user?.localUser?.endpoint)}")
-
+            Log.e("Vault", "Connecting to ${String.format(WEB_SOCKET_URL_TEMPLATE, AuthRepository.user?.localUser?.endpoint)}")
             Log.e("Vault", "URL ${String.format(WEB_SOCKET_URL_TEMPLATE, AuthRepository.user?.localUser?.endpoint)}")
 
             stompClient.withClientHeartbeat(1000).withServerHeartbeat(1000)
