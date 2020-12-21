@@ -13,6 +13,6 @@ interface ReferenceFileService {
     suspend fun downloadReferenceFile(@Body downloadReq: DownloadReferenceFileRequest): ApiResult<NetworkReferenceFile>
 
     @POST("api/refFile/update/")
-    suspend fun uploadReferenceFile(@Body uploadReq: UploadReferenceFileRequest): ApiResult<Void>
+    suspend fun uploadReferenceFile(@Body uploadReq: UploadReferenceFileRequest): ApiResult<Unit>
 
 }
