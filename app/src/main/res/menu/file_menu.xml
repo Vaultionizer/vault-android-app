@@ -10,8 +10,8 @@
         app:actionViewClass="android.widget.SearchView" />
 
     <item
-        android:id="@+id/action_space_settings"
-        android:icon="@drawable/ic_baseline_settings_24"
+        android:id="@+id/action_space_delete"
+        android:icon="@drawable/ic_baseline_delete_24"
         android:orderInCategory="100"
         android:title="Settings"
         app:showAsAction="always"/>

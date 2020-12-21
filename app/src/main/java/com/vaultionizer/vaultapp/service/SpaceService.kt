@@ -5,12 +5,13 @@ import com.vaultionizer.vaultapp.data.model.rest.request.GetAuthKeyRequest
 import com.vaultionizer.vaultapp.data.model.rest.request.JoinSpaceRequest
 import com.vaultionizer.vaultapp.data.model.rest.result.ApiResult
 import com.vaultionizer.vaultapp.data.model.rest.space.*
+import retrofit2.Response
 import retrofit2.http.*
 
 interface SpaceService {
 
     @POST("api/spaces/create")
-    suspend fun createSpace(@Body createSpaceReq: CreateSpaceRequest): ApiResult<NetworkSpaceAuthPair>
+    suspend fun createSpace(@Body createSpaceReq: CreateSpaceRequest): ApiResult<Long>
 
     @POST("api/spaces/getAll")
     @Headers("Accept: application/json", "Content-Type: application/json")
@@ -22,8 +23,8 @@ interface SpaceService {
     @POST("api/space/key")
     suspend fun getAuthKey(@Body getAuthKeyReq: GetAuthKeyRequest): ApiResult<NetworkSpaceAuthPair>
 
-    @DELETE("api/space/delete/{spaceID}")
+    @DELETE("api/spaces/delete/{spaceID}")
     @Headers("Accept: application/json", "Content-Type: application/json")
-    suspend fun deleteSpace(@Path("spaceID") spaceID : Long)
+    suspend fun deleteSpace(@Path("spaceID") spaceID : Long): ApiResult<String>
 
 }

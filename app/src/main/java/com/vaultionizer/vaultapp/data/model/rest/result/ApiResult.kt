@@ -7,7 +7,7 @@ package com.vaultionizer.vaultapp.data.model.rest.result
 sealed class ApiResult<out T : Any> {
 
     /**
-     * Shared errors
+     * Shared States
      */
     data class Success<out T : Any>(val data: T) : ApiResult<T>()
     data class Error(val statusCode: Int) : ApiResult<Nothing>()

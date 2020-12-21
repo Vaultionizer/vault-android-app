@@ -6,6 +6,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.mikepenz.iconics.IconicsDrawable
@@ -14,9 +15,11 @@ import com.mikepenz.iconics.typeface.library.fontawesome.FontAwesome
 import com.mikepenz.iconics.view.IconicsImageView
 import com.vaultionizer.vaultapp.R
 import com.vaultionizer.vaultapp.data.model.domain.VNFile
+import java.text.DateFormat
 
-class FileRecyclerAdapter(private val clickListener: (VNFile) -> Unit)
-    : RecyclerView.Adapter<FileRecyclerAdapter.FileViewHolder>() {
+class FileRecyclerAdapter(
+    private val clickListener: (VNFile) -> Unit,
+    private val optionsClickListener: (VNFile) -> Unit) : RecyclerView.Adapter<FileRecyclerAdapter.FileViewHolder>() {
 
     var currentElements = listOf<VNFile>()
         set(value) {
@@ -34,7 +37,7 @@ class FileRecyclerAdapter(private val clickListener: (VNFile) -> Unit)
 
         holder.fileImageView.icon = IconicsDrawable(holder.context, chooseElementIcon(elem.name, elem.isFolder))
         holder.fileDownloaded.visibility =
-            if(elem.isDownloaded(holder.view.context)) {
+            if(elem.isDownloaded(holder.view.context) || elem.state == VNFile.State.AVAILABLE_OFFLINE) {
                 View.VISIBLE
                 Log.e("Vault", "Visible")
             } else {
@@ -42,7 +45,10 @@ class FileRecyclerAdapter(private val clickListener: (VNFile) -> Unit)
                 View.INVISIBLE
             }
 
-        holder.fileNameView.text = elem.name
+        Log.e("Vault", "POS ${position} SIZE ${currentElements.size}")
+
+        holder.fileNameView.text = "${elem.name}"
+        holder.fileDate.text = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(elem.lastUpdated ?: elem.createdAt!!)
 
         if(elem.isFolder) {
             holder.fileNameView.setTypeface(null, Typeface.BOLD)
@@ -52,6 +58,9 @@ class FileRecyclerAdapter(private val clickListener: (VNFile) -> Unit)
 
         holder.itemView.setOnClickListener {
             clickListener(elem)
+        }
+        holder.fileMore.setOnClickListener {
+            optionsClickListener(elem)
         }
     }
 
@@ -84,6 +93,8 @@ class FileRecyclerAdapter(private val clickListener: (VNFile) -> Unit)
         val fileImageView: IconicsImageView = view.findViewById<IconicsImageView>(R.id.file_image),
         val fileNameView: TextView = view.findViewById<TextView>(R.id.file_name),
         val fileDownloaded: IconicsImageView = view.findViewById<IconicsImageView>(R.id.file_downloaded),
+        val fileDate: TextView = view.findViewById(R.id.file_date),
+        val fileMore: ImageButton = view.findViewById(R.id.file_more)
     ) : RecyclerView.ViewHolder(view)
 
 }

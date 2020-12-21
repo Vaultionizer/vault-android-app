@@ -7,4 +7,9 @@ object Constants {
 
     const val VN_FILE_SUFFIX = "evn"
 
+    const val VN_TAG = "Vault"
+
+    const val VN_KEY_PREFIX = "vaultionizer_"
+    const val VN_KEYSTORE_PROVIDER = "AndroidKeyStore"
+
 }

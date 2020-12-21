@@ -38,6 +38,13 @@ class AuthViewModel @ViewModelInject constructor(
 
     private val authenticationFormData = AuthFormData()
 
+    fun resetState() {
+        _loginResult.value = null
+        _hostValidationResult.value = null
+        _userDataFormState.value = UserDataFormState()
+        _hostFormState.value = HostFormState()
+    }
+
     fun validateHost(host: String) {
         if(host.isEmpty()) {
             _hostValidationResult.value = HostValidationResult(null)
@@ -75,7 +82,10 @@ class AuthViewModel @ViewModelInject constructor(
                         _loginResult.value = LoginResult(null)
                     }
                     is ManagedResult.UserError.UsernameAlreadyInUseError -> {
-                        Log.e("Vault", "Username already in use!")
+                        _loginResult.value = LoginResult("Username is already in use!")
+                    }
+                    else -> {
+                        _loginResult.value = LoginResult("An unexpected error occurred!")
                     }
                 }
             }
@@ -88,6 +98,7 @@ class AuthViewModel @ViewModelInject constructor(
             val result = authRepository.login(authenticationFormData.host, authenticationFormData.username, authenticationFormData.password)
 
             result.collect {
+                Log.d("Vault", it.javaClass.toString())
                 when(it) {
                     is ManagedResult.Success -> {
                         _loginResult.value = LoginResult(null)
@@ -96,6 +107,7 @@ class AuthViewModel @ViewModelInject constructor(
                         _loginResult.value = LoginResult("Invalid credentials!")
                     }
                     is ManagedResult.NetworkError -> {
+                        Log.d("Vault", it.exception.localizedMessage)
                     }
                 }
             }

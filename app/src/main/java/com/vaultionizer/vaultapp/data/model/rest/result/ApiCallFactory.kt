@@ -27,6 +27,7 @@ class ApiCallFactory : CallAdapter.Factory() {
         }
 
         val callGenericType = getParameterUpperBound(0, callType as ParameterizedType)
-        return ApiResultAdapter(callGenericType)
+        Log.e("Vault", "RETURN END ${getRawType(callGenericType)}")
+        return ApiResultAdapter(callGenericType, getRawType(callGenericType))
     }
 }

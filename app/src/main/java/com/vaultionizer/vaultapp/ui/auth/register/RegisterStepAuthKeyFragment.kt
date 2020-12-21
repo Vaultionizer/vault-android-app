@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
+import android.widget.Toast
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
@@ -50,10 +51,14 @@ class RegisterStepAuthKeyFragment : Fragment() {
 
         authViewModel.loginResult.observe(viewLifecycleOwner, Observer {
             finishButton.hideProgress(R.string.register_step_auth_key_finish)
+            if(it == null) return@Observer
             if(it.error == null) {
                 val action =
                     RegisterStepAuthKeyFragmentDirections.actionRegisterStepAuthKeyFragmentToMainActivity2()
                 findNavController().navigate(action)
+            } else {
+                Toast.makeText(requireContext(), it.error, Toast.LENGTH_LONG).show()
+                finishButton.hideProgress(R.string.register_step_auth_key_finish_progress)
             }
         })
     }

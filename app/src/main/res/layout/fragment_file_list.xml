@@ -40,4 +40,62 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/path_list" />
+
+    <com.nambimobile.widgets.efab.ExpandableFabLayout
+        android:id="@+id/file_efab_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+        <com.nambimobile.widgets.efab.ExpandableFab
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|end"
+            android:layout_marginBottom="@dimen/efab_ui_margin_medium"
+            android:layout_marginEnd="@dimen/efab_ui_margin_medium"
+            android:layout_marginRight="@dimen/efab_ui_margin_medium"
+            app:efab_icon="@drawable/ic_outline_cloud_upload_24"
+            app:efab_orientation="portrait"/>
+        <com.nambimobile.widgets.efab.FabOption
+            android:id="@+id/fab_option_upload_file"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:fab_orientation="portrait"
+            app:label_text="Upload file"
+            app:fab_icon="@drawable/ic_baseline_attach_file_24" />
+        <com.nambimobile.widgets.efab.FabOption
+            android:id="@+id/fab_option_upload_folder"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:fab_orientation="portrait"
+            app:label_text="Create folder"
+            app:fab_icon="@drawable/ic_outline_folder_24"/>
+    </com.nambimobile.widgets.efab.ExpandableFabLayout>
+
+    <com.mikepenz.iconics.view.IconicsImageView
+        android:id="@+id/iconicsImageView2"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:visibility="invisible"
+        app:iiv_icon="faw-frown"
+        app:iiv_color="@android:color/holo_red_dark"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/text_no_content"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="No content here."
+        android:textAlignment="center"
+        android:textSize="14sp"
+        android:visibility="invisible"
+        app:layout_constraintEnd_toEndOf="@+id/iconicsImageView2"
+        app:layout_constraintStart_toStartOf="@+id/iconicsImageView2"
+        app:layout_constraintTop_toBottomOf="@+id/iconicsImageView2" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

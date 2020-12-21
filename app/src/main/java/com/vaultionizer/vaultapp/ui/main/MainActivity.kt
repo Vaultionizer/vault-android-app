@@ -3,6 +3,7 @@ package com.vaultionizer.vaultapp.ui.main
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
@@ -12,6 +13,7 @@ import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
+import com.google.android.material.navigation.NavigationView
 import com.mikepenz.iconics.typeface.library.fontawesome.FontAwesome
 import com.mikepenz.iconics.typeface.library.googlematerial.GoogleMaterial
 import com.mikepenz.materialdrawer.iconics.iconicsIcon
@@ -20,8 +22,7 @@ import com.mikepenz.materialdrawer.model.interfaces.descriptionRes
 import com.mikepenz.materialdrawer.model.interfaces.descriptionText
 import com.mikepenz.materialdrawer.model.interfaces.nameRes
 import com.mikepenz.materialdrawer.model.interfaces.nameText
-import com.mikepenz.materialdrawer.util.addItems
-import com.mikepenz.materialdrawer.util.setupWithNavController
+import com.mikepenz.materialdrawer.util.*
 import com.mikepenz.materialdrawer.widget.AccountHeaderView
 import com.mikepenz.materialdrawer.widget.MaterialDrawerSliderView
 import com.vaultionizer.vaultapp.R
@@ -42,6 +43,8 @@ class MainActivity : AppCompatActivity() {
 
     // UI
     var itemIdentifier = 0L
+
+    private var addNewSpaceIdentifier: Long = -1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -66,35 +69,8 @@ class MainActivity : AppCompatActivity() {
             dividerBelowHeader = false
         }
 
-        navView.apply {
-            addItems(
-                    SectionDrawerItem().apply {
-                        identifier = nextIdentifier()
-                        nameText = "App management"
-                    },
-                    PrimaryDrawerItem().apply {
-                        identifier = nextIdentifier()
-                        isSelectable = false
-                        nameRes = R.string.menu_settings
-                        iconicsIcon = GoogleMaterial.Icon.gmd_settings
-                        descriptionRes = R.string.menu_settings_description
-                    },
-                    PrimaryDrawerItem().apply {
-                        identifier = nextIdentifier()
-                        nameRes = R.string.menu_keys
-                        iconicsIcon = GoogleMaterial.Icon.gmd_vpn_key
-                        descriptionRes = R.string.menu_keys_description
-                    },
-                    SectionDrawerItem().apply {
-                        identifier = nextIdentifier()
-                        nameRes = R.string.menu_section_vaults
-                    }
-            )
-        }
-
-
         appBarConfiguration = AppBarConfiguration(setOf(
-            R.id.fileFragment), drawerLayout)
+            R.id.fileFragment, R.id.createSpaceFragment, R.id.keyManagementFragment), drawerLayout)
         setupActionBarWithNavController(navController, appBarConfiguration)
         navView.setupWithNavController(navController)
 
@@ -105,13 +81,25 @@ class MainActivity : AppCompatActivity() {
             if(copy is VNSpace) {
                 actionBar?.title = "Space ${copy.remoteId}"
                 viewModel.selectedSpaceChanged(copy)
+                Log.e("Vault", "Changing space to ${copy.id}")
             }
 
             preserved(v, drawerItem, position)
         }
 
+        rebuildGeneralUi(navView)
+
         viewModel.userSpaces.observe(this, androidx.lifecycle.Observer {
+            navView.removeAllItems()
+            rebuildGeneralUi(navView)
+
             navView.apply {
+                addItems(NavigationDrawerItem(R.id.createSpaceFragment, PrimaryDrawerItem().apply {
+                    identifier = nextIdentifier()
+                    nameText = "Add new space"
+                    iconicsIcon = FontAwesome.Icon.faw_plus_circle
+                    isSelectable = false
+                }))
                 for(space in it) {
                     addItems(NavigationDrawerItem(R.id.fileFragment,
                         PrimaryDrawerItem().apply {
@@ -124,14 +112,16 @@ class MainActivity : AppCompatActivity() {
                             identifier = nextIdentifier()
                             nameText = "Space #${space.remoteId}"
                             isSelectable = false
-
-                            viewModel.selectedSpaceChanged(space)
                         }.apply {
                             identifier = nextIdentifier()
                             tag = space
                             isSelectable = false
                         }))
                 }
+            }
+
+            if(viewModel.selectedSpace.value == null && it.size > 0) {
+                viewModel.selectedSpaceChanged(it[0])
             }
         })
 
@@ -151,5 +141,34 @@ class MainActivity : AppCompatActivity() {
 
     private fun nextIdentifier(): Long {
         return itemIdentifier++
+    }
+
+    private fun rebuildGeneralUi(navigationView: MaterialDrawerSliderView) {
+        navigationView.apply {
+            addItems(
+                SectionDrawerItem().apply {
+                    identifier = nextIdentifier()
+                    nameText = "App management"
+                },
+                PrimaryDrawerItem().apply {
+                    identifier = nextIdentifier()
+                    isSelectable = false
+                    nameRes = R.string.menu_settings
+                    iconicsIcon = GoogleMaterial.Icon.gmd_settings
+                    descriptionRes = R.string.menu_settings_description
+                },
+                NavigationDrawerItem(R.id.keyManagementFragment, PrimaryDrawerItem().apply {
+                        identifier = nextIdentifier()
+                        nameRes = R.string.menu_keys
+                        iconicsIcon = GoogleMaterial.Icon.gmd_vpn_key
+                        descriptionRes = R.string.menu_keys_description
+                    }
+                ),
+                SectionDrawerItem().apply {
+                    identifier = nextIdentifier()
+                    nameRes = R.string.menu_section_vaults
+                }
+            )
+        }
     }
 }

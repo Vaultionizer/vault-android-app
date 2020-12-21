@@ -13,7 +13,10 @@ data class NetworkReferenceFile(
                 private const val CURRENT_VERSION = 1
                 var GLOBAL_FOLDER_ID_COUNTER: Long = -1
 
-                val EMPTY_FILE = NetworkReferenceFile(CURRENT_VERSION, mutableListOf())
+                val EMPTY_FILE = NetworkReferenceFile(CURRENT_VERSION, mutableListOf(
+                        NetworkFolder(Type.FOLDER, "Documents", -2, System.currentTimeMillis(), mutableListOf()),
+                        NetworkFolder(Type.FOLDER, "Photos", -3, System.currentTimeMillis(), mutableListOf())
+                ))
 
                 fun generateRandom(): NetworkReferenceFile {
                         val depth = Random.nextInt(1..5)

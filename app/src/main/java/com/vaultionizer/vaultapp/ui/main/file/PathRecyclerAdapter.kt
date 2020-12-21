@@ -11,7 +11,7 @@ import java.util.*
 
 class PathRecyclerAdapter: RecyclerView.Adapter<PathRecyclerAdapter.PathViewHolder>() {
 
-    var folderList = LinkedList<VNFile>()
+    private var currentFolderStack = mutableListOf<VNFile>()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PathViewHolder {
         val view = LayoutInflater.from(parent.context).inflate(R.layout.tree_path_item, parent, false)
@@ -19,14 +19,22 @@ class PathRecyclerAdapter: RecyclerView.Adapter<PathRecyclerAdapter.PathViewHold
     }
 
     override fun onBindViewHolder(holder: PathViewHolder, position: Int) {
-        val folder = folderList[position]
+        val folder = currentFolderStack[currentFolderStack.size - position - 1]
         holder.folderNameText.text = folder.name
     }
 
-    override fun getItemCount(): Int = folderList.size
+    override fun getItemCount(): Int = currentFolderStack.size
 
-    fun changeHierarchy(folders: LinkedList<VNFile>) {
-        folderList = folders
+    fun changeHierarchy(folder: VNFile) {
+        currentFolderStack.clear()
+        currentFolderStack.add(folder)
+
+        var current: VNFile? = folder
+        while(current?.parent != null) {
+            currentFolderStack.add(current.parent!!)
+            current = current.parent
+        }
+
         notifyDataSetChanged()
     }
 

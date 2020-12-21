@@ -24,6 +24,7 @@ import okio.Buffer
 import org.json.JSONObject
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
 @Module
@@ -66,7 +67,7 @@ object RestModule {
         .addInterceptor {
             val request = it.request()
             if(request.body == null || request.body?.contentType()?.subtype?.contains("json") == false) {
-                Log.v("Vault", "Different content type...")
+                Log.v("Vault", "Different content type... ${request.body?.contentType()} ${request.method}")
                 return@addInterceptor it.proceed(request.newBuilder().url(injectHostUrl(request)).build())
             }
 
@@ -84,8 +85,7 @@ object RestModule {
             Log.v("Vault", "Proceed chain... $host $relativePath ${injectHostUrl(request).toUri().toString()}")
             return@addInterceptor it.proceed(request.newBuilder().url(injectHostUrl(request)).post(requestBody).build())
         }
-        .addInterceptor(HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY }).build()
-
+        .addInterceptor(HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY }).connectTimeout(20000, TimeUnit.MILLISECONDS).build()
 
     private fun requestBodyToString(body: RequestBody?): String {
         if(body == null || body.contentLength() == 0L) {
