@@ -116,9 +116,8 @@ class MainActivityViewModel @ViewModelInject constructor(
             fileRepository.deleteFile(file).collect {
                 when(it) {
                     is ManagedResult.Success -> {
-                        updateCurrentFiles()
-
                         _fileDialogState.value = FileDialogState(isValid = true)
+                        updateCurrentFiles()
                     }
                     else -> { // TODO(jatsqi) Error handling
                         _fileDialogState.value = FileDialogState(fileError = R.string.host_error_network)

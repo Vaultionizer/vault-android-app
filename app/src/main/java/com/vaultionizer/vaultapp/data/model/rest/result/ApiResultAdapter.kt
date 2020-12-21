@@ -12,7 +12,7 @@ class ApiResultAdapter(val type: Type) : CallAdapter<Type, Call<ApiResult<Type>>
     }
 
     override fun adapt(call: Call<Type>): Call<ApiResult<Type>> {
-        Log.e("Vault", "ADAPT")
+        Log.e("Vault", "ADAPT ${type.javaClass.name}")
         return ApiResultCallDecorator(call)
     }
 }

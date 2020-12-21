@@ -2,6 +2,7 @@ package com.vaultionizer.vaultapp.data.model.rest.result
 
 import android.util.Log
 import okhttp3.Request
+import okhttp3.internal.headersContentLength
 import okio.IOException
 import okio.Timeout
 import retrofit2.Call
@@ -20,7 +21,16 @@ class ApiResultCallDecorator<T : Any>(val proxy: Call<T>):
         proxy.enqueue(object : Callback<T> {
             override fun onResponse(call: Call<T>, response: Response<T>) {
                 if(response.code() in (200 until 300)) {
-                    callback.onResponse(this@ApiResultCallDecorator, Response.success(ApiResult.Success(response.body()!!)))
+                    if(response.raw().headersContentLength() == 0L) {
+                        /** If a service wants to ignore the result of a rest call the generic type T should be Unit
+                         * For now, we just assume the service specified unit as type if the content length is 0 (no response body)
+                         * TODO(jatsqi): Implement better generic type handling.
+                         * TODO(jatsqi): Option: Use the unwrapped class type from the factory
+                         */
+                        callback.onResponse(this@ApiResultCallDecorator, Response.success(ApiResult.Success(Unit) as ApiResult<T>))
+                    } else {
+                        callback.onResponse(this@ApiResultCallDecorator, Response.success(ApiResult.Success(response.body()!!)))
+                    }
                 } else {
                     callback.onResponse(this@ApiResultCallDecorator, Response.success(ApiResult.Error(statusCode = response.code())))
                 }
@@ -46,6 +56,5 @@ class ApiResultCallDecorator<T : Any>(val proxy: Call<T>):
     override fun request(): Request = proxy.request()
 
     override fun timeout(): Timeout = proxy.timeout()
-
 
 }

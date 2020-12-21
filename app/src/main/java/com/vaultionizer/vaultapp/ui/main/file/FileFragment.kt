@@ -142,7 +142,8 @@ class FileFragment : Fragment(), View.OnClickListener {
         viewModel.fileDialogState.observe(viewLifecycleOwner) {
             if(backgroundProgressDialog != null) {
                 if(it.isValid) {
-                    backgroundProgressDialog?.dismiss()
+                    Log.e("Vault", "Hiding...")
+                    backgroundProgressDialog?.hide()
                 } else {
                     backgroundProgressDialog?.changeAlertType(SweetAlertDialog.ERROR_TYPE)
                     backgroundProgressDialog?.setTitle(it.fileError!!)
