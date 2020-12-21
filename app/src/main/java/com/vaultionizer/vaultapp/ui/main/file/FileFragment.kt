@@ -1,11 +1,9 @@
 package com.vaultionizer.vaultapp.ui.main.file
 
-import android.Manifest
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.DialogInterface
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import android.view.*
@@ -15,31 +13,25 @@ import android.widget.ProgressBar
 import android.widget.SearchView
 import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
-import androidx.core.content.ContextCompat
-import androidx.core.net.toFile
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
-import androidx.lifecycle.viewModelScope
-import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.google.android.material.floatingactionbutton.FloatingActionButton
+import cn.pedant.SweetAlert.SweetAlertDialog
+import com.arthurivanets.bottomsheets.BottomSheet
+import com.arthurivanets.bottomsheets.ktx.showActionPickerBottomSheet
+import com.arthurivanets.bottomsheets.sheets.listeners.OnItemSelectedListener
+import com.arthurivanets.bottomsheets.sheets.model.Option
 import com.mikepenz.iconics.IconicsDrawable
 import com.mikepenz.iconics.typeface.library.fontawesome.FontAwesome
 import com.mikepenz.iconics.view.IconicsImageView
 import com.nambimobile.widgets.efab.ExpandableFabLayout
 import com.vaultionizer.vaultapp.R
-import com.vaultionizer.vaultapp.service.FileExchangeService
+import com.vaultionizer.vaultapp.data.model.domain.VNFile
 import com.vaultionizer.vaultapp.ui.viewmodel.MainActivityViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.fragment_file_list.*
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.launch
-import java.io.BufferedReader
-import java.io.File
-import java.io.InputStreamReader
-import javax.inject.Inject
 
 private const val OPEN_FILE_INTENT_RC = 0
 
@@ -53,8 +45,10 @@ class FileFragment : Fragment(), View.OnClickListener {
 
     private lateinit var pathRecyclerView: RecyclerView
     private lateinit var pathRecyclerAdapter: PathRecyclerAdapter
-
     private lateinit var backPressedCallback: OnBackPressedCallback
+
+    private var bottomSheet: BottomSheet? = null
+    private var backgroundProgressDialog: SweetAlertDialog? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -86,12 +80,15 @@ class FileFragment : Fragment(), View.OnClickListener {
         viewModel.shownElements.observe(viewLifecycleOwner, Observer {
 
             fileAdapter = FileRecyclerAdapter(
-            ) {
-                // TODO: refactor into ViewModel
-                if (it.isFolder) {
-                    viewModel.onDirectoryChange(it)
+                clickListener = { file ->
+                    if (file.isFolder) {
+                        viewModel.onDirectoryChange(file)
+                    }
+                },
+                optionsClickListener = { file ->
+                    showBottomSheetForFile(file)
                 }
-            }.apply {
+            ).apply {
                 currentElements = it
             }
 
@@ -102,7 +99,7 @@ class FileFragment : Fragment(), View.OnClickListener {
 
             progressBar.visibility = View.GONE
 
-            val visibility = if(it.isEmpty()) View.VISIBLE else View.INVISIBLE
+            val visibility = if (it.isEmpty()) View.VISIBLE else View.INVISIBLE
             noContentImage.visibility = visibility
             noContentImage.icon = IconicsDrawable(requireContext(), FontAwesome.Icon.faw_frown)
             noContentText.visibility = visibility
@@ -120,19 +117,39 @@ class FileFragment : Fragment(), View.OnClickListener {
             layoutManager = LinearLayoutManager(this@FileFragment.requireContext())
             // addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
             visibility = View.GONE
-            layoutAnimation = AnimationUtils.loadLayoutAnimation(requireContext(), R.anim.layout_animation_fall_down)
+            layoutAnimation = AnimationUtils.loadLayoutAnimation(
+                requireContext(),
+                R.anim.layout_animation_fall_down
+            )
         }
 
         pathRecyclerAdapter = PathRecyclerAdapter()
         pathRecyclerView = view.findViewById<RecyclerView>(R.id.path_list)
         pathRecyclerView.apply {
-            layoutManager = LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
+            layoutManager = LinearLayoutManager(
+                requireContext(),
+                LinearLayoutManager.HORIZONTAL,
+                false
+            )
             adapter = pathRecyclerAdapter
         }
 
         val efabLayout = view.findViewById<ExpandableFabLayout>(R.id.file_efab_layout)
         efabLayout.portraitConfiguration.fabOptions.forEach {
             it.setOnClickListener(this)
+        }
+
+        viewModel.fileDialogState.observe(viewLifecycleOwner) {
+            if(backgroundProgressDialog != null) {
+                if(it.isValid) {
+                    Log.e("Vault", "Hiding...")
+                    backgroundProgressDialog?.hide()
+                } else {
+                    backgroundProgressDialog?.changeAlertType(SweetAlertDialog.ERROR_TYPE)
+                    backgroundProgressDialog?.setTitle(it.fileError!!)
+                    backgroundProgressDialog?.showContentText(false)
+                }
+            }
         }
     }
 
@@ -184,17 +201,46 @@ class FileFragment : Fragment(), View.OnClickListener {
         }
     }
 
+    override fun onClick(v: View?) {
+        when(v?.id) {
+            R.id.fab_option_upload_file -> onClickFileUpload(v)
+            R.id.fab_option_upload_folder -> onClickFolderUpload(v)
+        }
+    }
+
     private fun onClickFolderUpload(view: View) {
         val tempView = EditText(requireContext())
-        AlertDialog.Builder(context)
-            .setTitle("Create folder")
-            .setMessage("Enter a name")
-            .setView(tempView)
-            .setPositiveButton("Create") { dialogInterface: DialogInterface, i: Int ->
+        SweetAlertDialog(requireContext(), SweetAlertDialog.NORMAL_TYPE)
+            .setTitleText("Create folder")
+            .setConfirmText("Create")
+            .setCustomView(tempView)
+            .setConfirmClickListener {
                 if(!tempView.text.trim().isEmpty()) {
+                    it.dismiss()
+                    showProgressDialog("Creating folder")
                     viewModel.requestFolder(tempView.text.trim().toString())
                 }
-            }.setNegativeButton("Cancel", null).show()
+            }
+            .setCancelClickListener(null)
+            .show()
+    }
+
+    private fun showProgressDialog(text: String) {
+        backgroundProgressDialog = SweetAlertDialog(requireContext(), SweetAlertDialog.PROGRESS_TYPE).setTitleText(text)
+        backgroundProgressDialog?.show()
+    }
+
+    private fun showConfirmationDialog(type: FileAlertDialogType, onConfirmation: () -> Unit) {
+        backgroundProgressDialog = SweetAlertDialog(requireContext(), SweetAlertDialog.WARNING_TYPE)
+            .setTitleText(getString(type.titleTextId))
+            .setContentText(getString(type.contentText))
+            .setConfirmText(getString(type.confirmText))
+            .setConfirmClickListener { sDialog ->
+                sDialog.changeAlertType(SweetAlertDialog.PROGRESS_TYPE)
+                sDialog.hideConfirmButton()
+                onConfirmation()
+            }
+        backgroundProgressDialog?.show()
     }
 
     private fun onClickFileUpload(view: View) {
@@ -203,10 +249,27 @@ class FileFragment : Fragment(), View.OnClickListener {
         startActivityForResult(intent, OPEN_FILE_INTENT_RC)
     }
 
-    override fun onClick(v: View?) {
-        when(v?.id) {
-            R.id.fab_option_upload_file -> onClickFileUpload(v)
-            R.id.fab_option_upload_folder -> onClickFolderUpload(v)
-        }
+    private fun getActionOptions(): List<Option> {
+        return listOf(
+            Option().apply {
+                id = FileBottomSheetOption.DELETE.id
+                iconId = R.drawable.ic_baseline_delete_24
+                title = "Delete"
+            }
+        )
+    }
+
+    private fun showBottomSheetForFile(file: VNFile) {
+        bottomSheet = showActionPickerBottomSheet(
+            options = getActionOptions(),
+            onItemSelectedListener = OnItemSelectedListener {
+                if (it.id == FileBottomSheetOption.DELETE.id) {
+                    showConfirmationDialog(FileAlertDialogType.DELETE_FILE) {
+                        viewModel.requestDeletion(file)
+                    }
+                }
+                bottomSheet?.dismiss()
+            }
+        )
     }
 }

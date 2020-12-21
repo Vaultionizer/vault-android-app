@@ -6,6 +6,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.mikepenz.iconics.IconicsDrawable
@@ -16,8 +17,9 @@ import com.vaultionizer.vaultapp.R
 import com.vaultionizer.vaultapp.data.model.domain.VNFile
 import java.text.DateFormat
 
-class FileRecyclerAdapter(private val clickListener: (VNFile) -> Unit)
-    : RecyclerView.Adapter<FileRecyclerAdapter.FileViewHolder>() {
+class FileRecyclerAdapter(
+    private val clickListener: (VNFile) -> Unit,
+    private val optionsClickListener: (VNFile) -> Unit) : RecyclerView.Adapter<FileRecyclerAdapter.FileViewHolder>() {
 
     var currentElements = listOf<VNFile>()
         set(value) {
@@ -57,6 +59,9 @@ class FileRecyclerAdapter(private val clickListener: (VNFile) -> Unit)
         holder.itemView.setOnClickListener {
             clickListener(elem)
         }
+        holder.fileMore.setOnClickListener {
+            optionsClickListener(elem)
+        }
     }
 
     override fun getItemCount(): Int = currentElements.size
@@ -88,7 +93,8 @@ class FileRecyclerAdapter(private val clickListener: (VNFile) -> Unit)
         val fileImageView: IconicsImageView = view.findViewById<IconicsImageView>(R.id.file_image),
         val fileNameView: TextView = view.findViewById<TextView>(R.id.file_name),
         val fileDownloaded: IconicsImageView = view.findViewById<IconicsImageView>(R.id.file_downloaded),
-        val fileDate: TextView = view.findViewById(R.id.file_date)
+        val fileDate: TextView = view.findViewById(R.id.file_date),
+        val fileMore: ImageButton = view.findViewById(R.id.file_more)
     ) : RecyclerView.ViewHolder(view)
 
 }

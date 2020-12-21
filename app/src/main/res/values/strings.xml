@@ -62,4 +62,8 @@
     <string name="create_space_create">Create space</string>
     <string name="create_space_name_error">Space name be at least 4 characters long</string>
     <string name="create_space_progress">Creating space</string>
+
+    <string name="delete_file_progress_title">Are you sure?</string>
+    <string name="delete_file_progress_content">You wont be able to recover these files!</string>
+    <string name="delete_file_progress_confirm">Yes, delete the files</string>
 </resources>
