@@ -4,6 +4,7 @@ import com.vaultionizer.vaultapp.data.model.rest.result.ApiResult
 import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkReferenceFile
 import com.vaultionizer.vaultapp.data.model.rest.request.DownloadReferenceFileRequest
 import com.vaultionizer.vaultapp.data.model.rest.request.UploadReferenceFileRequest
+import retrofit2.Response
 import retrofit2.http.*
 
 interface ReferenceFileService {
@@ -12,6 +13,6 @@ interface ReferenceFileService {
     suspend fun downloadReferenceFile(@Body downloadReq: DownloadReferenceFileRequest): ApiResult<NetworkReferenceFile>
 
     @POST("api/refFile/update/")
-    suspend fun uploadReferenceFile(@Body uploadReq: UploadReferenceFileRequest): ApiResult<NetworkReferenceFile>
+    suspend fun uploadReferenceFile(@Body uploadReq: UploadReferenceFileRequest): ApiResult<Void>
 
 }
