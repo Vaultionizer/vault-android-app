@@ -17,6 +17,15 @@
         <item name="titleTextColor">@color/white</item>
     </style>
 
+    <style name="AppOutlineButton" parent="Widget.MaterialComponents.Button">
+        <item name="shapeAppearanceOverlay">@style/AppOutlineButtonStyle</item>
+    </style>
+
+    <style name="AppOutlineButtonStyle">
+        <item name="android:letterSpacing">0</item>
+        <item name="cornerFamily">cut</item>
+    </style>
+
     <style name="AppTheme.NoActionBar">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
