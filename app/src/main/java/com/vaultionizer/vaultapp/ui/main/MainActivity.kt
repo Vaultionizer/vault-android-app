@@ -49,6 +49,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
         val toolbar: Toolbar = findViewById(R.id.toolbar)
         setSupportActionBar(toolbar)
 
@@ -110,7 +111,11 @@ class MainActivity : AppCompatActivity() {
                             }
 
                             identifier = nextIdentifier()
-                            nameText = "Space #${space.remoteId}"
+                            nameText = if(space.name != null) {
+                                "Space \"${space.name}\""
+                            } else {
+                                "Space #${space.id}"
+                            }
                             isSelectable = false
                         }.apply {
                             identifier = nextIdentifier()

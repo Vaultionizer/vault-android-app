@@ -209,7 +209,10 @@ class MainActivityViewModel @ViewModelInject constructor(
             val cursor: Cursor? = contentResolver.query(uri, null, null, null, null)
             try {
                 if (cursor != null && cursor.moveToFirst()) {
-                    result = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME))
+                    val index = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                    if (index >= 0) {
+                        result = cursor.getString(index)
+                    }
                 }
             } finally {
                 cursor?.close()
