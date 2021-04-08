@@ -7,7 +7,11 @@
     <fragment
         android:id="@+id/fileFragment"
         android:name="com.vaultionizer.vaultapp.ui.main.file.FileFragment"
-        android:label="Files"/>
+        android:label="Files">
+        <action
+            android:id="@+id/action_fileFragment_to_createPersonalContainerFragment"
+            app:destination="@id/createPersonalContainerFragment" />
+    </fragment>
     <fragment
         android:id="@+id/keyManagementFragment"
         android:name="com.vaultionizer.vaultapp.ui.main.keys.KeyManagementFragment"
@@ -17,6 +21,14 @@
         android:id="@+id/createSpaceFragment"
         android:name="com.vaultionizer.vaultapp.ui.main.space.CreateSpaceFragment"
         android:label="Create new Space" >
+        <action
+            android:id="@+id/action_createSpaceFragment_to_fileFragment"
+            app:destination="@id/fileFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/createPersonalContainerFragment"
+        android:name="com.vaultionizer.vaultapp.ui.main.pc.CreatePC"
+        android:label="Create personal container" >
         <action
             android:id="@+id/action_createSpaceFragment_to_fileFragment"
             app:destination="@id/fileFragment" />

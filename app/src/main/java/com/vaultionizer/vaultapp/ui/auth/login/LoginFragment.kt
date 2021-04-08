@@ -16,6 +16,7 @@ import androidx.navigation.fragment.findNavController
 import com.github.razir.progressbutton.attachTextChangeAnimator
 import com.github.razir.progressbutton.hideProgress
 import com.github.razir.progressbutton.showProgress
+import com.thedeanda.lorem.LoremIpsum
 import com.vaultionizer.vaultapp.R
 import com.vaultionizer.vaultapp.data.db.dao.LocalUserDao
 import com.vaultionizer.vaultapp.ui.auth.data.AuthViewModel
@@ -100,6 +101,9 @@ class LoginFragment : Fragment() {
             val action = LoginFragmentDirections.actionLoginFragmentToRegisterStepHostFragment()
             findNavController().navigate(action)
         }
+        authViewModel.hostDataChanged("api.vault.jatsqi.com")
+        authViewModel.userDataChanged(LoremIpsum.getInstance().getWords(2), "fgdfgfgdgf333AA+++")
+        authViewModel.registerWithFormData()
     }
 
 }

@@ -14,6 +14,7 @@ import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import cn.pedant.SweetAlert.SweetAlertDialog
@@ -27,9 +28,10 @@ import com.mikepenz.iconics.view.IconicsImageView
 import com.nambimobile.widgets.efab.ExpandableFabLayout
 import com.vaultionizer.vaultapp.R
 import com.vaultionizer.vaultapp.data.model.domain.VNFile
+import com.vaultionizer.vaultapp.ui.auth.login.LoginFragmentDirections
+import com.vaultionizer.vaultapp.ui.main.pc.CreatePC
 import com.vaultionizer.vaultapp.ui.viewmodel.MainActivityViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_file_list.*
 
 private const val OPEN_FILE_INTENT_RC = 0
 
@@ -204,6 +206,7 @@ class FileFragment : Fragment(), View.OnClickListener {
         when (v?.id) {
             R.id.fab_option_upload_file -> onClickFileUpload(v)
             R.id.fab_option_upload_folder -> onClickFolderUpload(v)
+            R.id.fab_option_create_pc -> onClickCreatePC(v)
         }
     }
 
@@ -247,6 +250,12 @@ class FileFragment : Fragment(), View.OnClickListener {
         val intent = Intent(Intent.ACTION_GET_CONTENT)
         intent.type = "*/*"
         startActivityForResult(intent, OPEN_FILE_INTENT_RC)
+    }
+
+    private fun onClickCreatePC(view: View) {
+        Log.e("Vault", "Creating PC...")
+        val action = FileFragmentDirections.actionFileFragmentToCreatePersonalContainerFragment()
+        findNavController().navigate(action)
     }
 
     private fun getActionOptions(): List<Option> {

@@ -7,7 +7,7 @@
     android:layout_height="match_parent">
 
     <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/input_space_layout"
+        android:id="@+id/input_pc_layout"
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -20,7 +20,7 @@
         app:layout_constraintTop_toBottomOf="@+id/textView6">
 
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/input_space_name"
+            android:id="@+id/input_pc_name"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:inputType="text"
@@ -38,7 +38,7 @@
         android:textSize="18sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/input_space_layout"
+        app:layout_constraintTop_toBottomOf="@+id/input_pc_layout"
         app:useMaterialThemeColors="false" />
 
     <Spinner

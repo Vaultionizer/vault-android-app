@@ -73,4 +73,11 @@
     <string name="pwd_validator_too_few_special">Password must contain at least 3 special characters!</string>
     <string name="pwd_validator_too_few_digits">Password must contain at least 3 digits!</string>
     <string name="pwd_validator_no_whitespaces">Password must not contain whitespaces!</string>
+
+    <!-- Create personal container texts -->
+    <string name="createPCLabel">Enter the personal container\'s name</string>
+    <string name="createPCInputText">Personal container name</string>
+    <string name="createPCCheckboxText">Open personal container on create</string>
+    <string name="createPCButtonText">Create PC!</string>
+    <string name="create_pc_too_short_name">Personal container\'s name must be at least 4 characters long!</string>
 </resources>
