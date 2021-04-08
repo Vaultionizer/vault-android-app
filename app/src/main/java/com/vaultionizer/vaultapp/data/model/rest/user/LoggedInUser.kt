@@ -7,7 +7,7 @@ import com.vaultionizer.vaultapp.data.db.entity.LocalUser
  */
 // TODO(jatsqi) Remove this later
 data class LoggedInUser(
-        val localUser: LocalUser,
-        val sessionToken: String,
-        val webSocketToken: String
+    val localUser: LocalUser,
+    val sessionToken: String,
+    val webSocketToken: String
 )

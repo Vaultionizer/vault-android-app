@@ -1,10 +1,5 @@
 package com.vaultionizer.vaultapp.data.source
 
-import com.vaultionizer.vaultapp.data.model.rest.result.ApiResult
-import com.vaultionizer.vaultapp.data.model.rest.user.LoggedInUser
-import java.io.IOException
-import java.util.*
-
 /**
  * Class that handles authentication w/ login credentials and retrieves user information.
  */

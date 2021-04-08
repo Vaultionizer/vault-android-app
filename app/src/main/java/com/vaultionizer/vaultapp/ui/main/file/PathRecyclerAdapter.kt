@@ -7,15 +7,15 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.vaultionizer.vaultapp.R
 import com.vaultionizer.vaultapp.data.model.domain.VNFile
-import java.util.*
 
-class PathRecyclerAdapter: RecyclerView.Adapter<PathRecyclerAdapter.PathViewHolder>() {
+class PathRecyclerAdapter : RecyclerView.Adapter<PathRecyclerAdapter.PathViewHolder>() {
 
     private var currentFolderStack = mutableListOf<VNFile>()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): PathViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.tree_path_item, parent, false)
-        return PathRecyclerAdapter.PathViewHolder(view)
+        val view =
+            LayoutInflater.from(parent.context).inflate(R.layout.tree_path_item, parent, false)
+        return PathViewHolder(view)
     }
 
     override fun onBindViewHolder(holder: PathViewHolder, position: Int) {
@@ -30,7 +30,7 @@ class PathRecyclerAdapter: RecyclerView.Adapter<PathRecyclerAdapter.PathViewHold
         currentFolderStack.add(folder)
 
         var current: VNFile? = folder
-        while(current?.parent != null) {
+        while (current?.parent != null) {
             currentFolderStack.add(current.parent!!)
             current = current.parent
         }

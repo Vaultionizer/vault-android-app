@@ -24,26 +24,45 @@ object RepositoryModule {
 
     @Provides
     @Singleton
-    fun provideAuthRepository(userService: UserService, localUserDao: LocalUserDao, gson: Gson) = AuthRepository(userService, gson, localUserDao)
+    fun provideAuthRepository(userService: UserService, localUserDao: LocalUserDao, gson: Gson) =
+        AuthRepository(userService, gson, localUserDao)
 
     @Provides
     @Singleton
-    fun provideReferenceFileRepository(referenceFileService: ReferenceFileService, gson: Gson, localSpaceDao: LocalSpaceDao) = ReferenceFileRepository(referenceFileService, gson, localSpaceDao)
+    fun provideReferenceFileRepository(
+        referenceFileService: ReferenceFileService,
+        gson: Gson,
+        localSpaceDao: LocalSpaceDao
+    ) = ReferenceFileRepository(referenceFileService, gson, localSpaceDao)
 
     @Provides
     @Singleton
-    fun provideSpaceRepository(spaceService: SpaceService, localSpaceDao: LocalSpaceDao, localFileDao: LocalFileDao, gson: Gson) = SpaceRepository(spaceService, localSpaceDao, localFileDao, gson)
+    fun provideSpaceRepository(
+        spaceService: SpaceService,
+        localSpaceDao: LocalSpaceDao,
+        localFileDao: LocalFileDao,
+        gson: Gson
+    ) = SpaceRepository(spaceService, localSpaceDao, localFileDao, gson)
 
     @Provides
     @Singleton
     fun provideFileRepository(
-                              @ApplicationContext applicationContext: Context,
-                              gson: Gson,
-                              referenceFileRepository: ReferenceFileRepository,
-                              spaceRepository: SpaceRepository,
-                              localFileDao: LocalFileDao,
-                              localSpaceDao: LocalSpaceDao,
-                              fileExchangeService: FileExchangeService) = FileRepository(applicationContext, gson, referenceFileRepository, spaceRepository, localFileDao, localSpaceDao, fileExchangeService)
+        @ApplicationContext applicationContext: Context,
+        gson: Gson,
+        referenceFileRepository: ReferenceFileRepository,
+        spaceRepository: SpaceRepository,
+        localFileDao: LocalFileDao,
+        localSpaceDao: LocalSpaceDao,
+        fileExchangeService: FileExchangeService
+    ) = FileRepository(
+        applicationContext,
+        gson,
+        referenceFileRepository,
+        spaceRepository,
+        localFileDao,
+        localSpaceDao,
+        fileExchangeService
+    )
 
     @Provides
     @Singleton

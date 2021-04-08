@@ -15,7 +15,9 @@
       }
     }
   },
-  "required": [ "version" ],
+  "required": [
+    "version"
+  ],
   "definitions": {
     "element": {
       "oneOf": [
@@ -53,7 +55,15 @@
           "type": "number"
         }
       },
-      "required": [ "type", "crc", "name", "id", "createdAt", "updatedAt", "size" ],
+      "required": [
+        "type",
+        "crc",
+        "name",
+        "id",
+        "createdAt",
+        "updatedAt",
+        "size"
+      ],
       "additionalProperties": false
     },
     "folder": {
@@ -79,7 +89,11 @@
           }
         }
       },
-      "required": [ "type", "name", "id" ],
+      "required": [
+        "type",
+        "name",
+        "id"
+      ],
       "additionalProperties": false
     }
   }

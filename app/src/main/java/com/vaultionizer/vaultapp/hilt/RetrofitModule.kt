@@ -15,22 +15,30 @@ import javax.inject.Singleton
 object RetrofitModule {
 
     @Provides
-    fun provideMiscService(retrofit: Retrofit): MiscService = retrofit.create(MiscService::class.java)
+    fun provideMiscService(retrofit: Retrofit): MiscService =
+        retrofit.create(MiscService::class.java)
 
     @Provides
-    fun provideSpaceService(retrofit: Retrofit): SpaceService = retrofit.create(SpaceService::class.java)
+    fun provideSpaceService(retrofit: Retrofit): SpaceService =
+        retrofit.create(SpaceService::class.java)
 
     @Provides
-    fun provideUserService(retrofit: Retrofit): UserService = retrofit.create(UserService::class.java)
+    fun provideUserService(retrofit: Retrofit): UserService =
+        retrofit.create(UserService::class.java)
 
     @Provides
-    fun provideReferenceFileService(retrofit: Retrofit) = retrofit.create(ReferenceFileService::class.java)
+    fun provideReferenceFileService(retrofit: Retrofit) =
+        retrofit.create(ReferenceFileService::class.java)
 
     @Provides
     fun provideFileService(retrofit: Retrofit) = retrofit.create(FileService::class.java)
 
     @Provides
     @Singleton
-    fun provideFileExchangeService(authRepository: AuthRepository, fileService: FileService, gson: Gson) = FileExchangeService(authRepository, fileService, gson)
+    fun provideFileExchangeService(
+        authRepository: AuthRepository,
+        fileService: FileService,
+        gson: Gson
+    ) = FileExchangeService(authRepository, fileService, gson)
 
 }

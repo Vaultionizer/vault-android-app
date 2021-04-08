@@ -3,10 +3,10 @@ package com.vaultionizer.vaultapp.hilt
 import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
-import com.vaultionizer.vaultapp.data.model.rest.result.ApiCallFactory
 import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkElement
 import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkFile
 import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkFolder
+import com.vaultionizer.vaultapp.data.model.rest.result.ApiCallFactory
 import com.vaultionizer.vaultapp.repository.AuthRepository
 import com.vaultionizer.vaultapp.util.external.RuntimeTypeAdapterFactory
 import dagger.Module
@@ -66,9 +66,14 @@ object RestModule {
     fun provideOkHttpClient() = OkHttpClient.Builder()
         .addInterceptor {
             val request = it.request()
-            if(request.body == null || request.body?.contentType()?.subtype?.contains("json") == false) {
-                Log.v("Vault", "Different content type... ${request.body?.contentType()} ${request.method}")
-                return@addInterceptor it.proceed(request.newBuilder().url(injectHostUrl(request)).build())
+            if (request.body == null || request.body?.contentType()?.subtype?.contains("json") == false) {
+                Log.v(
+                    "Vault",
+                    "Different content type... ${request.body?.contentType()} ${request.method}"
+                )
+                return@addInterceptor it.proceed(
+                    request.newBuilder().url(injectHostUrl(request)).build()
+                )
             }
 
             Log.v("Vault", "Injecting auth object...")
@@ -77,25 +82,35 @@ object RestModule {
             jsonBody.put("auth", JSONObject().apply {
                 put("sessionKey", AuthRepository.user?.sessionToken)
                 put("userID", AuthRepository.user?.localUser?.remoteUserId)
-                Log.e("Vault", "User: ${AuthRepository.user?.localUser?.remoteUserId} Token: ${AuthRepository.user?.sessionToken.toString()}")
+                Log.e(
+                    "Vault",
+                    "User: ${AuthRepository.user?.localUser?.remoteUserId} Token: ${AuthRepository.user?.sessionToken.toString()}"
+                )
             })
 
             val requestBody = jsonBody.toString().toRequestBody(request.body!!.contentType())
 
-            Log.v("Vault", "Proceed chain... $host $relativePath ${injectHostUrl(request).toUri().toString()}")
-            return@addInterceptor it.proceed(request.newBuilder().url(injectHostUrl(request)).post(requestBody).build())
+            Log.v(
+                "Vault",
+                "Proceed chain... $host $relativePath ${injectHostUrl(request).toUri().toString()}"
+            )
+            return@addInterceptor it.proceed(
+                request.newBuilder().url(injectHostUrl(request)).post(requestBody).build()
+            )
         }
-        .addInterceptor(HttpLoggingInterceptor().apply { level = HttpLoggingInterceptor.Level.BODY }).connectTimeout(20000, TimeUnit.MILLISECONDS).build()
+        .addInterceptor(HttpLoggingInterceptor().apply {
+            level = HttpLoggingInterceptor.Level.BODY
+        }).connectTimeout(20000, TimeUnit.MILLISECONDS).build()
 
     private fun requestBodyToString(body: RequestBody?): String {
-        if(body == null || body.contentLength() == 0L) {
+        if (body == null || body.contentLength() == 0L) {
             return "{}"
         }
 
         val buffer = Buffer()
         body.writeTo(buffer)
 
-        if(buffer.size == 0L) {
+        if (buffer.size == 0L) {
             return "{}"
         }
 

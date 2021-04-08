@@ -3,14 +3,12 @@ package com.vaultionizer.vaultapp.ui.main.keys
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
 import android.widget.ImageButton
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.vaultionizer.vaultapp.R
 import com.vaultionizer.vaultapp.data.model.domain.VNSpace
 import com.vaultionizer.vaultapp.util.Constants
-import okhttp3.internal.notify
 
 class KeyManagementAdapter(private val clickListener: (VNSpace) -> Unit) :
     RecyclerView.Adapter<KeyManagementAdapter.ViewHolder>() {
@@ -19,7 +17,7 @@ class KeyManagementAdapter(private val clickListener: (VNSpace) -> Unit) :
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val textView: TextView
-        val deleteButton : ImageButton
+        val deleteButton: ImageButton
 
         init {
             // Define click listener for the ViewHolder's View.
@@ -42,8 +40,9 @@ class KeyManagementAdapter(private val clickListener: (VNSpace) -> Unit) :
 
         // Get element from your dataset at this position and replace the
         // contents of the view with that element
-        viewHolder.textView.text = "Keyname: ${Constants.VN_KEY_PREFIX}${dataSet[position].name?:dataSet[position].id}"
-        viewHolder.deleteButton.setOnClickListener{
+        viewHolder.textView.text =
+            "Keyname: ${Constants.VN_KEY_PREFIX}${dataSet[position].name ?: dataSet[position].id}"
+        viewHolder.deleteButton.setOnClickListener {
             clickListener(dataSet[position])
         }
     }
