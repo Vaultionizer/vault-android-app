@@ -66,4 +66,11 @@
     <string name="delete_file_progress_title">Are you sure?</string>
     <string name="delete_file_progress_content">You wont be able to recover these files!</string>
     <string name="delete_file_progress_confirm">Yes, delete the files</string>
+
+    <!-- PWD validator texts -->
+    <string name="pwd_validator_too_short">Password is too short!</string>
+    <string name="pwd_validator_too_few_uppercase">Password must contain at least 2 upper case letters!</string>
+    <string name="pwd_validator_too_few_special">Password must contain at least 3 special characters!</string>
+    <string name="pwd_validator_too_few_digits">Password must contain at least 3 digits!</string>
+    <string name="pwd_validator_no_whitespaces">Password must not contain whitespaces!</string>
 </resources>
