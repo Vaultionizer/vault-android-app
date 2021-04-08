@@ -24,7 +24,8 @@ object DatabaseModule {
     fun provideUserDao(database: VaultionizerLocalDatabase): LocalUserDao = database.localUserDao()
 
     @Provides
-    fun provideSpaceDao(database: VaultionizerLocalDatabase): LocalSpaceDao = database.localSpaceDao()
+    fun provideSpaceDao(database: VaultionizerLocalDatabase): LocalSpaceDao =
+        database.localSpaceDao()
 
     @Provides
     fun provideFileDao(database: VaultionizerLocalDatabase): LocalFileDao = database.localFileDao()

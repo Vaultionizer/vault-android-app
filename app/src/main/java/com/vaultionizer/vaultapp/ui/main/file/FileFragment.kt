@@ -1,8 +1,6 @@
 package com.vaultionizer.vaultapp.ui.main.file
 
 import android.app.Activity
-import android.app.AlertDialog
-import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -106,7 +104,7 @@ class FileFragment : Fragment(), View.OnClickListener {
         })
 
         viewModel.currentDirectory.observe(viewLifecycleOwner) {
-            if(it != null) {
+            if (it != null) {
                 backPressedCallback.isEnabled = it.parent != null
                 pathRecyclerAdapter.changeHierarchy(it)
             }
@@ -140,8 +138,8 @@ class FileFragment : Fragment(), View.OnClickListener {
         }
 
         viewModel.fileDialogState.observe(viewLifecycleOwner) {
-            if(backgroundProgressDialog != null) {
-                if(it.isValid) {
+            if (backgroundProgressDialog != null) {
+                if (it.isValid) {
                     Log.e("Vault", "Hiding...")
                     backgroundProgressDialog?.hide()
                 } else {
@@ -182,7 +180,7 @@ class FileFragment : Fragment(), View.OnClickListener {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean =
-        when(item.itemId) {
+        when (item.itemId) {
             R.id.action_space_delete -> {
                 viewModel.requestSpaceDeletion()
                 true
@@ -194,7 +192,8 @@ class FileFragment : Fragment(), View.OnClickListener {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == OPEN_FILE_INTENT_RC
-            && resultCode == Activity.RESULT_OK) {
+            && resultCode == Activity.RESULT_OK
+        ) {
             data?.data?.also { uri ->
                 viewModel.requestUpload(uri, requireContext())
             }
@@ -202,7 +201,7 @@ class FileFragment : Fragment(), View.OnClickListener {
     }
 
     override fun onClick(v: View?) {
-        when(v?.id) {
+        when (v?.id) {
             R.id.fab_option_upload_file -> onClickFileUpload(v)
             R.id.fab_option_upload_folder -> onClickFolderUpload(v)
         }
@@ -215,7 +214,7 @@ class FileFragment : Fragment(), View.OnClickListener {
             .setConfirmText("Create")
             .setCustomView(tempView)
             .setConfirmClickListener {
-                if(!tempView.text.trim().isEmpty()) {
+                if (!tempView.text.trim().isEmpty()) {
                     it.dismiss()
                     showProgressDialog("Creating folder")
                     viewModel.requestFolder(tempView.text.trim().toString())
@@ -226,7 +225,8 @@ class FileFragment : Fragment(), View.OnClickListener {
     }
 
     private fun showProgressDialog(text: String) {
-        backgroundProgressDialog = SweetAlertDialog(requireContext(), SweetAlertDialog.PROGRESS_TYPE).setTitleText(text)
+        backgroundProgressDialog =
+            SweetAlertDialog(requireContext(), SweetAlertDialog.PROGRESS_TYPE).setTitleText(text)
         backgroundProgressDialog?.show()
     }
 

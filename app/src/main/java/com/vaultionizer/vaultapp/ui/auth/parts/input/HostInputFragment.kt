@@ -41,14 +41,15 @@ class HostInputFragment : Fragment() {
         authViewModel.hostFormState.observe(viewLifecycleOwner, Observer {
             val editLayout = requireView().findViewById<TextInputLayout>(R.id.input_host_layout)
 
-            if(!it.hostValid) {
+            if (!it.hostValid) {
                 Log.e("Vault", "Host not valid!")
                 editLayout.error = it.hostError
                 editLayout.endIconDrawable = null
             } else {
                 editLayout.error = null
-                if(editLayout.endIconDrawable != null) {
-                    editLayout.endIconDrawable = ContextCompat.getDrawable(requireContext(), R.drawable.ic_outline_done_24)
+                if (editLayout.endIconDrawable != null) {
+                    editLayout.endIconDrawable =
+                        ContextCompat.getDrawable(requireContext(), R.drawable.ic_outline_done_24)
                 }
             }
         })
@@ -63,7 +64,7 @@ class HostInputFragment : Fragment() {
         val editText = requireView().findViewById<EditText>(R.id.input_host)
         val editLayout = requireView().findViewById<TextInputLayout>(R.id.input_host_layout)
 
-        if(triggerAnimation) {
+        if (triggerAnimation) {
             editLayout.endIconDrawable = requireContext().getProgressBarDrawable()
             (editLayout.endIconDrawable as Animatable).start()
         }

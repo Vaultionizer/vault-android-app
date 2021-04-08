@@ -18,13 +18,18 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import javax.inject.Inject
 
-class SpaceRepository @Inject constructor(val spaceService: SpaceService, val localSpaceDao: LocalSpaceDao, val localFileDao: LocalFileDao, val gson: Gson) {
+class SpaceRepository @Inject constructor(
+    val spaceService: SpaceService,
+    val localSpaceDao: LocalSpaceDao,
+    val localFileDao: LocalFileDao,
+    val gson: Gson
+) {
 
     suspend fun getAllSpaces(): Flow<ManagedResult<List<VNSpace>>> {
         return flow {
             val response = spaceService.getAll()
 
-            when(response) {
+            when (response) {
                 is ApiResult.Success -> {
                     val list = mutableListOf<VNSpace>()
                     for (space in response.data) {
@@ -40,11 +45,22 @@ class SpaceRepository @Inject constructor(val spaceService: SpaceService, val lo
     suspend fun createSpace(name: String, isPrivate: Boolean): Flow<ManagedResult<VNSpace>> {
         return flow {
             // TODO(jatsqi) Replace LoremIpsum with real authKey
-            val response = spaceService.createSpace(CreateSpaceRequest(LoremIpsum.getInstance().getWords(20), isPrivate, gson.toJson(NetworkReferenceFile.EMPTY_FILE)))
+            val response = spaceService.createSpace(
+                CreateSpaceRequest(
+                    LoremIpsum.getInstance().getWords(20),
+                    isPrivate,
+                    gson.toJson(NetworkReferenceFile.EMPTY_FILE)
+                )
+            )
 
-            when(response) {
+            when (response) {
                 is ApiResult.Success -> {
-                    val persisted = persistNetworkSpace(response.data, isPrivate, name, null) // TODO(jatsqi) Replace null with actual reference file
+                    val persisted = persistNetworkSpace(
+                        response.data,
+                        isPrivate,
+                        name,
+                        null
+                    ) // TODO(jatsqi) Replace null with actual reference file
 
                     emit(ManagedResult.Success(persisted))
                 }
@@ -56,7 +72,7 @@ class SpaceRepository @Inject constructor(val spaceService: SpaceService, val lo
         return flow {
             val response = spaceService.deleteSpace(space.remoteId)
 
-            when(response) {
+            when (response) {
                 is ApiResult.Success -> {
                     localFileDao.deleteFilesBySpace(space.id)
                     localSpaceDao.deleteSpaces(localSpaceDao.getSpaceById(space.id)!!)
@@ -67,9 +83,15 @@ class SpaceRepository @Inject constructor(val spaceService: SpaceService, val lo
         }
     }
 
-    private fun persistNetworkSpace(remoteSpaceId: Long, isPrivate: Boolean, name: String?, refFile: String?): VNSpace {
-        var space = localSpaceDao.getSpaceByRemoteId(AuthRepository.user!!.localUser.userId, remoteSpaceId)
-        if(space == null) {
+    private fun persistNetworkSpace(
+        remoteSpaceId: Long,
+        isPrivate: Boolean,
+        name: String?,
+        refFile: String?
+    ): VNSpace {
+        var space =
+            localSpaceDao.getSpaceByRemoteId(AuthRepository.user!!.localUser.userId, remoteSpaceId)
+        if (space == null) {
             space = LocalSpace(
                 0,
                 remoteSpaceId,
@@ -92,5 +114,6 @@ class SpaceRepository @Inject constructor(val spaceService: SpaceService, val lo
         )
     }
 
-    private fun persistNetworkSpace(networkSpace: NetworkSpace): VNSpace = persistNetworkSpace(networkSpace.spaceID, networkSpace.private, null, null)
+    private fun persistNetworkSpace(networkSpace: NetworkSpace): VNSpace =
+        persistNetworkSpace(networkSpace.spaceID, networkSpace.private, null, null)
 }

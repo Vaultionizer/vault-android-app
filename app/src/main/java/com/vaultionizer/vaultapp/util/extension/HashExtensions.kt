@@ -16,5 +16,8 @@ fun String.hashSha512(): String {
 }
 
 private fun hashString(data: String, algorithm: String): String {
-    return Base64.encodeToString(MessageDigest.getInstance(algorithm).digest(data.toByteArray()), Base64.DEFAULT)
+    return Base64.encodeToString(
+        MessageDigest.getInstance(algorithm).digest(data.toByteArray()),
+        Base64.DEFAULT
+    )
 }

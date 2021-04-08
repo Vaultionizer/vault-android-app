@@ -1,11 +1,7 @@
 package com.vaultionizer.vaultapp.ui.auth
 
-import android.annotation.SuppressLint
-import android.graphics.Color
-import android.graphics.drawable.ColorDrawable
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import androidx.navigation.findNavController
+import androidx.appcompat.app.AppCompatActivity
 import com.vaultionizer.vaultapp.R
 import dagger.hilt.android.AndroidEntryPoint
 

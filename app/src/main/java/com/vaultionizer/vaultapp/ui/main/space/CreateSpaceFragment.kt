@@ -3,7 +3,6 @@ package com.vaultionizer.vaultapp.ui.main.space
 import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.view.Menu
 import android.view.View
 import android.view.ViewGroup
 import android.widget.*
@@ -39,10 +38,12 @@ class CreateSpaceFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         val spinner = view.findViewById<Spinner>(R.id.input_space_algorithm)
-        spinner.adapter = ArrayAdapter<String>(requireContext(), R.layout.support_simple_spinner_dropdown_item, arrayOf(
-            "AES256 GCM",
-            "AES256 CBC"
-        ))
+        spinner.adapter = ArrayAdapter<String>(
+            requireContext(), R.layout.support_simple_spinner_dropdown_item, arrayOf(
+                "AES256 GCM",
+                "AES256 CBC"
+            )
+        )
 
         val spaceNameLayout = view.findViewById<TextInputLayout>(R.id.input_space_layout)
         val spaceNameEdit = view.findViewById<EditText>(R.id.input_space_name)
@@ -56,7 +57,11 @@ class CreateSpaceFragment : Fragment() {
                 buttonTextRes = R.string.create_space_progress
                 progressColor = Color.WHITE
             }
-            viewModel.createSpace(spaceNameEdit.text.toString(), !spaceShared.isChecked, spinner.selectedItem.toString())
+            viewModel.createSpace(
+                spaceNameEdit.text.toString(),
+                !spaceShared.isChecked,
+                spinner.selectedItem.toString()
+            )
         }
 
         spaceNameEdit.addTextChangedListener {
@@ -64,15 +69,15 @@ class CreateSpaceFragment : Fragment() {
         }
 
         viewModel.spaceFormState.observe(viewLifecycleOwner) {
-            if(!it.isDataValid) {
+            if (!it.isDataValid) {
                 createButton.isEnabled = false
-                if(spaceNameLayout.error == null) {
-                    if(it.nameError != null) {
+                if (spaceNameLayout.error == null) {
+                    if (it.nameError != null) {
                         spaceNameLayout.error = getString(it.nameError)
                     }
                 }
 
-                if(it.nameError == null) {
+                if (it.nameError == null) {
                     spaceNameLayout.error = null
                 }
             } else {
@@ -82,7 +87,7 @@ class CreateSpaceFragment : Fragment() {
         }
 
         viewModel.spaceCreationResult.observe(viewLifecycleOwner) {
-            if(it.creationSuccessful) {
+            if (it.creationSuccessful) {
                 createButton.hideProgress(R.string.create_space_create)
 
                 mainActivityViewModel.updateUserSpaces()

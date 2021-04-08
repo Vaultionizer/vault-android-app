@@ -17,14 +17,19 @@ class MiscRepository @Inject constructor(val retrofit: Retrofit) {
 
     suspend fun pingHost(host: String): Flow<ManagedResult<NetworkVersion>> {
         return flow {
-            val temp = retrofit.newBuilder().baseUrl("https://$host/").client(OkHttpClient()).build()
+            val temp =
+                retrofit.newBuilder().baseUrl("https://$host/").client(OkHttpClient()).build()
             Log.e("Vault", temp.baseUrl().toString())
 
             val response = temp.create(MiscService::class.java).getVersionInfo()
 
-            when(response::class) {
+            when (response::class) {
                 ApiResult.NetworkError::class -> emit(ManagedResult.NetworkError((response as ApiResult.NetworkError).exception))
-                ApiResult.Error::class -> emit(ManagedResult.MiscError.HostServerError(statusCode = (response as ApiResult.Error).statusCode ?: -1))
+                ApiResult.Error::class -> emit(
+                    ManagedResult.MiscError.HostServerError(
+                        statusCode = (response as ApiResult.Error).statusCode ?: -1
+                    )
+                )
                 else -> emit(ManagedResult.Success((response as ApiResult.Success).data))
             }
         }.flowOn(Dispatchers.IO)

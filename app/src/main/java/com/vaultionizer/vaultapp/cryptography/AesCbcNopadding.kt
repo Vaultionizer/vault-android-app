@@ -9,20 +9,26 @@ import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 import javax.crypto.spec.IvParameterSpec
 
-class AesCbcNopadding : CryptoClass(){
+class AesCbcNopadding : CryptoClass() {
 
-    companion object{
+    companion object {
         const val TRANSFORMATION = "AES/CBC/NoPadding"
         const val BLOCK_MODE_IV_SIZE = 16
     }
 
-    override fun generateKey(keystoreAlias : String): SecretKey {
-        val keyGenerator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, Constants.VN_KEYSTORE_PROVIDER)
-        val kgps = KeyGenParameterSpec.Builder(keystoreAlias, KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT)
-                .setBlockModes(KeyProperties.BLOCK_MODE_CBC)
-                .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
-                .setKeySize(256)
-                .build()
+    override fun generateKey(keystoreAlias: String): SecretKey {
+        val keyGenerator = KeyGenerator.getInstance(
+            KeyProperties.KEY_ALGORITHM_AES,
+            Constants.VN_KEYSTORE_PROVIDER
+        )
+        val kgps = KeyGenParameterSpec.Builder(
+            keystoreAlias,
+            KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT
+        )
+            .setBlockModes(KeyProperties.BLOCK_MODE_CBC)
+            .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
+            .setKeySize(256)
+            .build()
         keyGenerator.init(kgps)
 
         return keyGenerator.generateKey()
@@ -46,9 +52,9 @@ class AesCbcNopadding : CryptoClass(){
         return cipher.doFinal(message)
     }
 
-    override fun dewrapper(warp : ByteArray) : Pair<ByteArray,ByteArray> {
-        val iv : ByteArray = warp.sliceArray(0 until BLOCK_MODE_IV_SIZE)
-        val cipherText : ByteArray = warp.sliceArray(BLOCK_MODE_IV_SIZE until warp.size)
+    override fun dewrapper(warp: ByteArray): Pair<ByteArray, ByteArray> {
+        val iv: ByteArray = warp.sliceArray(0 until BLOCK_MODE_IV_SIZE)
+        val cipherText: ByteArray = warp.sliceArray(BLOCK_MODE_IV_SIZE until warp.size)
 
         return Pair(iv, cipherText)
     }

@@ -1,12 +1,13 @@
 package com.vaultionizer.vaultapp.service
 
-import com.vaultionizer.vaultapp.data.model.rest.result.ApiResult
 import com.vaultionizer.vaultapp.data.model.rest.request.CreateUserRequest
 import com.vaultionizer.vaultapp.data.model.rest.request.LoginUserRequest
+import com.vaultionizer.vaultapp.data.model.rest.result.ApiResult
 import com.vaultionizer.vaultapp.data.model.rest.user.NetworkUserAuthPair
 import retrofit2.http.Body
+import retrofit2.http.DELETE
 import retrofit2.http.POST
-import retrofit2.http.*
+import retrofit2.http.PUT
 import java.util.*
 
 interface UserService {

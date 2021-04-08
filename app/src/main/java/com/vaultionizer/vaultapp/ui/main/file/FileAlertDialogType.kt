@@ -5,7 +5,8 @@ import com.vaultionizer.vaultapp.R
 enum class FileAlertDialogType(
     val titleTextId: Int,
     val contentText: Int,
-    val confirmText: Int) {
+    val confirmText: Int
+) {
 
     DELETE_FILE(
         R.string.delete_file_progress_title,
