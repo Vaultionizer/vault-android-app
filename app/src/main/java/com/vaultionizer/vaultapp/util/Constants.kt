@@ -11,5 +11,5 @@ object Constants {
 
     const val VN_KEY_PREFIX = "vaultionizer_"
     const val VN_KEYSTORE_PROVIDER = "AndroidKeyStore"
-
+    const val VN_KEY_TRANSFER_SIZE = 256
 }

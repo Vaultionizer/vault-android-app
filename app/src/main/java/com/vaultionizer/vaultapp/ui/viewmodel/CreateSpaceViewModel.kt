@@ -35,7 +35,7 @@ class CreateSpaceViewModel @ViewModelInject constructor(val spaceRepository: Spa
                     is ManagedResult.Success -> {
                         _spaceCreationResult.value = SpaceCreationResult(it.data, true)
 
-                        Cryptography().createKey(
+                        Cryptography().createSingleUserKey(
                             it.data.id,
                             CryptoType.AES,
                             CryptoMode.GCM,
