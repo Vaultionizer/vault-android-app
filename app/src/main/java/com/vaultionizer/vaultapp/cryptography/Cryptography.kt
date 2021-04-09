@@ -167,7 +167,7 @@ class Cryptography {
         return pair.iv + pair.cipher
     }
 
-    fun wrapper(byteArray1: ByteArray, byteArray2: ByteArray): ByteArray {
+    fun wrapper(byteArray1: ByteArray, byteArray2: ByteArray): ByteArray  {
         return byteArray1 + byteArray2
     }
 
