@@ -9,7 +9,7 @@ sonarqube {
     properties {
         property "sonar.projectKey", "vault-android-app"
         property "sonar.projectName", "vault-android-app"
-        property "sonar.sources", "src/main/java"
+        property "sonar.sources", "src"
         property "sonar.binaries", ["build/intermediates/javac/debug/classes"]
         property "sonar.java.binaries", ["build/intermediates/javac/debug/classes"]
         property "sonar.tests", ["src/test/java", "src/androidTest/java"]
