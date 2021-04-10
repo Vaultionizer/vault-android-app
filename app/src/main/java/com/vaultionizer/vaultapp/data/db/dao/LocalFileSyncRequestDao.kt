@@ -1,6 +1,7 @@
 package com.vaultionizer.vaultapp.data.db.dao
 
 import androidx.room.Dao
+import androidx.room.Insert
 import androidx.room.Query
 import com.vaultionizer.vaultapp.data.db.entity.LocalFileSyncRequest
 
@@ -12,5 +13,8 @@ interface LocalFileSyncRequestDao {
 
     @Query("SELECT * FROM LocalFileSyncRequest WHERE request_id = :id")
     fun getById(id: Long): LocalFileSyncRequest
+
+    @Insert
+    fun createRequest(request: LocalFileSyncRequest): Long
 
 }
