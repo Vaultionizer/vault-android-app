@@ -4,6 +4,7 @@ import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.vaultionizer.vaultapp.data.db.dao.LocalFileDao
+import com.vaultionizer.vaultapp.data.db.dao.LocalFileSyncRequestDao
 import com.vaultionizer.vaultapp.data.db.dao.LocalSpaceDao
 import com.vaultionizer.vaultapp.data.db.dao.LocalUserDao
 import com.vaultionizer.vaultapp.data.db.entity.LocalFile
@@ -26,5 +27,5 @@ abstract class VaultionizerLocalDatabase : RoomDatabase() {
     abstract fun localUserDao(): LocalUserDao
     abstract fun localSpaceDao(): LocalSpaceDao
     abstract fun localFileDao(): LocalFileDao
-
+    abstract fun localFileSyncRequestDao(): LocalFileSyncRequestDao
 }

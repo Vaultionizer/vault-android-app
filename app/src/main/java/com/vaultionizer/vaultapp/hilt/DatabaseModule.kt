@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Room
 import com.vaultionizer.vaultapp.data.db.VaultionizerLocalDatabase
 import com.vaultionizer.vaultapp.data.db.dao.LocalFileDao
+import com.vaultionizer.vaultapp.data.db.dao.LocalFileSyncRequestDao
 import com.vaultionizer.vaultapp.data.db.dao.LocalSpaceDao
 import com.vaultionizer.vaultapp.data.db.dao.LocalUserDao
 import dagger.Module
@@ -29,5 +30,8 @@ object DatabaseModule {
 
     @Provides
     fun provideFileDao(database: VaultionizerLocalDatabase): LocalFileDao = database.localFileDao()
+
+    @Provides
+    fun provideFileSyncRequestDao(database: VaultionizerLocalDatabase): LocalFileSyncRequestDao = database.localFileSyncRequestDao()
 
 }
