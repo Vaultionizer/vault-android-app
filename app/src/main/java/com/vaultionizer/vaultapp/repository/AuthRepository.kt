@@ -120,6 +120,13 @@ class AuthRepository @Inject constructor(
         Log.e("Vault", "Found user ${localUser?.toString()}")
         Log.e("Vault", "Found user ${localUser?.toString()}")
         Log.e("Vault", "Found user ${localUser?.toString()}")
+        
+        Log.e("Vault", "Test SONARQUBE")
+        Log.e("Vault", "Test SONARQUBE")
+        Log.e("Vault", "Test SONARQUBE")
+        Log.e("Vault", "Test SONARQUBE")
+        Log.e("Vault", "Test SONARQUBE")
+        Log.e("Vault", "Test SONARQUBE")
 
         if (localUser != null) {
             localUser.lastLogin = System.currentTimeMillis()
