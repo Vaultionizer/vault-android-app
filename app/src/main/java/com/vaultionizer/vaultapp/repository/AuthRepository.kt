@@ -114,6 +114,12 @@ class AuthRepository @Inject constructor(
 
         val localUser = localUserDao.getUserByRemoteId(authPair.userID, host)
         Log.e("Vault", "Found user ${localUser?.toString()}")
+        Log.e("Vault", "Found user ${localUser?.toString()}")
+        Log.e("Vault", "Found user ${localUser?.toString()}")
+        Log.e("Vault", "Found user ${localUser?.toString()}")
+        Log.e("Vault", "Found user ${localUser?.toString()}")
+        Log.e("Vault", "Found user ${localUser?.toString()}")
+        Log.e("Vault", "Found user ${localUser?.toString()}")
 
         if (localUser != null) {
             localUser.lastLogin = System.currentTimeMillis()
