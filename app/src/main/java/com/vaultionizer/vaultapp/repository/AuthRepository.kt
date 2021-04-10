@@ -57,6 +57,32 @@ class AuthRepository @Inject constructor(
                     emit(ManagedResult.Error(statusCode = response.statusCode))
                 }
             }
+            when (response) {
+                is ApiResult.Success -> {
+                    updateLocalUser(username, host, response.data)
+
+                    emit(ManagedResult.Success(user!!))
+                }
+                is ApiResult.NetworkError -> {
+                    emit(ManagedResult.NetworkError(response.exception))
+                }
+                is ApiResult.Error -> {
+                    emit(ManagedResult.Error(statusCode = response.statusCode))
+                }
+            }
+            when (response) {
+                is ApiResult.Success -> {
+                    updateLocalUser(username, host, response.data)
+
+                    emit(ManagedResult.Success(user!!))
+                }
+                is ApiResult.NetworkError -> {
+                    emit(ManagedResult.NetworkError(response.exception))
+                }
+                is ApiResult.Error -> {
+                    emit(ManagedResult.Error(statusCode = response.statusCode))
+                }
+            }
         }.flowOn(Dispatchers.IO)
     }
 
