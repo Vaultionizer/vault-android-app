@@ -85,53 +85,6 @@ class FileRepository @Inject constructor(
         }.flowOn(Dispatchers.IO)
     }
 
-    private fun buildTree(
-        elements: List<NetworkElement>?,
-        localFiles: Map<Long, LocalFile>,
-        parent: VNFile,
-        space: VNSpace,
-        ctx: Context
-    ) {
-        elements?.forEach {
-            if (minimumIdCache[space.id]!! > it.id) minimumIdCache[space.id] = it.id
-
-            if (it is NetworkFolder) {
-                val folder = VNFile(
-                    it.name,
-                    space,
-                    parent,
-                    localId = it.id,
-                    content = mutableListOf()
-                ).apply {
-                    createdAt = it.createdAt
-                }
-                buildTree(it.content, localFiles, folder, space, ctx)
-
-                parent.content!!.add(folder)
-            } else if (it is NetworkFile) {
-                val add = VNFile(
-                    it.name,
-                    space,
-                    parent,
-                    localId = localFiles[it.id]?.fileId,
-                    remoteId = it.id
-                )
-                add.createdAt = it.createdAt
-                add.lastUpdated = it.updatedAt
-
-                if (!add.isDownloaded(ctx) && add.localId != null) {
-                    Log.e("Vault", "LocalID ${add.localId} localFiles ${localFiles[add.localId]}")
-                    localFileDao.deleteFiles(localFiles[add.localId]!!)
-                    add.localId = null
-
-                    Log.e("Vault", "Delete local mismatch!")
-                }
-
-                parent.content!!.add(add)
-            }
-        }
-    }
-
     suspend fun uploadFile(
         space: VNSpace,
         parent: VNFile?,
@@ -235,6 +188,54 @@ class FileRepository @Inject constructor(
     fun cacheEvict(spaceId: Long) {
         cache.remove(spaceId)
         minimumIdCache.remove(spaceId)
+    }
+
+
+    private fun buildTree(
+        elements: List<NetworkElement>?,
+        localFiles: Map<Long, LocalFile>,
+        parent: VNFile,
+        space: VNSpace,
+        ctx: Context
+    ) {
+        elements?.forEach {
+            if (minimumIdCache[space.id]!! > it.id) minimumIdCache[space.id] = it.id
+
+            if (it is NetworkFolder) {
+                val folder = VNFile(
+                    it.name,
+                    space,
+                    parent,
+                    localId = it.id,
+                    content = mutableListOf()
+                ).apply {
+                    createdAt = it.createdAt
+                }
+                buildTree(it.content, localFiles, folder, space, ctx)
+
+                parent.content!!.add(folder)
+            } else if (it is NetworkFile) {
+                val add = VNFile(
+                    it.name,
+                    space,
+                    parent,
+                    localId = localFiles[it.id]?.fileId,
+                    remoteId = it.id
+                )
+                add.createdAt = it.createdAt
+                add.lastUpdated = it.updatedAt
+
+                if (!add.isDownloaded(ctx) && add.localId != null) {
+                    Log.e("Vault", "LocalID ${add.localId} localFiles ${localFiles[add.localId]}")
+                    localFileDao.deleteFiles(localFiles[add.localId]!!)
+                    add.localId = null
+
+                    Log.e("Vault", "Delete local mismatch!")
+                }
+
+                parent.content!!.add(add)
+            }
+        }
     }
 
     private suspend fun resyncRefFile(space: VNSpace): Flow<ManagedResult<NetworkReferenceFile>> {
