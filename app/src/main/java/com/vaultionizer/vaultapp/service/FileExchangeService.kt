@@ -28,7 +28,6 @@ class FileExchangeService @Inject constructor(
     }
 
     private var stompClient = StompClient(OkHttpWebSocketClient())
-    private lateinit var uploadSession: StompSession
 
     suspend fun uploadFile(spaceRemoteId: Long, data: ByteArray): Flow<ApiResult<Long>> {
         return flow {
@@ -38,7 +37,7 @@ class FileExchangeService @Inject constructor(
                     val fileId = response.data
 
                     // Connect to server
-                    uploadSession = stompClient.connect(
+                    val uploadSession = stompClient.connect(
                         String.format(
                             WEB_SOCKET_URL_TEMPLATE,
                             AuthRepository.user?.localUser?.endpoint
@@ -61,6 +60,9 @@ class FileExchangeService @Inject constructor(
                             put("content", Base64.encodeToString(data, Base64.NO_WRAP))
                         }.toString())
                     )
+
+                    // Close session
+                    uploadSession.disconnect()
 
                     // Emit new file
                     emit(ApiResult.Success(fileId))
