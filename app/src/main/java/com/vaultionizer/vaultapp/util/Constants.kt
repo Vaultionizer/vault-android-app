@@ -29,4 +29,10 @@ object Constants {
     const val VN_KEY_PREFIX = "vaultionizer_"
     const val VN_KEYSTORE_PROVIDER = "AndroidKeyStore"
     const val VN_KEY_TRANSFER_SIZE = 256
+
+    /**
+     * WorkManager
+     */
+    const val WORKER_SYNC_REQUEST_ID = "SYNC_REQUEST_ID"
+    const val WORKER_FILE_BYTES = "FILE_BYTES"
 }
