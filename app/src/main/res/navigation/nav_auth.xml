@@ -12,8 +12,7 @@
         tools:layout="@layout/fragment_login" >
         <action
             android:id="@+id/action_loginFragment_to_registerStepHostFragment"
-            app:destination="@id/navigation"
-            app:enterAnim="@anim/fragment_fade_enter" />
+            app:destination="@id/navigation" />
         <action
             android:id="@+id/action_loginFragment_to_mainActivity2"
             app:destination="@id/mainActivity2" />
@@ -66,7 +65,6 @@
         android:label="WelcomeFragment" >
         <action
             android:id="@+id/action_welcomeFragment_to_loginFragment"
-            app:destination="@id/loginFragment"
-            app:enterAnim="@anim/fragment_open_enter" />
+            app:destination="@id/loginFragment" />
     </fragment>
 </navigation>
