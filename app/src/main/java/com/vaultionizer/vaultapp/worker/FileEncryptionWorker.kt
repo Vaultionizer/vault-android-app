@@ -10,11 +10,12 @@ import com.vaultionizer.vaultapp.service.SyncRequestService
 import com.vaultionizer.vaultapp.util.Constants
 import com.vaultionizer.vaultapp.util.writeFileToInternal
 import dagger.assisted.Assisted
+import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 @HiltWorker
-class FileEncryptionWorker(
+class FileEncryptionWorker @AssistedInject constructor(
     @Assisted appContext: Context,
     @Assisted params: WorkerParameters,
     val syncRequestService: SyncRequestService
