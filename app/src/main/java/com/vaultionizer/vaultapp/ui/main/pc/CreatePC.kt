@@ -1,6 +1,7 @@
 package com.vaultionizer.vaultapp.ui.main.pc
 
 import android.os.Bundle
+import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -10,11 +11,15 @@ import android.widget.EditText
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.observe
+import androidx.navigation.NavDirections
+import androidx.navigation.fragment.findNavController
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputLayout
 import com.vaultionizer.vaultapp.R
 import com.vaultionizer.vaultapp.ui.viewmodel.CreatePCViewModel
+import dagger.hilt.android.AndroidEntryPoint
 
+@AndroidEntryPoint
 class CreatePC : Fragment() {
 
     companion object {
@@ -32,9 +37,9 @@ class CreatePC : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val pcNameEdit = view.findViewById<EditText>(R.id.input_pc_name)
+        val pcNameEdit = view.findViewById<EditText>(R.id.edit_pc_pair_value_input)
         val pcCreateButton = view.findViewById<MaterialButton>(R.id.create_pc_button)
-        val pcInputLayout = view.findViewById<TextInputLayout>(R.id.input_pc_layout)
+        val pcInputLayout = view.findViewById<TextInputLayout>(R.id.edit_pc_pair_key_layout)
         val pcEditPCCheckbox = view.findViewById<CheckBox>(R.id.open_pc_checkbox)
 
         pcNameEdit.addTextChangedListener{
@@ -42,13 +47,17 @@ class CreatePC : Fragment() {
         }
 
         pcCreateButton.setOnClickListener {
-            if (viewModel.pcCreationRes.value != null && viewModel.pcCreationRes.value!!.isDataValid){
-                viewModel.createPersonalContainer(pcNameEdit.text.toString())
-                if (pcEditPCCheckbox.isSelected){
-                    // open created PC in editing mode
-                    // TODO(keksklauer4):
-                }
+            Log.e("Vault", "Created PC. Edit now? " + pcEditPCCheckbox.isChecked)
+            viewModel.createPersonalContainer(pcNameEdit.text.toString())
+            var action: NavDirections;
+            if (pcEditPCCheckbox.isChecked){
+                // TODO(keksklauer4):
+                action = CreatePCDirections.actionCreatePersonalContainerFragmentToViewPC()
             }
+            else  {
+                action = CreatePCDirections.actionCreateSpaceFragmentToFileFragment()
+            }
+            findNavController().navigate(action)
         }
 
         viewModel.pcCreationRes.observe(viewLifecycleOwner){
@@ -59,5 +68,8 @@ class CreatePC : Fragment() {
                 pcInputLayout.error = null;
             }
         }
+
+        pcNameEdit.setText("ABCDE")
+        pcCreateButton.callOnClick()
     }
 }

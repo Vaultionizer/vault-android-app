@@ -80,4 +80,23 @@
     <string name="createPCCheckboxText">Open personal container on create</string>
     <string name="createPCButtonText">Create PC!</string>
     <string name="create_pc_too_short_name">Personal container\'s name must be at least 4 characters long!</string>
+
+    <!-- Edit/Create category for personal container -->
+    <string name="label_pc_category_name">Enter new category name</string>
+    <string name="edit_pc_category_name">Category name</string>
+    <string name="button_pc_create_category_name">Create category!</string>
+    <string name="button_pc_edit_category_name">Update category!</string>
+    <string name="input_pc_category_too_short">Category must be at least 1 character long!</string>
+    <string name="error_create_category">Category exists already.</string>
+
+    <!-- Edit/Create pair for personal container -->
+    <string name="label_create_pc_pair_category">Select category:</string>
+    <string name="label_create_pc_pair_key">Enter name:</string>
+    <string name="label_create_pc_pair_value">Enter content:</string>
+    <string name="input_create_pc_pair_key">Name</string>
+    <string name="input_create_pc_pair_value">Content</string>
+    <string name="button_create_pc_pair_create">Create pair!</string>
+    <string name="button_create_pc_pair_edit">Edit pair!</string>
+    <string name="error_input_pc_pair_key">Key must be at least 1 character long!</string>
+
 </resources>

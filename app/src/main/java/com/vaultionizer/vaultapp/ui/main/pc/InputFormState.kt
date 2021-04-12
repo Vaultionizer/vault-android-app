@@ -1,6 +1,6 @@
 package com.vaultionizer.vaultapp.ui.main.pc
 
-data class CreatePCFormState(
+data class InputFormState(
     val nameError: Int? = null,
     val isDataValid: Boolean = false
 )

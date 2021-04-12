@@ -67,4 +67,9 @@ object RepositoryModule {
     @Provides
     @Singleton
     fun provideMiscRepository(retrofit: Retrofit) = MiscRepository(retrofit)
+
+    @Provides
+    @Singleton
+    fun providePCRepository(gson: Gson, fileRepository: FileRepository)
+            = PCRepository(gson, fileRepository)
 }

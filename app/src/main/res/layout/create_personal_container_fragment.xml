@@ -22,11 +22,11 @@
             android:textSize="18sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/input_pc_layout"
+            app:layout_constraintTop_toBottomOf="@+id/edit_pc_pair_key_layout"
             app:useMaterialThemeColors="false" />
 
         <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/input_pc_layout"
+            android:id="@+id/edit_pc_pair_key_layout"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -39,7 +39,7 @@
             app:layout_constraintTop_toBottomOf="@+id/pcNameLabel">
 
             <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/input_pc_name"
+                android:id="@+id/edit_pc_pair_value_input"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:inputType="text"

@@ -21,6 +21,9 @@
     "pair": {
       "type": "object",
       "properties": {
+        "pairId": {
+          "type": "integer"
+        },
         "key": {
           "type": "string",
           "minLength": 0
@@ -38,7 +41,7 @@
     "category": {
       "type": "object",
       "properties": {
-        "id": {
+        "categoryId": {
           "type": "integer"
         },
         "name": {
