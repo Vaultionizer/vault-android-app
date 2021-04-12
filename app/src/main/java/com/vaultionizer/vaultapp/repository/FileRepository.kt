@@ -37,7 +37,6 @@ class FileRepository @Inject constructor(
     val spaceRepository: SpaceRepository,
     val localFileDao: LocalFileDao,
     val localSpaceDao: LocalSpaceDao,
-    val fileExchangeService: FileExchangeService,
     val fileService: FileService,
     val syncRequestService: SyncRequestService
 ) {
