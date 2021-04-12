@@ -8,7 +8,7 @@ import javax.inject.Inject
 
 class SyncRequestService @Inject constructor(val localFileSyncRequestDao: LocalFileSyncRequestDao) {
 
-    fun createDownloadRequest(spaceId: Long) {
+    fun createDownloadRequest(spaceId: Long): LocalFileSyncRequest {
         val request = LocalFileSyncRequest(
             0,
             LocalFileSyncRequest.Type.DOWNLOAD,
@@ -19,9 +19,10 @@ class SyncRequestService @Inject constructor(val localFileSyncRequestDao: LocalF
         )
 
         localFileSyncRequestDao.createRequest(request)
+        return request
     }
 
-    fun createUploadRequest(spaceId: Long, localUri: Uri) {
+    fun createUploadRequest(spaceId: Long, localUri: Uri): LocalFileSyncRequest {
         val request = LocalFileSyncRequest(
             0,
             LocalFileSyncRequest.Type.UPLOAD,
@@ -32,6 +33,11 @@ class SyncRequestService @Inject constructor(val localFileSyncRequestDao: LocalF
         )
 
         localFileSyncRequestDao.createRequest(request)
+        return request
+    }
+
+    fun updateRequest(request: LocalFileSyncRequest) {
+        localFileSyncRequestDao.updateRequest(request)
     }
 
     fun updateRemoteFileId(requestId: Long, newRemoteFileId: Long) {

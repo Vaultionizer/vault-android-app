@@ -21,4 +21,7 @@ interface LocalFileSyncRequestDao {
     @Query("UPDATE LocalFileSyncRequest SET remote_file_id = :remoteFileId WHERE request_id = :requestId")
     fun updateRemoteFileId(requestId: Long, remoteFileId: Long)
 
+    @Update
+    fun updateRequest(request: LocalFileSyncRequest)
+
 }
