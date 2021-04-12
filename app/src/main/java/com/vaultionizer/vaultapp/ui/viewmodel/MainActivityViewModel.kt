@@ -1,16 +1,14 @@
 package com.vaultionizer.vaultapp.ui.viewmodel
 
-import android.content.ContentResolver
 import android.content.Context
-import android.database.Cursor
 import android.net.Uri
-import android.provider.OpenableColumns
 import android.util.Log
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.work.WorkInfo
+import androidx.work.WorkManager
 import com.vaultionizer.vaultapp.R
 import com.vaultionizer.vaultapp.data.model.domain.VNFile
 import com.vaultionizer.vaultapp.data.model.domain.VNSpace
@@ -18,12 +16,17 @@ import com.vaultionizer.vaultapp.data.model.rest.result.ManagedResult
 import com.vaultionizer.vaultapp.repository.FileRepository
 import com.vaultionizer.vaultapp.repository.SpaceRepository
 import com.vaultionizer.vaultapp.ui.main.file.FileDialogState
+import com.vaultionizer.vaultapp.util.Constants
+import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import java.util.*
+import javax.inject.Inject
 
-
-class MainActivityViewModel @ViewModelInject constructor(
+@HiltViewModel
+class MainActivityViewModel @Inject constructor(
+    @ApplicationContext val context: Context,
     val spaceRepository: SpaceRepository,
     val fileRepository: FileRepository
 ) : ViewModel() {
@@ -42,6 +45,9 @@ class MainActivityViewModel @ViewModelInject constructor(
 
     private val _fileDialogState = MutableLiveData<FileDialogState>()
     val fileDialogState: LiveData<FileDialogState> = _fileDialogState
+
+    val fileWorkerInfo: LiveData<List<WorkInfo>> =
+        WorkManager.getInstance(context).getWorkInfosByTagLiveData(Constants.WORKER_TAG_FILE)
 
     fun updateUserSpaces() {
         viewModelScope.launch {
@@ -80,22 +86,12 @@ class MainActivityViewModel @ViewModelInject constructor(
 
     fun requestUpload(uri: Uri, context: Context) {
         viewModelScope.launch {
-            val resolver = context.contentResolver
-            resolver.openInputStream(uri)?.use {
-                val content = it.readBytes()
-
-                fileRepository.uploadFile(
-                    selectedSpace.value!!,
-                    _currentDirectory.value!!,
-                    content,
-                    getFileName(uri, resolver) ?: "?? Unknown ??",
-                    context
-                ).collect {
-                    updateCurrentFiles()
-
-                    _fileDialogState.value = FileDialogState(isValid = true)
-                }
-            }
+            fileRepository.uploadFile(
+                selectedSpace.value!!,
+                uri,
+                _currentDirectory.value!!
+            )
+            _fileDialogState.value = FileDialogState(isValid = true)
         }
     }
 
@@ -210,31 +206,4 @@ class MainActivityViewModel @ViewModelInject constructor(
             }
         }
     }
-
-    // https://stackoverflow.com/questions/5568874/how-to-extract-the-file-name-from-uri-returned-from-intent-action-get-content
-    private fun getFileName(uri: Uri, contentResolver: ContentResolver): String? {
-        var result: String? = null
-        if (uri.scheme == "content") {
-            val cursor: Cursor? = contentResolver.query(uri, null, null, null, null)
-            try {
-                if (cursor != null && cursor.moveToFirst()) {
-                    val index = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
-                    if (index >= 0) {
-                        result = cursor.getString(index)
-                    }
-                }
-            } finally {
-                cursor?.close()
-            }
-        }
-        if (result == null) {
-            result = uri.path
-            val cut = result!!.lastIndexOf('/')
-            if (cut != -1) {
-                result = result.substring(cut + 1)
-            }
-        }
-        return result
-    }
-
 }

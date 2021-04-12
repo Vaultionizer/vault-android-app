@@ -13,9 +13,7 @@ import com.vaultionizer.vaultapp.data.model.rest.result.ManagedResult
 import com.vaultionizer.vaultapp.data.model.rest.space.NetworkSpace
 import com.vaultionizer.vaultapp.service.SpaceService
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.*
 import javax.inject.Inject
 
 class SpaceRepository @Inject constructor(
@@ -24,7 +22,6 @@ class SpaceRepository @Inject constructor(
     val localFileDao: LocalFileDao,
     val gson: Gson
 ) {
-
     suspend fun getAllSpaces(): Flow<ManagedResult<List<VNSpace>>> {
         return flow {
             val response = spaceService.getAll()
@@ -37,6 +34,27 @@ class SpaceRepository @Inject constructor(
                     }
 
                     emit(ManagedResult.Success(list))
+                }
+            }
+        }.flowOn(Dispatchers.IO)
+    }
+
+    suspend fun getSpace(spaceId: Long): Flow<ManagedResult<VNSpace>> {
+        return flow {
+            val response = getAllSpaces().collect {
+                when(it) {
+                    is ManagedResult.Success -> {
+                        val space = localSpaceDao.getSpaceById(spaceId)
+                        if(space == null) {
+                            emit(ManagedResult.Error(404))
+                        } else {
+                            emit(ManagedResult.Success(it.data.first { it.id == spaceId }))
+                        }
+                    }
+
+                    else -> {
+
+                    }
                 }
             }
         }.flowOn(Dispatchers.IO)

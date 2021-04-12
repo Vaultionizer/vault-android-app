@@ -38,12 +38,7 @@ class FileEncryptionWorker(
             // Write file to local file system
             writeFileToInternal(applicationContext, request.uri.toString(), stream.readBytes())
 
-            return@withContext Result.success(
-                workDataOf(
-                    Constants.WORKER_SYNC_REQUEST_ID to syncRequestId
-
-                )
-            )
+            return@withContext Result.success()
         }
     }
 }

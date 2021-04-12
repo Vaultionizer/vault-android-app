@@ -33,6 +33,10 @@ object Constants {
     /**
      * WorkManager
      */
+    const val WORKER_TAG_FILE = "FILE_WORKER"
+    const val WORKER_FILE_PARENT_ID = "FILE_PARENT_ID"
+    const val WORKER_FILE_REMOTE_ID = "FILE_REMOTE_ID"
     const val WORKER_SYNC_REQUEST_ID = "SYNC_REQUEST_ID"
+    const val WORKER_SPACE_ID = "SPACE_ID"
     const val WORKER_FILE_BYTES = "FILE_BYTES"
 }

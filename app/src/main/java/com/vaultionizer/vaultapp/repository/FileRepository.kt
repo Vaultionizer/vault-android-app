@@ -1,7 +1,11 @@
 package com.vaultionizer.vaultapp.repository
 
 import android.content.Context
+import android.net.Uri
 import android.util.Log
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import androidx.work.workDataOf
 import com.google.gson.Gson
 import com.vaultionizer.vaultapp.data.db.dao.LocalFileDao
 import com.vaultionizer.vaultapp.data.db.dao.LocalSpaceDao
@@ -12,11 +16,16 @@ import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkElement
 import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkFile
 import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkFolder
 import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkReferenceFile
+import com.vaultionizer.vaultapp.data.model.rest.request.UploadFileRequest
 import com.vaultionizer.vaultapp.data.model.rest.result.ApiResult
 import com.vaultionizer.vaultapp.data.model.rest.result.ManagedResult
 import com.vaultionizer.vaultapp.service.FileExchangeService
+import com.vaultionizer.vaultapp.service.FileService
+import com.vaultionizer.vaultapp.service.SyncRequestService
 import com.vaultionizer.vaultapp.util.Constants
-import com.vaultionizer.vaultapp.util.writeFileToInternal
+import com.vaultionizer.vaultapp.util.getFileName
+import com.vaultionizer.vaultapp.worker.FileEncryptionWorker
+import com.vaultionizer.vaultapp.worker.FileUploadWorker
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import javax.inject.Inject
@@ -28,7 +37,9 @@ class FileRepository @Inject constructor(
     val spaceRepository: SpaceRepository,
     val localFileDao: LocalFileDao,
     val localSpaceDao: LocalSpaceDao,
-    val fileExchangeService: FileExchangeService
+    val fileExchangeService: FileExchangeService,
+    val fileService: FileService,
+    val syncRequestService: SyncRequestService
 ) {
 
     /*
@@ -85,48 +96,42 @@ class FileRepository @Inject constructor(
         }.flowOn(Dispatchers.IO)
     }
 
-    suspend fun uploadFile(
+    fun uploadFile(
         space: VNSpace,
+        uri: Uri,
         parent: VNFile?,
-        data: ByteArray,
-        name: String,
-        context: Context
-    ): Flow<VNFile> {
-        return flow {
-            val cachedList = cache[space.id]
-            fileExchangeService.uploadFile(space.remoteId, data).collect {
-                if (it is ApiResult.Success) {
-                    val localFile = LocalFile(
-                        0,
-                        space.id,
-                        it.data
-                    )
+    ) {
+        val uploadRequest = syncRequestService.createUploadRequest(space.id, uri)
+        val workManager = WorkManager.getInstance(applicationContext)
+        val workData = workDataOf(
+            Constants.WORKER_SYNC_REQUEST_ID to uploadRequest.requestId,
+            Constants.WORKER_FILE_PARENT_ID to (parent?.localId ?: -1),
+            Constants.WORKER_SPACE_ID to space.id
+        )
 
-                    val localFileId = localFileDao.createFile(localFile)
-                    val newFile = VNFile(
-                        name,
-                        space,
-                        parent,
-                        remoteId = it.data,
-                        localId = localFileId,
-                    ).apply {
-                        createdAt = System.currentTimeMillis()
-                        lastUpdated = System.currentTimeMillis()
-                        lastSyncTimestamp = System.currentTimeMillis()
-                        state = VNFile.State.AVAILABLE_OFFLINE
-                    }
+        val encryptionWorker =
+            OneTimeWorkRequestBuilder<FileEncryptionWorker>().setInputData(workData)
+                .addTag(Constants.WORKER_TAG_FILE)
+                .build()
+        val uploadWorker =
+            OneTimeWorkRequestBuilder<FileUploadWorker>().setInputData(workData)
+                .addTag(Constants.WORKER_TAG_FILE).build()
 
-                    writeFileToInternal(context, "${localFileId}.${Constants.VN_FILE_SUFFIX}", data)
-                    parent?.content?.add(newFile)
+        parent?.content?.add(
+            VNFile(
+                getFileName(uri, applicationContext.contentResolver) ?: "UNKNOWN", space, parent
+            )
+        )
 
-                    resyncRefFile(space).collect() // TODO(jatsqi): Error handling
-                    emit(newFile)
-                }
-            }
-        }.flowOn(Dispatchers.IO)
+        // TODO(jatsqi): Persist file locally
+        workManager
+            .beginWith(encryptionWorker)
+            .then(uploadWorker)
+            .enqueue()
     }
 
-    suspend fun uploadFolder(
+
+    fun uploadFolder(
         space: VNSpace,
         name: String,
         parent: VNFile
@@ -161,6 +166,28 @@ class FileRepository @Inject constructor(
                         parent.content!!.remove(folder)
                         emit(ManagedResult.Error(400)) // TODO(jatsqi): Error handling
                     }
+                }
+            }
+        }.flowOn(Dispatchers.IO)
+    }
+
+    suspend fun announceUpload(spaceId: Long): Flow<ManagedResult<Long>> {
+        return flow {
+            when (val response = fileService.uploadFile(
+                UploadFileRequest(
+                    1,
+                    (spaceRepository.getSpace(spaceId)
+                        .first() as ManagedResult.Success<VNSpace>).data.remoteId
+                )
+            )) {
+                is ApiResult.Success -> {
+                    emit(ManagedResult.Success(response.data))
+                }
+                is ApiResult.NetworkError -> {
+                    emit(ManagedResult.NetworkError(response.exception))
+                }
+                is ApiResult.Error -> {
+                    emit(ManagedResult.Error(response.statusCode))
                 }
             }
         }.flowOn(Dispatchers.IO)

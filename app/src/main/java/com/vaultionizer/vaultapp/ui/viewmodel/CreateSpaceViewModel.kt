@@ -1,6 +1,5 @@
 package com.vaultionizer.vaultapp.ui.viewmodel
 
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -14,10 +13,13 @@ import com.vaultionizer.vaultapp.data.model.rest.result.ManagedResult
 import com.vaultionizer.vaultapp.repository.SpaceRepository
 import com.vaultionizer.vaultapp.ui.main.space.SpaceCreationResult
 import com.vaultionizer.vaultapp.ui.main.space.SpaceFormState
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class CreateSpaceViewModel @ViewModelInject constructor(val spaceRepository: SpaceRepository) :
+@HiltViewModel
+class CreateSpaceViewModel @Inject constructor(val spaceRepository: SpaceRepository) :
     ViewModel() {
 
     private val _spaceCreationResult = MutableLiveData<SpaceCreationResult>()

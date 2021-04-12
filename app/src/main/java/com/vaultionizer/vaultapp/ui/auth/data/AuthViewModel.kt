@@ -3,7 +3,6 @@ package com.vaultionizer.vaultapp.ui.auth.data
 import android.content.Context
 import android.util.Log
 import android.util.Patterns
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -13,12 +12,15 @@ import com.vaultionizer.vaultapp.data.model.rest.result.ManagedResult
 import com.vaultionizer.vaultapp.repository.AuthRepository
 import com.vaultionizer.vaultapp.repository.MiscRepository
 import com.vaultionizer.vaultapp.ui.auth.login.LoginResult
+import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class AuthViewModel @ViewModelInject constructor(
+@HiltViewModel
+class AuthViewModel @Inject constructor(
     val miscRepository: MiscRepository,
     val authRepository: AuthRepository,
     @ApplicationContext private val applicationContext: Context
