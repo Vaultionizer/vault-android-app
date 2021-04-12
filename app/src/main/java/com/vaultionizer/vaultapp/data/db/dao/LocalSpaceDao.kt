@@ -1,6 +1,7 @@
 package com.vaultionizer.vaultapp.data.db.dao
 
 import androidx.room.*
+import com.vaultionizer.vaultapp.data.db.dao.relation.SpaceWithFiles
 import com.vaultionizer.vaultapp.data.db.entity.LocalSpace
 
 @Dao
