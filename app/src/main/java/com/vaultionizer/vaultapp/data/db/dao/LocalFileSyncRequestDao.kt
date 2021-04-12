@@ -1,9 +1,6 @@
 package com.vaultionizer.vaultapp.data.db.dao
 
-import androidx.room.Dao
-import androidx.room.Insert
-import androidx.room.Query
-import androidx.room.Update
+import androidx.room.*
 import com.vaultionizer.vaultapp.data.db.entity.LocalFileSyncRequest
 
 @Dao
@@ -23,5 +20,8 @@ interface LocalFileSyncRequestDao {
 
     @Update
     fun updateRequest(request: LocalFileSyncRequest)
+
+    @Delete
+    fun deleteRequest(request: LocalFileSyncRequest)
 
 }

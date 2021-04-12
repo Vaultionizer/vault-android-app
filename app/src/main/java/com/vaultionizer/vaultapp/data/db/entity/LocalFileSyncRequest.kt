@@ -9,7 +9,7 @@ import java.net.URI
 data class LocalFileSyncRequest(
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "request_id")
-    val requestId: Long,
+    var requestId: Long,
 
     @ColumnInfo(name = "type")
     val type: Type,
@@ -37,7 +37,7 @@ data class LocalFileSyncRequest(
      * requested.
      */
     @ColumnInfo(name = "remote_file_id")
-    val remoteFileId: Long?
+    var remoteFileId: Long?
 ) {
 
     enum class Type(val id: Int) {

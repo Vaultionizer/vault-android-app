@@ -18,7 +18,7 @@ class SyncRequestService @Inject constructor(val localFileSyncRequestDao: LocalF
             null
         )
 
-        localFileSyncRequestDao.createRequest(request)
+        request.requestId = localFileSyncRequestDao.createRequest(request)
         return request
     }
 
@@ -32,7 +32,7 @@ class SyncRequestService @Inject constructor(val localFileSyncRequestDao: LocalF
             null
         )
 
-        localFileSyncRequestDao.createRequest(request)
+        request.requestId = localFileSyncRequestDao.createRequest(request)
         return request
     }
 
@@ -42,6 +42,10 @@ class SyncRequestService @Inject constructor(val localFileSyncRequestDao: LocalF
 
     fun updateRemoteFileId(requestId: Long, newRemoteFileId: Long) {
         localFileSyncRequestDao.updateRemoteFileId(requestId, newRemoteFileId)
+    }
+
+    fun deleteRequest(request: LocalFileSyncRequest) {
+        localFileSyncRequestDao.deleteRequest(request)
     }
 
     fun getRequest(requestId: Long): LocalFileSyncRequest {
