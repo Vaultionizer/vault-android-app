@@ -37,9 +37,10 @@ class FileEncryptionWorker @AssistedInject constructor(
                     ?: return@withContext Result.failure()
 
             // Write file to local file system
-            writeFileToInternal(applicationContext, request.uri.toString(), stream.readBytes())
+            val bytes = stream.readBytes()
+            writeFileToInternal(applicationContext, "28282882.osd", bytes)
 
-            return@withContext Result.success()
+            return@withContext Result.success(workDataOf(Constants.WORKER_FILE_BYTES to bytes))
         }
     }
 }
