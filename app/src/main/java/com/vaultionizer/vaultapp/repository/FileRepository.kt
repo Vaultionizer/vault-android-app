@@ -19,15 +19,15 @@ import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkReferenceFile
 import com.vaultionizer.vaultapp.data.model.rest.request.UploadFileRequest
 import com.vaultionizer.vaultapp.data.model.rest.result.ApiResult
 import com.vaultionizer.vaultapp.data.model.rest.result.ManagedResult
-import com.vaultionizer.vaultapp.service.FileExchangeService
 import com.vaultionizer.vaultapp.service.FileService
 import com.vaultionizer.vaultapp.service.SyncRequestService
 import com.vaultionizer.vaultapp.util.Constants
 import com.vaultionizer.vaultapp.util.getFileName
-import com.vaultionizer.vaultapp.worker.FileEncryptionWorker
+import com.vaultionizer.vaultapp.worker.DataEncryptionWorker
 import com.vaultionizer.vaultapp.worker.FileUploadWorker
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class FileRepository @Inject constructor(
@@ -38,13 +38,9 @@ class FileRepository @Inject constructor(
     val localFileDao: LocalFileDao,
     val localSpaceDao: LocalSpaceDao,
     val fileService: FileService,
-    val syncRequestService: SyncRequestService
+    val syncRequestService: SyncRequestService,
 ) {
 
-    /*
-    Simple in memory cache
-    Maps localSpaceId to Root folder of file tree
-     */
     private val cache = mutableMapOf<Long, VNFile>()
     private val minimumIdCache = mutableMapOf<Long, Long>()
 
@@ -60,19 +56,11 @@ class FileRepository @Inject constructor(
                 when (it) {
                     is ManagedResult.Success -> {
                         val localFiles =
-                            localSpaceDao.getSpaceWithFiles(space.id).files.map { it.remoteFileId to it }
+                            localSpaceDao.getSpaceWithFiles(space.id).files.filter { it.remoteFileId != null }
+                                .map { it.remoteFileId!! to it }
                                 .toMap()
-
-                        Log.e(
-                            "Vault",
-                            "GOT ${localFiles.size} DB ${localSpaceDao.getSpaceWithFiles(space.id).files.size}"
-                        )
-                        localFiles.forEach {
-                            Log.e(
-                                "Vault",
-                                "FOUND ENTRY FOR SPACE: ${space.id} ${it.key} with ${it.value}"
-                            )
-                        }
+                        val localFilesWithoutRemote =
+                            localSpaceDao.getSpaceWithFiles(space.id).files.filter { it.remoteFileId == null }
 
                         val root = VNFile(
                             name = "/",
@@ -95,38 +83,60 @@ class FileRepository @Inject constructor(
         }.flowOn(Dispatchers.IO)
     }
 
-    fun uploadFile(
+    suspend fun uploadFile(
         space: VNSpace,
         uri: Uri,
         parent: VNFile?,
+        context: Context
     ) {
-        val uploadRequest = syncRequestService.createUploadRequest(space.id, uri)
-        val workManager = WorkManager.getInstance(applicationContext)
-        val workData = workDataOf(
-            Constants.WORKER_SYNC_REQUEST_ID to uploadRequest.requestId,
-            Constants.WORKER_FILE_PARENT_ID to (parent?.localId ?: -1),
-            Constants.WORKER_SPACE_ID to space.id
-        )
+        withContext(Dispatchers.IO) {
+            val workManager = WorkManager.getInstance(context)
 
-        val encryptionWorker =
-            OneTimeWorkRequestBuilder<FileEncryptionWorker>().setInputData(workData)
-                .addTag(Constants.WORKER_TAG_FILE)
-                .build()
-        val uploadWorker =
-            OneTimeWorkRequestBuilder<FileUploadWorker>().setInputData(workData)
-                .addTag(Constants.WORKER_TAG_FILE).build()
-
-        parent?.content?.add(
-            VNFile(
-                getFileName(uri, applicationContext.contentResolver) ?: "UNKNOWN", space, parent
+            // Create file in DB
+            val fileLocalId = localFileDao.createFile(
+                LocalFile(
+                    0, space.id, null
+                )
             )
-        )
 
-        // TODO(jatsqi): Persist file locally
-        workManager
-            .beginWith(encryptionWorker)
-            .then(uploadWorker)
-            .enqueue()
+            // Create upload request
+            val uploadRequest =
+                syncRequestService.createUploadRequest(space.id, uri, fileLocalId)
+
+            val encryptionWorkData = workDataOf(
+                Constants.WORKER_SPACE_ID to space.id,
+                Constants.WORKER_FILE_BYTES to applicationContext.contentResolver.openInputStream(
+                    uri
+                )?.readBytes()
+            )
+            val uploadWorkData = workDataOf(
+                Constants.WORKER_SYNC_REQUEST_ID to uploadRequest.requestId,
+                Constants.WORKER_FILE_LOCAL_ID to fileLocalId
+            )
+
+            val encryptionWorker =
+                OneTimeWorkRequestBuilder<DataEncryptionWorker>().setInputData(encryptionWorkData)
+                    .addTag(Constants.WORKER_TAG_FILE)
+                    .build()
+            val uploadWorker =
+                OneTimeWorkRequestBuilder<FileUploadWorker>().setInputData(uploadWorkData)
+                    .addTag(Constants.WORKER_TAG_FILE).build()
+
+            // Add temporary file to parent
+            parent?.content?.add(
+                VNFile(
+                    getFileName(uri, applicationContext.contentResolver) ?: "UNKNOWN",
+                    space,
+                    parent,
+                    fileLocalId
+                )
+            )
+
+            workManager
+                .beginWith(encryptionWorker)
+                .then(uploadWorker)
+                .enqueue()
+        }
     }
 
 
@@ -208,6 +218,12 @@ class FileRepository @Inject constructor(
                     }
                 }
             }
+        }
+    }
+
+    suspend fun updateFileRemoteId(fileId: Long, remoteId: Long) {
+        withContext(Dispatchers.IO) {
+            localFileDao.updateFileRemoteId(fileId, remoteId)
         }
     }
 
