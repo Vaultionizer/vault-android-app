@@ -2,16 +2,10 @@ package com.vaultionizer.vaultapp.service
 
 import android.util.Base64
 import com.google.gson.Gson
-import com.vaultionizer.vaultapp.data.model.rest.request.UploadFileRequest
-import com.vaultionizer.vaultapp.data.model.rest.result.ApiResult
 import com.vaultionizer.vaultapp.repository.AuthRepository
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.withContext
 import org.hildan.krossbow.stomp.StompClient
-import org.hildan.krossbow.stomp.StompSession
 import org.hildan.krossbow.stomp.frame.FrameBody
 import org.hildan.krossbow.stomp.headers.StompSendHeaders
 import org.hildan.krossbow.websocket.okhttp.OkHttpWebSocketClient
