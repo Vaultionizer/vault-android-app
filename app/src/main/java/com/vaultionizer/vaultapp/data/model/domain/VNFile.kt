@@ -16,8 +16,6 @@ class VNFile(
     enum class State {
         AVAILABLE_REMOTE,
         AVAILABLE_OFFLINE,
-        PARENT_AVAILABLE_OFFLINE,
-
         UPLOADING,
         DOWNLOADING
     }
@@ -31,8 +29,8 @@ class VNFile(
         get() = content != null && remoteId == null
 
     // ==== Meta ====
-    var lastUpdated: Long? = null
-    var createdAt: Long? = null
+    var lastUpdated: Long? = System.currentTimeMillis()
+    var createdAt: Long? = System.currentTimeMillis()
     var lastSyncTimestamp: Long? = null
     var state: State? = State.AVAILABLE_REMOTE
 
