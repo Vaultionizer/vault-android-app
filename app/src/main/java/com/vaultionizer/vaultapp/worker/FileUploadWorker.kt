@@ -10,13 +10,12 @@ import com.vaultionizer.vaultapp.repository.SpaceRepository
 import com.vaultionizer.vaultapp.service.FileExchangeService
 import com.vaultionizer.vaultapp.service.SyncRequestService
 import com.vaultionizer.vaultapp.util.Constants
+import com.vaultionizer.vaultapp.util.writeFileToInternal
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
-import java.lang.Exception
 
 @HiltWorker
 class FileUploadWorker @AssistedInject constructor(
@@ -33,7 +32,7 @@ class FileUploadWorker @AssistedInject constructor(
     override suspend fun doWork(): Result {
         return withContext(Dispatchers.IO) {
             val fileBytes = inputData.getByteArray(Constants.WORKER_FILE_BYTES)
-            val requestId = inputData.getLong(Constants.WORKER_SPACE_ID, -1)
+            val requestId = inputData.getLong(Constants.WORKER_SYNC_REQUEST_ID, -1)
             if (requestId == -1L || fileBytes == null) {
                 return@withContext Result.failure()
             }
@@ -41,13 +40,13 @@ class FileUploadWorker @AssistedInject constructor(
             val request = syncRequestService.getRequest(requestId)
             val space = spaceRepository.getSpace(request.spaceId).first()
 
-            if(space !is ManagedResult.Success) {
+            if (space !is ManagedResult.Success) {
                 return@withContext Result.failure()
             }
 
-            if(request.remoteFileId == null) {
+            if (request.remoteFileId == null) {
                 val announceResponse =
-                    fileRepository.announceUpload(space.data.remoteId).first()
+                    fileRepository.announceUpload(space.data.id).first()
 
                 if (announceResponse !is ManagedResult.Success) {
                     return@withContext Result.failure()
@@ -55,14 +54,27 @@ class FileUploadWorker @AssistedInject constructor(
 
                 request.remoteFileId = announceResponse.data
                 syncRequestService.updateRequest(request)
+
+                if (request.localFileId != null) {
+                    fileRepository.updateFileRemoteId(request.localFileId!!, announceResponse.data)
+                }
             }
 
             try {
-                fileExchangeService.uploadFile(space.data.remoteId, request.remoteFileId!!, fileBytes)
+                fileExchangeService.uploadFile(
+                    space.data.remoteId,
+                    request.remoteFileId!!,
+                    fileBytes
+                )
             } catch (exception: Exception) {
                 return@withContext Result.failure()
             }
 
+            writeFileToInternal(
+                applicationContext,
+                "${request.localFileId.toString()}.${Constants.VN_FILE_SUFFIX}",
+                fileBytes
+            )
             syncRequestService.deleteRequest(request)
             return@withContext Result.success()
         }
