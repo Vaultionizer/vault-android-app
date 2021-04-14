@@ -15,7 +15,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 @HiltWorker
-class FileEncryptionWorker @AssistedInject constructor(
+class DataEncryptionWorker @AssistedInject constructor(
     @Assisted appContext: Context,
     @Assisted params: WorkerParameters,
     val syncRequestService: SyncRequestService
@@ -26,21 +26,14 @@ class FileEncryptionWorker @AssistedInject constructor(
      */
     override suspend fun doWork(): Result {
         return withContext(Dispatchers.IO) {
-            val syncRequestId = inputData.getLong(Constants.WORKER_SYNC_REQUEST_ID, -1)
-            if (syncRequestId == -1L) {
+            val spaceId = inputData.getLong(Constants.WORKER_SPACE_ID, -1)
+            val inputBytes = inputData.getByteArray(Constants.WORKER_FILE_BYTES)
+            if (spaceId == -1L || inputBytes == null) {
                 return@withContext Result.failure()
             }
 
-            val request = syncRequestService.getRequest(syncRequestId)
-            val stream =
-                applicationContext.contentResolver.openInputStream(Uri.parse(request.uri!!))
-                    ?: return@withContext Result.failure()
-
-            // Write file to local file system
-            val bytes = stream.readBytes()
-            writeFileToInternal(applicationContext, "28282882.osd", bytes)
-
-            return@withContext Result.success(workDataOf(Constants.WORKER_FILE_BYTES to bytes))
+            // TODO(jatsqi): Encrypt [inputBytes]
+            return@withContext Result.success(workDataOf(Constants.WORKER_FILE_BYTES to inputBytes))
         }
     }
 }
