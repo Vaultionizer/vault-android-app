@@ -1,6 +1,7 @@
 package com.vaultionizer.vaultapp.service
 
 import android.net.Uri
+import android.util.Log
 import com.vaultionizer.vaultapp.data.db.dao.LocalFileSyncRequestDao
 import com.vaultionizer.vaultapp.data.db.entity.LocalFileSyncRequest
 import com.vaultionizer.vaultapp.repository.AuthRepository
@@ -8,31 +9,34 @@ import javax.inject.Inject
 
 class SyncRequestService @Inject constructor(val localFileSyncRequestDao: LocalFileSyncRequestDao) {
 
-    fun createDownloadRequest(spaceId: Long): LocalFileSyncRequest {
+    fun createDownloadRequest(spaceId: Long, remoteFileId: Long, localFileId: Long): LocalFileSyncRequest {
         val request = LocalFileSyncRequest(
             0,
             LocalFileSyncRequest.Type.DOWNLOAD,
             AuthRepository.user!!.localUser.userId,
             spaceId,
             null,
-            null
+            remoteFileId,
+            localFileId
         )
 
         request.requestId = localFileSyncRequestDao.createRequest(request)
         return request
     }
 
-    fun createUploadRequest(spaceId: Long, localUri: Uri): LocalFileSyncRequest {
+    fun createUploadRequest(spaceId: Long, localUri: Uri, localFileId: Long): LocalFileSyncRequest {
         val request = LocalFileSyncRequest(
             0,
             LocalFileSyncRequest.Type.UPLOAD,
             AuthRepository.user!!.localUser.userId,
             spaceId,
-            localUri.path,
-            null
+            localUri.toString(),
+            null,
+            localFileId
         )
 
         request.requestId = localFileSyncRequestDao.createRequest(request)
+        Log.d("Vault", "ROWID ${request.requestId}")
         return request
     }
 
