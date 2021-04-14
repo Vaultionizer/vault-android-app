@@ -22,7 +22,7 @@ data class LocalFileSyncRequest(
 
     /**
      * URI to the file in the local file system.
-     * Only present if [type] is [Type.UPLOAD].
+     * Only present if [type] is [Type.UPLOAD] and [isVirtualFolder] is false.
      */
     @ColumnInfo(name = "uri")
     val uri: String?,
@@ -37,7 +37,10 @@ data class LocalFileSyncRequest(
      * requested.
      */
     @ColumnInfo(name = "remote_file_id")
-    var remoteFileId: Long?
+    var remoteFileId: Long?,
+
+    @ColumnInfo(name = "local_file_id")
+    var localFileId: Long?
 ) {
 
     enum class Type(val id: Int) {
