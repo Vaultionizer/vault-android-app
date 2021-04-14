@@ -89,7 +89,8 @@ class MainActivityViewModel @Inject constructor(
             fileRepository.uploadFile(
                 selectedSpace.value!!,
                 uri,
-                _currentDirectory.value!!
+                _currentDirectory.value!!,
+                context
             )
             _fileDialogState.value = FileDialogState(isValid = true)
         }
@@ -204,6 +205,12 @@ class MainActivityViewModel @Inject constructor(
 
                 if (it.isFolder) buildSearchList(query, it, list)
             }
+        }
+    }
+
+    fun onWorkerInfoChange() {
+        viewModelScope.launch {
+            updateCurrentFiles()
         }
     }
 }
