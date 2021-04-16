@@ -7,6 +7,7 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.google.gson.Gson
+import com.vaultionizer.vaultapp.data.cache.FileCache
 import com.vaultionizer.vaultapp.data.db.dao.LocalFileDao
 import com.vaultionizer.vaultapp.data.db.dao.LocalSpaceDao
 import com.vaultionizer.vaultapp.data.db.entity.LocalFile
@@ -41,15 +42,31 @@ class FileRepository @Inject constructor(
     val syncRequestService: SyncRequestService,
 ) {
 
-    private val cache = mutableMapOf<Long, VNFile>()
+    companion object {
+        const val ROOT_FOLDER_ID = -1L
+    }
+
+    /**
+     * Simple in memory cache for files.
+     * Every spaceId maps to excactly one file cache.
+     */
+    private val fileCaches = mutableMapOf<Long, FileCache>()
+
+    /**
+     * In memory cache for the current minimum id of each space.
+     * This id is used to determine the next id for a new folder.
+     * TODO(jatsqi): Merge file cache with minimum id cache
+     */
     private val minimumIdCache = mutableMapOf<Long, Long>()
 
     suspend fun getFileTree(space: VNSpace): Flow<ManagedResult<VNFile>> {
         return flow {
-            if (cache[space.id] != null) {
-                emit(ManagedResult.Success(cache[space.id]!!))
+            val cache = fileCaches[space.id] ?: FileCache()
+            cache.getFile(ROOT_FOLDER_ID)?.let {
+                emit(ManagedResult.Success(it))
                 return@flow
             }
+
             val referenceFile = referenceFileRepository.downloadReferenceFile(space)
 
             referenceFile.collect {
@@ -59,8 +76,6 @@ class FileRepository @Inject constructor(
                             localSpaceDao.getSpaceWithFiles(space.id).files.filter { it.remoteFileId != null }
                                 .map { it.remoteFileId!! to it }
                                 .toMap()
-                        val localFilesWithoutRemote =
-                            localSpaceDao.getSpaceWithFiles(space.id).files.filter { it.remoteFileId == null }
 
                         val root = VNFile(
                             name = "/",
@@ -70,9 +85,9 @@ class FileRepository @Inject constructor(
                             content = mutableListOf()
                         )
 
-                        cache[space.id] = root
+                        cache.addFile(root)
                         minimumIdCache[space.id] = -1
-                        buildTree(it.data.elements, localFiles, root, space, applicationContext)
+                        buildTreeFromNetwork(it.data.elements, localFiles, root, space, applicationContext)
                         emit(ManagedResult.Success(root))
                     }
                     else -> {
@@ -152,7 +167,6 @@ class FileRepository @Inject constructor(
                 minimumIdCache[space.id] = minimumIdCache[space.id]!! - 1
             }
 
-            Log.e("Vault", "MIN ID ${minimumIdCache[space.id]!!}")
             val folder = VNFile(
                 name,
                 space,
@@ -228,12 +242,12 @@ class FileRepository @Inject constructor(
     }
 
     fun cacheEvict(spaceId: Long) {
-        cache.remove(spaceId)
+        fileCaches.remove(spaceId)
         minimumIdCache.remove(spaceId)
     }
 
 
-    private fun buildTree(
+    private fun buildTreeFromNetwork(
         elements: List<NetworkElement>?,
         localFiles: Map<Long, LocalFile>,
         parent: VNFile,
@@ -242,6 +256,7 @@ class FileRepository @Inject constructor(
     ) {
         elements?.forEach {
             if (minimumIdCache[space.id]!! > it.id) minimumIdCache[space.id] = it.id
+            var buildResult: VNFile?
 
             if (it is NetworkFolder) {
                 val folder = VNFile(
@@ -252,9 +267,14 @@ class FileRepository @Inject constructor(
                     content = mutableListOf()
                 ).apply {
                     createdAt = it.createdAt
+                    state = VNFile.State.AVAILABLE_OFFLINE
                 }
-                buildTree(it.content, localFiles, folder, space, ctx)
 
+                fileCaches[space.id]?.apply {
+                    addFile(folder)
+                }
+
+                buildTreeFromNetwork(it.content, localFiles, folder, space, ctx)
                 parent.content!!.add(folder)
             } else if (it is NetworkFile) {
                 val add = VNFile(
@@ -263,16 +283,21 @@ class FileRepository @Inject constructor(
                     parent,
                     localId = localFiles[it.id]?.fileId,
                     remoteId = it.id
-                )
-                add.createdAt = it.createdAt
-                add.lastUpdated = it.updatedAt
+                ).apply {
+                    createdAt = it.createdAt
+                    lastUpdated = it.updatedAt
+                }
 
+                fileCaches[space.id]?.apply {
+                    addFile(add)
+                }
+
+                if (add.isDownloaded(ctx)) {
+                    add.state = VNFile.State.AVAILABLE_OFFLINE
+                }
                 if (!add.isDownloaded(ctx) && add.localId != null) {
-                    Log.e("Vault", "LocalID ${add.localId} localFiles ${localFiles[add.localId]}")
                     localFileDao.deleteFiles(localFiles[add.localId]!!)
                     add.localId = null
-
-                    Log.e("Vault", "Delete local mismatch!")
                 }
 
                 parent.content!!.add(add)
@@ -282,12 +307,13 @@ class FileRepository @Inject constructor(
 
     private suspend fun resyncRefFile(space: VNSpace): Flow<ManagedResult<NetworkReferenceFile>> {
         return flow {
-            if (!cache.containsKey(space.id)) {
+            val cache = fileCaches[space.id]
+            if (cache?.getFile(ROOT_FOLDER_ID) == null) {
                 emit(ManagedResult.ConsistencyError)
                 return@flow
             }
 
-            val root = cache[space.id]!!.mapToNetwork() as NetworkFolder
+            val root = cache.getFile(ROOT_FOLDER_ID)!!.mapToNetwork() as NetworkFolder
 
             val referenceFile = NetworkReferenceFile(
                 1,
