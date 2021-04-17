@@ -3,23 +3,21 @@ package com.vaultionizer.vaultapp.hilt
 import android.content.Context
 import com.google.gson.Gson
 import com.vaultionizer.vaultapp.data.db.dao.LocalFileDao
+import com.vaultionizer.vaultapp.data.db.dao.LocalFileSyncRequestDao
 import com.vaultionizer.vaultapp.data.db.dao.LocalSpaceDao
 import com.vaultionizer.vaultapp.data.db.dao.LocalUserDao
 import com.vaultionizer.vaultapp.repository.*
-import com.vaultionizer.vaultapp.service.FileExchangeService
-import com.vaultionizer.vaultapp.service.ReferenceFileService
-import com.vaultionizer.vaultapp.service.SpaceService
-import com.vaultionizer.vaultapp.service.UserService
+import com.vaultionizer.vaultapp.service.*
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.components.ApplicationComponent
 import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.components.SingletonComponent
 import retrofit2.Retrofit
 import javax.inject.Singleton
 
 @Module
-@InstallIn(ApplicationComponent::class)
+@InstallIn(SingletonComponent::class)
 object RepositoryModule {
 
     @Provides
@@ -32,8 +30,14 @@ object RepositoryModule {
     fun provideReferenceFileRepository(
         referenceFileService: ReferenceFileService,
         gson: Gson,
-        localSpaceDao: LocalSpaceDao
-    ) = ReferenceFileRepository(referenceFileService, gson, localSpaceDao)
+        localSpaceDao: LocalSpaceDao,
+        spaceRepository: SpaceRepository
+    ) = ReferenceFileRepository(
+        referenceFileService,
+        gson,
+        localSpaceDao,
+        spaceRepository
+    )
 
     @Provides
     @Singleton
@@ -53,7 +57,8 @@ object RepositoryModule {
         spaceRepository: SpaceRepository,
         localFileDao: LocalFileDao,
         localSpaceDao: LocalSpaceDao,
-        fileExchangeService: FileExchangeService
+        fileService: FileService,
+        syncRequestService: SyncRequestService
     ) = FileRepository(
         applicationContext,
         gson,
@@ -61,10 +66,16 @@ object RepositoryModule {
         spaceRepository,
         localFileDao,
         localSpaceDao,
-        fileExchangeService
+        fileService,
+        syncRequestService
     )
 
     @Provides
     @Singleton
     fun provideMiscRepository(retrofit: Retrofit) = MiscRepository(retrofit)
+
+    @Provides
+    @Singleton
+    fun provideSyncRequestService(localFileSyncRequestDao: LocalFileSyncRequestDao) =
+        SyncRequestService(localFileSyncRequestDao)
 }

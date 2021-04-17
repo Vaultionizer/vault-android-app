@@ -1,4 +1,4 @@
-package com.vaultionizer.vaultapp.data.db.dao
+package com.vaultionizer.vaultapp.data.db.dao.relation
 
 import androidx.room.Embedded
 import androidx.room.Relation

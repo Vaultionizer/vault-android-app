@@ -2,15 +2,10 @@ package com.vaultionizer.vaultapp.service
 
 import android.util.Base64
 import com.google.gson.Gson
-import com.vaultionizer.vaultapp.data.model.rest.request.UploadFileRequest
-import com.vaultionizer.vaultapp.data.model.rest.result.ApiResult
 import com.vaultionizer.vaultapp.repository.AuthRepository
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.withContext
 import org.hildan.krossbow.stomp.StompClient
-import org.hildan.krossbow.stomp.StompSession
 import org.hildan.krossbow.stomp.frame.FrameBody
 import org.hildan.krossbow.stomp.headers.StompSendHeaders
 import org.hildan.krossbow.websocket.okhttp.OkHttpWebSocketClient
@@ -28,44 +23,36 @@ class FileExchangeService @Inject constructor(
     }
 
     private var stompClient = StompClient(OkHttpWebSocketClient())
-    private lateinit var uploadSession: StompSession
 
-    suspend fun uploadFile(spaceRemoteId: Long, data: ByteArray): Flow<ApiResult<Long>> {
-        return flow {
-            val response = fileService.uploadFile(UploadFileRequest(1, spaceRemoteId))
-            when (response) {
-                is ApiResult.Success -> {
-                    val fileId = response.data
+    suspend fun uploadFile(spaceRemoteId: Long, fileRemoteId: Long, data: ByteArray) {
+        withContext(Dispatchers.IO) {
+            // Connect to server
+            val uploadSession = stompClient.connect(
+                String.format(
+                    WEB_SOCKET_URL_TEMPLATE,
+                    AuthRepository.user?.localUser?.endpoint
+                )
+            )
 
-                    // Connect to server
-                    uploadSession = stompClient.connect(
-                        String.format(
-                            WEB_SOCKET_URL_TEMPLATE,
-                            AuthRepository.user?.localUser?.endpoint
-                        )
+            // Send STOMP data
+            uploadSession.send(
+                StompSendHeaders(
+                    "/api/ws/upload", customHeaders = mapOf(
+                        Pair(
+                            "userID",
+                            AuthRepository.user!!.localUser.remoteUserId.toString()
+                        ),
+                        Pair("spaceID", spaceRemoteId.toString()),
+                        Pair("saveIndex", fileRemoteId.toString()),
+                        Pair("sessionKey", AuthRepository.user!!.sessionToken)
                     )
+                ), FrameBody.Text(JSONObject().apply {
+                    put("content", Base64.encodeToString(data, Base64.NO_WRAP))
+                }.toString())
+            )
 
-                    // Send STOMP data
-                    uploadSession.send(
-                        StompSendHeaders(
-                            "/api/ws/upload", customHeaders = mapOf(
-                                Pair(
-                                    "userID",
-                                    AuthRepository.user!!.localUser.remoteUserId.toString()
-                                ),
-                                Pair("spaceID", spaceRemoteId.toString()),
-                                Pair("saveIndex", fileId.toString()),
-                                Pair("sessionKey", AuthRepository.user!!.sessionToken)
-                            )
-                        ), FrameBody.Text(JSONObject().apply {
-                            put("content", Base64.encodeToString(data, Base64.NO_WRAP))
-                        }.toString())
-                    )
-
-                    // Emit new file
-                    emit(ApiResult.Success(fileId))
-                }
-            }
-        }.flowOn(Dispatchers.IO)
+            // Close session
+            uploadSession.disconnect()
+        }
     }
 }

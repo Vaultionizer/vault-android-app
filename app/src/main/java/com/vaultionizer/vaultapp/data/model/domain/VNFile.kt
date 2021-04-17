@@ -16,23 +16,20 @@ class VNFile(
     enum class State {
         AVAILABLE_REMOTE,
         AVAILABLE_OFFLINE,
-        PARENT_AVAILABLE_OFFLINE,
-
         UPLOADING,
         DOWNLOADING
     }
 
     var localId: Long? = null
     var remoteId: Long? = null
-        private set
 
     var content: MutableList<VNFile>? = null
     val isFolder: Boolean
         get() = content != null && remoteId == null
 
     // ==== Meta ====
-    var lastUpdated: Long? = null
-    var createdAt: Long? = null
+    var lastUpdated: Long? = System.currentTimeMillis()
+    var createdAt: Long? = System.currentTimeMillis()
     var lastSyncTimestamp: Long? = null
     var state: State? = State.AVAILABLE_REMOTE
 
@@ -60,12 +57,18 @@ class VNFile(
     }
 
     fun mapToNetwork(): NetworkElement {
+        if (!isFolder && remoteId == null) {
+            throw RuntimeException("Invalid operation")
+        }
+
         if (isFolder) {
             return NetworkFolder(
                 name = name,
                 id = localId!!,
                 createdAt = createdAt,
-                content = content?.map { it.mapToNetwork() }?.toMutableList()
+                content = content?.filter {
+                    !(!it.isFolder && it.remoteId == null)
+                }?.map { it.mapToNetwork() }?.toMutableList()
             )
         } else { // TODO(jatsqi) Pass correct values to constructor (crc, ...)
             return NetworkFile(

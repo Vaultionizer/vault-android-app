@@ -35,4 +35,8 @@ sealed class ManagedResult<out T : Any> {
     sealed class ExchangeError<out T : Any> : ManagedResult<T>() {
         object FileDeletionError : ExchangeError<Nothing>()
     }
+
+    sealed class SpaceError<out T : Any> : ManagedResult<T>() {
+        object SpaceNotFoundError : SpaceError<Nothing>()
+    }
 }

@@ -14,14 +14,10 @@ data class LocalFile(
     @ColumnInfo(name = "space_id")
     val spaceId: Long,
 
+    /**
+     * File ID on the remote server.
+     * If this id is NULL, then this file has not been uploaded yet.
+     */
     @ColumnInfo(name = "remote_file_id")
-    val remoteFileId: Long
-) {
-
-    enum class TransferStatus {
-        COMPLETED,
-        UPLOADING,
-        DOWNLOADING
-    }
-
-}
+    val remoteFileId: Long?
+)
