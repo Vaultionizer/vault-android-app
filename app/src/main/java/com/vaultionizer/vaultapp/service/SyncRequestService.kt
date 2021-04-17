@@ -17,14 +17,15 @@ class SyncRequestService @Inject constructor(val localFileSyncRequestDao: LocalF
             spaceId,
             null,
             remoteFileId,
-            localFileId
+            localFileId,
+            null
         )
 
         request.requestId = localFileSyncRequestDao.createRequest(request)
         return request
     }
 
-    fun createUploadRequest(spaceId: Long, localUri: Uri, localFileId: Long): LocalFileSyncRequest {
+    fun createUploadRequest(spaceId: Long, localUri: Uri, localFileId: Long, parentFileId: Long): LocalFileSyncRequest {
         val request = LocalFileSyncRequest(
             0,
             LocalFileSyncRequest.Type.UPLOAD,
@@ -32,7 +33,8 @@ class SyncRequestService @Inject constructor(val localFileSyncRequestDao: LocalF
             spaceId,
             localUri.toString(),
             null,
-            localFileId
+            localFileId,
+            parentFileId
         )
 
         request.requestId = localFileSyncRequestDao.createRequest(request)

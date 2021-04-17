@@ -26,6 +26,7 @@ import com.vaultionizer.vaultapp.util.Constants
 import com.vaultionizer.vaultapp.util.getFileName
 import com.vaultionizer.vaultapp.worker.DataEncryptionWorker
 import com.vaultionizer.vaultapp.worker.FileUploadWorker
+import com.vaultionizer.vaultapp.worker.ReferenceFileSyncWorker
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.withContext
@@ -85,9 +86,19 @@ class FileRepository @Inject constructor(
                             content = mutableListOf()
                         )
 
+                        // TODO(jatsqi):    Add files that are being uploaded to local file tree.
+                        //                  Steps:
+                        //                      1) Query sync requests
+                        //                      2) Add new VNFile to parent folder
                         cache.addFile(root)
                         minimumIdCache[space.id] = -1
-                        buildTreeFromNetwork(it.data.elements, localFiles, root, space, applicationContext)
+                        buildTreeFromNetwork(
+                            it.data.elements,
+                            localFiles,
+                            root,
+                            space,
+                            applicationContext
+                        )
                         emit(ManagedResult.Success(root))
                     }
                     else -> {
@@ -95,13 +106,15 @@ class FileRepository @Inject constructor(
                     }
                 }
             }
+
+            fileCaches.put(space.id, cache)
         }.flowOn(Dispatchers.IO)
     }
 
     suspend fun uploadFile(
         space: VNSpace,
         uri: Uri,
-        parent: VNFile?,
+        parent: VNFile,
         context: Context
     ) {
         withContext(Dispatchers.IO) {
@@ -116,7 +129,7 @@ class FileRepository @Inject constructor(
 
             // Create upload request
             val uploadRequest =
-                syncRequestService.createUploadRequest(space.id, uri, fileLocalId)
+                syncRequestService.createUploadRequest(space.id, uri, fileLocalId, parent.localId!!)
 
             val encryptionWorkData = workDataOf(
                 Constants.WORKER_SPACE_ID to space.id,
@@ -128,6 +141,9 @@ class FileRepository @Inject constructor(
                 Constants.WORKER_SYNC_REQUEST_ID to uploadRequest.requestId,
                 Constants.WORKER_FILE_LOCAL_ID to fileLocalId
             )
+            val refWorkData = workDataOf(
+                Constants.WORKER_SPACE_ID to space.id
+            )
 
             val encryptionWorker =
                 OneTimeWorkRequestBuilder<DataEncryptionWorker>().setInputData(encryptionWorkData)
@@ -136,20 +152,24 @@ class FileRepository @Inject constructor(
             val uploadWorker =
                 OneTimeWorkRequestBuilder<FileUploadWorker>().setInputData(uploadWorkData)
                     .addTag(Constants.WORKER_TAG_FILE).build()
+            val referenceFileSyncWorker =
+                OneTimeWorkRequestBuilder<ReferenceFileSyncWorker>().setInputData(refWorkData)
+                    .build()
 
             // Add temporary file to parent
-            parent?.content?.add(
-                VNFile(
-                    getFileName(uri, applicationContext.contentResolver) ?: "UNKNOWN",
-                    space,
-                    parent,
-                    fileLocalId
-                )
+            val vnFile = VNFile(
+                getFileName(uri, applicationContext.contentResolver) ?: "UNKNOWN",
+                space,
+                parent,
+                fileLocalId
             )
+            fileCaches[space.id]?.addFile(vnFile)
+            parent.content?.add(vnFile)
 
             workManager
                 .beginWith(encryptionWorker)
                 .then(uploadWorker)
+                .then(referenceFileSyncWorker)
                 .enqueue()
         }
     }
@@ -194,6 +214,8 @@ class FileRepository @Inject constructor(
         }.flowOn(Dispatchers.IO)
     }
 
+    fun getFile(spaceId: Long, fileId: Long) = fileCaches[spaceId]?.getFile(fileId)
+
     suspend fun announceUpload(spaceId: Long): Flow<ManagedResult<Long>> {
         return flow {
             when (val response = fileService.uploadFile(
@@ -216,6 +238,9 @@ class FileRepository @Inject constructor(
         }.flowOn(Dispatchers.IO)
     }
 
+    /**
+     * TODO(jatsqi): Create background worker for this.
+     */
     suspend fun deleteFile(file: VNFile): Flow<ManagedResult<VNFile>> {
         return flow {
             if (file.parent != null) {
@@ -305,6 +330,9 @@ class FileRepository @Inject constructor(
         }
     }
 
+    /**
+     * TODO(jatsqi): Remove and create background worker for this
+     */
     private suspend fun resyncRefFile(space: VNSpace): Flow<ManagedResult<NetworkReferenceFile>> {
         return flow {
             val cache = fileCaches[space.id]

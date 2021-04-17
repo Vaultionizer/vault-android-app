@@ -30,8 +30,14 @@ object RepositoryModule {
     fun provideReferenceFileRepository(
         referenceFileService: ReferenceFileService,
         gson: Gson,
-        localSpaceDao: LocalSpaceDao
-    ) = ReferenceFileRepository(referenceFileService, gson, localSpaceDao)
+        localSpaceDao: LocalSpaceDao,
+        spaceRepository: SpaceRepository
+    ) = ReferenceFileRepository(
+        referenceFileService,
+        gson,
+        localSpaceDao,
+        spaceRepository
+    )
 
     @Provides
     @Singleton

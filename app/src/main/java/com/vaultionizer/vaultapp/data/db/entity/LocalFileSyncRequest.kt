@@ -39,8 +39,20 @@ data class LocalFileSyncRequest(
     @ColumnInfo(name = "remote_file_id")
     var remoteFileId: Long?,
 
+    /**
+     * Local ID of the file.
+     *
+     * Only present if [type] is [Type.UPLOAD]
+     */
     @ColumnInfo(name = "local_file_id")
-    var localFileId: Long?
+    var localFileId: Long?,
+
+    /**
+     * Local id of the parent folder.
+     *
+     * Only present if [type] is [Type.UPLOAD]
+     */
+    var parentLocalFileId: Long?
 ) {
 
     enum class Type(val id: Int) {
