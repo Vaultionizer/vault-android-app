@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import com.vaultionizer.vaultapp.data.model.domain.VNFile
 import com.vaultionizer.vaultapp.data.model.rest.result.ManagedResult
 import com.vaultionizer.vaultapp.repository.FileRepository
 import com.vaultionizer.vaultapp.repository.SpaceRepository
@@ -70,11 +71,17 @@ class FileUploadWorker @AssistedInject constructor(
                 return@withContext Result.failure()
             }
 
+            // Write file to local file system
             writeFileToInternal(
                 applicationContext,
                 "${request.localFileId.toString()}.${Constants.VN_FILE_SUFFIX}",
                 fileBytes
             )
+
+            val vnFile = fileRepository.getFile(space.data.id, request.localFileId!!)
+            vnFile?.remoteId = request.remoteFileId
+            vnFile?.state = VNFile.State.AVAILABLE_OFFLINE
+
             syncRequestService.deleteRequest(request)
             return@withContext Result.success()
         }
