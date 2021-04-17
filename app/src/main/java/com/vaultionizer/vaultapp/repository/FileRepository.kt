@@ -281,7 +281,6 @@ class FileRepository @Inject constructor(
     ) {
         elements?.forEach {
             if (minimumIdCache[space.id]!! > it.id) minimumIdCache[space.id] = it.id
-            var buildResult: VNFile?
 
             if (it is NetworkFolder) {
                 val folder = VNFile(

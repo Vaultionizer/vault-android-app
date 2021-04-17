@@ -35,13 +35,14 @@ class SpaceRepository @Inject constructor(
 
                     emit(ManagedResult.Success(list))
                 }
+                // TODO(jatsqi): Error handling
             }
         }.flowOn(Dispatchers.IO)
     }
 
     suspend fun getSpace(spaceId: Long): Flow<ManagedResult<VNSpace>> {
         return flow {
-            val response = getAllSpaces().collect {
+            getAllSpaces().collect {
                 when(it) {
                     is ManagedResult.Success -> {
                         val space = localSpaceDao.getSpaceById(spaceId)
@@ -51,10 +52,7 @@ class SpaceRepository @Inject constructor(
                             emit(ManagedResult.Success(it.data.first { it.id == spaceId }))
                         }
                     }
-
-                    else -> {
-                        // TODO(jatsqi): Error handling
-                    }
+                    // TODO(jatsqi): Error handling
                 }
             }
         }.flowOn(Dispatchers.IO)
@@ -82,21 +80,22 @@ class SpaceRepository @Inject constructor(
 
                     emit(ManagedResult.Success(persisted))
                 }
+                // TODO(jatsqi): Error handling
             }
         }.flowOn(Dispatchers.IO)
     }
 
     suspend fun deleteSpace(space: VNSpace): Flow<ManagedResult<VNSpace>> {
         return flow {
-            val response = spaceService.deleteSpace(space.remoteId)
 
-            when (response) {
+            when (spaceService.deleteSpace(space.remoteId)) {
                 is ApiResult.Success -> {
                     localFileDao.deleteFilesBySpace(space.id)
                     localSpaceDao.deleteSpaces(localSpaceDao.getSpaceById(space.id)!!)
 
                     emit(ManagedResult.Success(space))
                 }
+                // TODO(jatsqi): Error handling
             }
         }
     }
