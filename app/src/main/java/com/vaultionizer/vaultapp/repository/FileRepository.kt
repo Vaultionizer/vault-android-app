@@ -102,7 +102,7 @@ class FileRepository @Inject constructor(
                         emit(ManagedResult.Success(root))
                     }
                     else -> {
-                        emit(ManagedResult.Error((it as ApiResult.Error).statusCode))
+                        emit(ManagedResult.Error((it as ManagedResult.Error).statusCode))
                     }
                 }
             }

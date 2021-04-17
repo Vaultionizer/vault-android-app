@@ -53,7 +53,7 @@ class SpaceRepository @Inject constructor(
                     }
 
                     else -> {
-
+                        // TODO(jatsqi): Error handling
                     }
                 }
             }
