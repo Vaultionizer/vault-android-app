@@ -42,13 +42,9 @@ class FileRecyclerAdapter(
         holder.fileDownloaded.visibility =
             if (elem.isDownloaded(holder.view.context) || elem.state == VNFile.State.AVAILABLE_OFFLINE) {
                 View.VISIBLE
-                Log.e("Vault", "Visible")
             } else {
-                Log.e("Vault", "Invisible")
                 View.INVISIBLE
             }
-
-        Log.e("Vault", "POS ${position} SIZE ${currentElements.size}")
 
         holder.fileNameView.text = "${elem.name}"
         holder.fileDate.text = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT)
