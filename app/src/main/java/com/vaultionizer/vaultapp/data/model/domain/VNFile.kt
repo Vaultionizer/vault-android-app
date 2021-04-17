@@ -22,7 +22,6 @@ class VNFile(
 
     var localId: Long? = null
     var remoteId: Long? = null
-        private set
 
     var content: MutableList<VNFile>? = null
     val isFolder: Boolean
@@ -58,12 +57,18 @@ class VNFile(
     }
 
     fun mapToNetwork(): NetworkElement {
+        if (!isFolder && remoteId == null) {
+            throw RuntimeException("Invalid operation")
+        }
+
         if (isFolder) {
             return NetworkFolder(
                 name = name,
                 id = localId!!,
                 createdAt = createdAt,
-                content = content?.map { it.mapToNetwork() }?.toMutableList()
+                content = content?.filter {
+                    !(!it.isFolder && it.remoteId == null)
+                }?.map { it.mapToNetwork() }?.toMutableList()
             )
         } else { // TODO(jatsqi) Pass correct values to constructor (crc, ...)
             return NetworkFile(
