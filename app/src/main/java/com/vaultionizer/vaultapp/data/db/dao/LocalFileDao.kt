@@ -24,4 +24,7 @@ interface LocalFileDao {
     @Query("DELETE FROM LocalFile WHERE space_id = :spaceId")
     fun deleteFilesBySpace(spaceId: Long)
 
+    @Query("UPDATE LocalFile SET remote_file_id = :remoteId WHERE file_id = :fileId")
+    fun updateFileRemoteId(fileId: Long, remoteId: Long)
+
 }

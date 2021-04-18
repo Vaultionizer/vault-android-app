@@ -7,11 +7,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageButton
+import android.widget.ProgressBar
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.mikepenz.iconics.IconicsDrawable
 import com.mikepenz.iconics.typeface.IIcon
 import com.mikepenz.iconics.typeface.library.fontawesome.FontAwesome
+import com.mikepenz.iconics.typeface.library.googlematerial.OutlinedGoogleMaterial
 import com.mikepenz.iconics.view.IconicsImageView
 import com.vaultionizer.vaultapp.R
 import com.vaultionizer.vaultapp.data.model.domain.VNFile
@@ -39,16 +41,21 @@ class FileRecyclerAdapter(
 
         holder.fileImageView.icon =
             IconicsDrawable(holder.context, chooseElementIcon(elem.name, elem.isFolder))
+
+        holder.fileDownloaded.icon =
+            IconicsDrawable(holder.context, OutlinedGoogleMaterial.Icon.gmo_smartphone)
         holder.fileDownloaded.visibility =
             if (elem.isDownloaded(holder.view.context) || elem.state == VNFile.State.AVAILABLE_OFFLINE) {
                 View.VISIBLE
-                Log.e("Vault", "Visible")
             } else {
-                Log.e("Vault", "Invisible")
-                View.INVISIBLE
+                View.GONE
             }
 
-        Log.e("Vault", "POS ${position} SIZE ${currentElements.size}")
+        holder.fileProgress.visibility =
+            if (elem.state == VNFile.State.UPLOADING || elem.state == VNFile.State.DOWNLOADING)
+                View.VISIBLE
+            else
+                View.GONE
 
         holder.fileNameView.text = "${elem.name}"
         holder.fileDate.text = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT)
@@ -97,7 +104,8 @@ class FileRecyclerAdapter(
         val fileNameView: TextView = view.findViewById<TextView>(R.id.file_name),
         val fileDownloaded: IconicsImageView = view.findViewById<IconicsImageView>(R.id.file_downloaded),
         val fileDate: TextView = view.findViewById(R.id.file_date),
-        val fileMore: ImageButton = view.findViewById(R.id.file_more)
+        val fileMore: ImageButton = view.findViewById(R.id.file_more),
+        val fileProgress: ProgressBar = view.findViewById(R.id.file_progress)
     ) : RecyclerView.ViewHolder(view)
 
 }

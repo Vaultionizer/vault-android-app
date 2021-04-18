@@ -28,6 +28,7 @@ import javax.inject.Inject
 class LoginFragment : Fragment() {
 
     private val authViewModel: AuthViewModel by activityViewModels()
+
     @Inject
     lateinit var userService: LocalUserDao
 

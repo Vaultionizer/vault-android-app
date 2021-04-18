@@ -151,6 +151,10 @@ class FileFragment : Fragment(), View.OnClickListener {
                 }
             }
         }
+
+        viewModel.fileWorkerInfo.observe(viewLifecycleOwner) {
+            viewModel.onWorkerInfoChange()
+        }
     }
 
     override fun onResume() {
