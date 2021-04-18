@@ -293,7 +293,6 @@ class FileRepository @Inject constructor(
                     content = mutableListOf()
                 ).apply {
                     createdAt = it.createdAt
-                    state = VNFile.State.AVAILABLE_OFFLINE
                 }
 
                 fileCaches[space.id]?.apply {
