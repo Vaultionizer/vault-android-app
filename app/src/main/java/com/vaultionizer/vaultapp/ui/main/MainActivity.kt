@@ -13,7 +13,7 @@ import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
 import com.mikepenz.iconics.typeface.library.fontawesome.FontAwesome
-import com.mikepenz.iconics.typeface.library.googlematerial.GoogleMaterial
+import com.mikepenz.iconics.typeface.library.googlematerial.OutlinedGoogleMaterial
 import com.mikepenz.materialdrawer.iconics.iconicsIcon
 import com.mikepenz.materialdrawer.model.NavigationDrawerItem
 import com.mikepenz.materialdrawer.model.PrimaryDrawerItem
@@ -166,13 +166,13 @@ class MainActivity : AppCompatActivity() {
                     identifier = nextIdentifier()
                     isSelectable = false
                     nameRes = R.string.menu_settings
-                    iconicsIcon = GoogleMaterial.Icon.gmd_settings
+                    iconicsIcon = OutlinedGoogleMaterial.Icon.gmo_settings
                     descriptionRes = R.string.menu_settings_description
                 },
                 NavigationDrawerItem(R.id.keyManagementFragment, PrimaryDrawerItem().apply {
                     identifier = nextIdentifier()
                     nameRes = R.string.menu_keys
-                    iconicsIcon = GoogleMaterial.Icon.gmd_vpn_key
+                    iconicsIcon = OutlinedGoogleMaterial.Icon.gmo_vpn_key
                     descriptionRes = R.string.menu_keys_description
                 }
                 ),
