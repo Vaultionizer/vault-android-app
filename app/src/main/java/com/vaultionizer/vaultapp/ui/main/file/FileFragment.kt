@@ -201,7 +201,7 @@ class FileFragment : Fragment(), View.OnClickListener {
             && resultCode == Activity.RESULT_OK
         ) {
             data?.data?.also { uri ->
-                viewModel.requestUpload(uri, requireContext())
+                viewModel.requestUpload(uri)
             }
         }
     }

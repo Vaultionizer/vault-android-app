@@ -69,7 +69,6 @@ class FileRepository @Inject constructor(
             }
 
             val referenceFile = referenceFileRepository.downloadReferenceFile(space)
-
             referenceFile.collect {
                 when (it) {
                     is ManagedResult.Success -> {
@@ -115,10 +114,9 @@ class FileRepository @Inject constructor(
         space: VNSpace,
         uri: Uri,
         parent: VNFile,
-        context: Context
     ) {
         withContext(Dispatchers.IO) {
-            val workManager = WorkManager.getInstance(context)
+            val workManager = WorkManager.getInstance(applicationContext)
 
             // Create file in DB
             val fileLocalId = localFileDao.createFile(
@@ -158,7 +156,7 @@ class FileRepository @Inject constructor(
 
             // Add temporary file to parent
             val vnFile = VNFile(
-                getFileName(uri, applicationContext.contentResolver) ?: "UNKNOWN",
+                applicationContext.contentResolver.getFileName(uri)!!,
                 space,
                 parent,
                 fileLocalId

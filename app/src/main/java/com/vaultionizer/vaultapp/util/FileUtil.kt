@@ -13,11 +13,14 @@ fun writeFileToInternal(context: Context, path: String, data: ByteArray) {
     }
 }
 
-// https://stackoverflow.com/questions/5568874/how-to-extract-the-file-name-from-uri-returned-from-intent-action-get-content
-fun getFileName(uri: Uri, contentResolver: ContentResolver): String? {
+/**
+ * Modified version of:
+ * https://stackoverflow.com/questions/5568874/how-to-extract-the-file-name-from-uri-returned-from-intent-action-get-content
+ */
+fun ContentResolver.getFileName(uri: Uri): String? {
     var result: String? = null
     if (uri.scheme == "content") {
-        val cursor: Cursor? = contentResolver.query(uri, null, null, null, null)
+        val cursor: Cursor? = query(uri, null, null, null, null)
         try {
             if (cursor != null && cursor.moveToFirst()) {
                 val index = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
