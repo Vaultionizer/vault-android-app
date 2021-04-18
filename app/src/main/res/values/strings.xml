@@ -45,6 +45,9 @@
     <string name="nav_header_desc">Navigation header</string>
     <string name="action_settings">Settings</string>
 
+    <string name="create_space_encryption_spinner_label">Encryption</string>
+    <string name="create_space_label_general">General</string>
+
     <string name="menu_home">Home</string>
     <string name="menu_gallery">Gallery</string>
     <string name="menu_slideshow">Slideshow</string>
@@ -66,6 +69,9 @@
     <string name="delete_file_progress_title">Are you sure?</string>
     <string name="delete_file_progress_content">You wont be able to recover these files!</string>
     <string name="delete_file_progress_confirm">Yes, delete the files</string>
+
+    <string name="delete_pair_content">You wont be able to recover the pair!</string>
+    <string name="delete_pair_confirm">Yes, delete this entry</string>
 
     <!-- PWD validator texts -->
     <string name="pwd_validator_too_short">Password is too short!</string>

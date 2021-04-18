@@ -47,8 +47,8 @@ class CreatePC : Fragment() {
         }
 
         pcCreateButton.setOnClickListener {
-            Log.e("Vault", "Created PC. Edit now? " + pcEditPCCheckbox.isChecked)
             viewModel.createPersonalContainer(pcNameEdit.text.toString())
+            viewModel.addTestData()
             var action: NavDirections;
             if (pcEditPCCheckbox.isChecked){
                 // TODO(keksklauer4):
@@ -68,8 +68,5 @@ class CreatePC : Fragment() {
                 pcInputLayout.error = null;
             }
         }
-
-        pcNameEdit.setText("ABCDE")
-        pcCreateButton.callOnClick()
     }
 }

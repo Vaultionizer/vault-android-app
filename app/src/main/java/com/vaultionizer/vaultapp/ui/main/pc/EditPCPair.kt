@@ -56,7 +56,15 @@ class EditPCPair : Fragment() {
         }
 
         createButton.setOnClickListener {
-            viewModel.pcRepository.addNewPair(keyInput.text.toString(), valInput.text.toString(), null);
+            // write to pc repository
+            if (editMode){
+                viewModel.pcRepository.replacePair(keyInput.text.toString(), valInput.text.toString(),
+                    viewModel.pcRepository.getCategoryIdByPos(spinner.selectedItemPosition - 1), args.parameters?.id!!)
+            }
+            else{
+                viewModel.pcRepository.addNewPair(keyInput.text.toString(), valInput.text.toString(),
+                    viewModel.pcRepository.getCategoryIdByPos(spinner.selectedItemPosition - 1));
+            }
             val action = EditPCPairDirections.actionEditPCPairToViewPC()
             findNavController().navigate(action)
         }
@@ -66,6 +74,7 @@ class EditPCPair : Fragment() {
             keyInput.setText(args.parameters!!.key)
             valInput.setText(args.parameters!!.value)
             createButton.setText(R.string.button_pc_edit_category_name)
+            spinner.setSelection(viewModel.pcRepository.getCategoryPosById(args.parameters!!.category))
         }
 
         viewModel.pcPairRes.observe(viewLifecycleOwner){

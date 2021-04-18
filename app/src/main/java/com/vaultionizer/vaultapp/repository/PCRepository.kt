@@ -1,6 +1,7 @@
 package com.vaultionizer.vaultapp.repository
 
 import android.content.Context
+import android.util.Log
 import com.google.gson.Gson
 import com.vaultionizer.vaultapp.data.model.domain.VNFile
 import com.vaultionizer.vaultapp.data.model.domain.VNSpace
@@ -44,18 +45,61 @@ class PCRepository @Inject constructor(
         return false
     }
 
+    fun deletePair(pairId: Int){
+        for(pairIdx in pairs.indices){
+            if (pairs[pairIdx].id == pairId){
+                pairs.removeAt(pairIdx)
+                return
+            }
+        }
+    }
+
+    fun deleteOnlyCategory(categoryId: Int){
+        for (pair in pairs){
+            if (pair.categoryId != categoryId) continue
+            pair.categoryId = null
+        }
+        for (categoryIdx in categories.indices){
+            if (categories[categoryIdx].id == categoryId){
+                categories.removeAt(categoryIdx)
+                return
+            }
+        }
+    }
+
+    fun deleteCategoryAndPairs(categoryId: Int){
+        for (pairIdx in pairs.size..0){
+            if (pairs[pairIdx].categoryId != categoryId) continue
+            pairs.removeAt(pairIdx)
+        }
+        for (categoryIdx in categories.indices){
+            if (categories[categoryIdx].id == categoryId){
+                categories.removeAt(categoryIdx)
+                return
+            }
+        }
+    }
+
+    fun getCategoryIdByPos(pos: Int): Int? {
+        if (categories.size > pos && pos >= 0) {
+            return categories[pos].id
+        }
+        return null
+    }
+
+    fun getCategoryPosById(categoryId: Int?): Int{
+        if (categoryId == null) return 0
+        for (cat in categories.indices){
+            if (categories[cat].id == categoryId) return cat + 1
+        }
+        return 0
+    }
+
     fun getCatgoryNames(): Array<String>{
         return Array(categories.size + 1) {
             if (it == 0) "<Uncategorized>"
             else categories[it - 1].name
         }
-    }
-
-    fun getPairById(id: Int): PCPair?{
-        for (pair in pairs){
-            if (pair.id == id) return pair
-        }
-        return null
     }
 
     fun addNewPair(key: String, value: String, categoryId: Int?){
@@ -71,15 +115,9 @@ class PCRepository @Inject constructor(
         }
         else{
             categories.add(PCCategory(findUnusedCategoryId(), name))
+            categoryIdsUsed.add(categories.last().id)
         }
         return true
-    }
-
-    fun getCategory(id: Int): PCCategory? {
-        for( category in categories){
-            if (category.id == id) return category
-        }
-        return null
     }
 
     fun findCategoryByName(name: String): Int? {
@@ -96,13 +134,13 @@ class PCRepository @Inject constructor(
         return null
     }
 
-    private fun findUnusedCategoryId(): Int{
-        for (i in categories.size..0) {
+    private fun findUnusedCategoryId(): Int {
+        for (i in 0..(categories.size + 1)) {
             if (!categoryIdsUsed.contains(i)){
                 return i
             }
         }
-        return 0
+        return -1
     }
 
 }

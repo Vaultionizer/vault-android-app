@@ -45,8 +45,8 @@ class CreateSpaceFragment : Fragment() {
             )
         )
 
-        val spaceNameLayout = view.findViewById<TextInputLayout>(R.id.input_pc_layout)
-        val spaceNameEdit = view.findViewById<EditText>(R.id.input_pc_name)
+        val spaceNameLayout = view.findViewById<TextInputLayout>(R.id.input_space_layout)
+        val spaceNameEdit = view.findViewById<EditText>(R.id.input_space_name)
         val spaceShared = view.findViewById<CheckBox>(R.id.input_space_shared)
         val createButton = view.findViewById<Button>(R.id.create_space)
         createButton.isEnabled = false
