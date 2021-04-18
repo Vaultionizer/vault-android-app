@@ -163,6 +163,8 @@ class FileRepository @Inject constructor(
                 parent,
                 fileLocalId
             )
+            vnFile.state = VNFile.State.UPLOADING
+
             fileCaches[space.id]?.addFile(vnFile)
             parent.content?.add(vnFile)
 
