@@ -33,7 +33,7 @@ class CreatePCViewModel @ViewModelInject constructor(
 
     // for testing purposes only
     fun addTestData(){
-        val testCategories = arrayOf("Financial data", "Phone numbers", "Todos", "Clothing sizes", "Stuff to watch")
+        val testCategories = arrayOf("Financial data", "Phone numbers", "To do items", "Clothing sizes", "Stuff to watch")
         val categoryIds: ArrayList<Int> = ArrayList()
         for (cat in testCategories) {
             pcRepository.addCategory(cat)
@@ -51,7 +51,7 @@ class CreatePCViewModel @ViewModelInject constructor(
         pcRepository.addNewPair("Ricardo", "0187 132434535", categoryIds[1])
         pcRepository.addNewPair("Mario", "0187 415454485", categoryIds[1])
 
-        // Todos
+        // To do items
         pcRepository.addNewPair("Finish SE", "Sunday evening", categoryIds[2])
         pcRepository.addNewPair("Japanese shukudai", "Tuesday", categoryIds[2])
 

@@ -13,7 +13,7 @@
         android:id="@+id/view_pc_category_list"
         android:name="com.vaultionizer.vaultapp.ui.main.pc.ViewPCFragment"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="wrap_content"
         android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"

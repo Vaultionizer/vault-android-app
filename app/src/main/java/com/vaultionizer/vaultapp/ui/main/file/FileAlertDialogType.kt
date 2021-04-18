@@ -22,14 +22,20 @@ enum class FileAlertDialogType(
 
     DELETE_ONLY_CATEGORY(
         R.string.delete_file_progress_title,
-        R.string.delete_pair_content,
-        R.string.delete_pair_confirm
+        R.string.delete_only_category_content,
+        R.string.delete_only_category_confirm
     ),
 
     DELETE_CATEGORY_AND_PAIRS(
         R.string.delete_file_progress_title,
-        R.string.delete_pair_content,
-        R.string.delete_pair_confirm
+        R.string.delete_category_and_pairs_content,
+        R.string.delete_category_and_pairs_confirm
+    ),
+
+    SAVE_FILE(
+        R.string.save_pc_file_title,
+        R.string.save_pc_file_content,
+        R.string.save_pc_file_confirmation
     )
 }
 

@@ -51,7 +51,6 @@ class CreatePC : Fragment() {
             viewModel.addTestData()
             var action: NavDirections;
             if (pcEditPCCheckbox.isChecked){
-                // TODO(keksklauer4):
                 action = CreatePCDirections.actionCreatePersonalContainerFragmentToViewPC()
             }
             else  {

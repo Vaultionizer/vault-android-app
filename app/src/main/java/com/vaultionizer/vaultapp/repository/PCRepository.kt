@@ -19,12 +19,14 @@ class PCRepository @Inject constructor(
     private var categories: ArrayList<PCCategory> = ArrayList()
     private var pairs: ArrayList<PCPair> = ArrayList()
     private var categoryIdsUsed: HashSet<Int> = HashSet()
+    var changed: Boolean = false
 
     fun createNewFile(name: String){
         fileName = name
         categories.clear()
         pairs.clear()
         categoryIdsUsed.clear()
+        changed = false
     }
 
     fun getCurrentFile(): PCFile{
@@ -36,6 +38,7 @@ class PCRepository @Inject constructor(
     }
 
     fun replacePair(newKey: String, newValue: String, newCategoryId: Int?, id: Int): Boolean{
+        changed = true
         for (pairIdx in pairs.indices){
             if (pairs[pairIdx].id == id){
                 pairs[pairIdx] = PCPair(id, newKey, newValue, newCategoryId)
@@ -46,6 +49,7 @@ class PCRepository @Inject constructor(
     }
 
     fun deletePair(pairId: Int){
+        changed = true
         for(pairIdx in pairs.indices){
             if (pairs[pairIdx].id == pairId){
                 pairs.removeAt(pairIdx)
@@ -55,6 +59,7 @@ class PCRepository @Inject constructor(
     }
 
     fun deleteOnlyCategory(categoryId: Int){
+        changed = true
         for (pair in pairs){
             if (pair.categoryId != categoryId) continue
             pair.categoryId = null
@@ -68,6 +73,7 @@ class PCRepository @Inject constructor(
     }
 
     fun deleteCategoryAndPairs(categoryId: Int){
+        changed = true
         for (pairIdx in pairs.size..0){
             if (pairs[pairIdx].categoryId != categoryId) continue
             pairs.removeAt(pairIdx)
@@ -103,12 +109,14 @@ class PCRepository @Inject constructor(
     }
 
     fun addNewPair(key: String, value: String, categoryId: Int?){
+        changed = true
         val newID = if (pairs.isEmpty()) 0 else pairs.last().id+1
         pairs.add(PCPair(newID, key, value, categoryId))
     }
 
     fun addCategory(name: String, categoryId: Int? = null): Boolean{
         if (categoryId == null && findCategoryByName(name) != null) return false
+        changed = true
         if (categoryId != null) {
             val index = findCategoryById(categoryId) ?: return false
             categories[index] = PCCategory(categoryId, name)

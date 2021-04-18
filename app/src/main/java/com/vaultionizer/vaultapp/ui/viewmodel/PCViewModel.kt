@@ -1,12 +1,19 @@
 package com.vaultionizer.vaultapp.ui.viewmodel
 
+import android.content.Context
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.vaultionizer.vaultapp.R
+import com.vaultionizer.vaultapp.data.model.domain.VNFile
+import com.vaultionizer.vaultapp.data.model.domain.VNSpace
 import com.vaultionizer.vaultapp.repository.PCRepository
 import com.vaultionizer.vaultapp.ui.main.pc.InputFormState
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class PCViewModel @ViewModelInject constructor(
     val pcRepository: PCRepository
@@ -38,5 +45,12 @@ class PCViewModel @ViewModelInject constructor(
         }
 
         _pcCategoryNameRes.value = InputFormState(null, true)
+    }
+
+    fun saveFile(space: VNSpace?, parent: VNFile?, context: Context){
+        if (space == null) return
+        if (pcRepository.changed){
+            viewModelScope.launch { pcRepository.saveFile(space, parent, context) }
+        }
     }
 }

@@ -7,40 +7,53 @@
     android:layout_height="wrap_content"
     android:clickable="true"
     android:focusable="true"
-    android:orientation="horizontal">
+    android:orientation="horizontal"
+    android:background="?android:attr/selectableItemBackground" >
+    <!-- TODO: remove line above (remove ripple effect android:background) when size bug fixed.-->
 
-    <TextView
-        android:id="@+id/content"
-        android:layout_width="241dp"
-        android:layout_height="21dp"
-        android:layout_margin="@dimen/text_margin"
-        android:layout_marginStart="16dp"
-        android:textAppearance="?attr/textAppearanceListItem"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:text="@tools:sample/cities" />
-
-    <TextView
-        android:id="@+id/pc_expand_icon"
-        android:layout_width="16dp"
-        android:layout_height="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_weight="1"
-        android:foreground="@drawable/material_drawer_ico_chevron_down"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/outerLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?android:attr/selectableItemBackground"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/content"
+            android:layout_width="241dp"
+            android:layout_height="21dp"
+            android:layout_margin="@dimen/text_margin"
+            android:focusable="auto"
+            android:textAppearance="?attr/textAppearanceListItem"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="@tools:sample/cities" />
+
+        <TextView
+            android:id="@+id/pc_expand_icon"
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_weight="1"
+            android:foreground="@drawable/material_drawer_ico_chevron_down"
+            app:layout_constraintBottom_toBottomOf="@+id/content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@+id/content"
+            app:layout_constraintVertical_bias="0.0" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <LinearLayout
         android:id="@+id/pair_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:visibility="invisible"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/content"></LinearLayout>
+        app:layout_constraintTop_toBottomOf="@+id/outerLayout"></LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

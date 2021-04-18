@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
+import android.widget.Toast
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.observe
@@ -48,14 +49,14 @@ class EditPCCategory : Fragment() {
             if (editMode){
                 val res = viewModel.pcRepository.addCategory(categoryInput.text.toString(), args!!.parameters?.categoryId)
                 if (!res){
-                    // TODO: make toast
+                    Toast.makeText(context, R.string.error_toast_edit_category, Toast.LENGTH_SHORT).show()
                     return@setOnClickListener
                 }
             }
             else {
                 val res = viewModel.pcRepository.addCategory(categoryInput.text.toString())
                 if (!res){
-                    // TODO: make toast
+                    Toast.makeText(context, R.string.error_toast_create_category, Toast.LENGTH_SHORT).show()
                     return@setOnClickListener
                 }
             }

@@ -1,5 +1,8 @@
 package com.vaultionizer.vaultapp.ui.main.pc
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -9,6 +12,9 @@ import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
+import androidx.core.content.ContextCompat.getSystemService
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.NavHostFragment.findNavController
 import androidx.navigation.fragment.findNavController
@@ -23,13 +29,15 @@ import com.vaultionizer.vaultapp.data.pc.PCCategory
 import com.vaultionizer.vaultapp.data.pc.PCPair
 import com.vaultionizer.vaultapp.ui.main.file.FileAlertDialogType
 import com.vaultionizer.vaultapp.ui.main.file.FileBottomSheetOption
+import com.vaultionizer.vaultapp.ui.viewmodel.MainActivityViewModel
 import com.vaultionizer.vaultapp.ui.viewmodel.PCViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.view_pc_category_list.view.*
 
 enum class PairOptions(val id: Long){
     DELETE(0),
-    EDIT(1)
+    EDIT(1),
+    COPY_VALUE(2)
 }
 
 enum class CategoryOptions(val id: Long){
@@ -43,6 +51,7 @@ class ViewPCFragment : Fragment(), ViewPCInterface {
     private var columnCount = 1
     private var dialog: SweetAlertDialog? = null
     private var bottomSheet: ActionPickerBottomSheet? = null
+    private lateinit var backPressedCallback: OnBackPressedCallback
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,6 +62,7 @@ class ViewPCFragment : Fragment(), ViewPCInterface {
     }
 
     private val viewModel: PCViewModel by viewModels()
+    private val mainActivityViewModel: MainActivityViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -85,20 +95,44 @@ class ViewPCFragment : Fragment(), ViewPCInterface {
                     it.setOnClickListener { transitionToEditPair() }
             }
         }
+        backPressedCallback = object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                handleNavigateBack()
+            }
+        }
+        requireActivity().onBackPressedDispatcher.addCallback(backPressedCallback)
         refreshRecyclerView()
+    }
+
+    private fun handleNavigateBack(){
+        showConfirmationCancelDialog(FileAlertDialogType.SAVE_FILE, getString(R.string.just_no), {
+            viewModel.saveFile(mainActivityViewModel.selectedSpace.value, mainActivityViewModel.currentDirectory.value, requireContext())
+            transitionBackToFileFragment()
+        },{ transitionBackToFileFragment() })
     }
 
     private fun refreshRecyclerView(openedCategoryId: Int? = null){
         requireView().view_pc_category_list.adapter = ViewPCRecyclerViewAdapter(viewModel.pcRepository.getCurrentFile(), this, openedCategoryId)
     }
 
+
+
     fun showConfirmationDialog(type: FileAlertDialogType, onConfirmation: () -> Unit) {
+        showConfirmationCancelDialog(type, null, onConfirmation, {})
+    }
+
+
+    fun showConfirmationCancelDialog(type: FileAlertDialogType, cancelText: String?, onConfirmation: () -> Unit, onCancel: () -> Unit) {
         dialog = SweetAlertDialog(requireContext(), SweetAlertDialog.WARNING_TYPE)
             .setTitleText(getString(type.titleTextId))
             .setContentText(getString(type.contentText))
+            .setCancelText(cancelText)
             .setConfirmText(getString(type.confirmText))
             .setConfirmClickListener {
                 onConfirmation()
+                dialog?.hide()
+            }.setCancelClickListener {
+                onCancel()
                 dialog?.hide()
             }
         dialog?.show()
@@ -118,6 +152,13 @@ class ViewPCFragment : Fragment(), ViewPCInterface {
                     }
                     PairOptions.EDIT.id -> {
                         transitionToEditPair(EditPCPairParameter(pair.categoryId, pair.key, pair.value, pair.id))
+                    }
+                    PairOptions.COPY_VALUE.id -> {
+                        if (context == null) return@OnItemSelectedListener
+                        val clipboardManager: ClipboardManager = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                        val clip = ClipData.newPlainText(pair.key, pair.value)
+                        clipboardManager.setPrimaryClip(clip)
+                        Toast.makeText(context, R.string.copied_pc_pair_value_successful, Toast.LENGTH_SHORT).show()
                     }
                 }
                 bottomSheet?.dismiss()
@@ -149,23 +190,25 @@ class ViewPCFragment : Fragment(), ViewPCInterface {
         )
     }
 
-    fun transitionToEditCategory(args: EditPCCategoryParameter? = null){
+    private fun transitionToEditCategory(args: EditPCCategoryParameter? = null){
         val action = ViewPCFragmentDirections.actionViewPCToEditPCCategory(args)
         findNavController(this).navigate(action)
     }
 
-    fun transitionToEditPair(args: EditPCPairParameter? = null){
+    private fun transitionToEditPair(args: EditPCPairParameter? = null){
         val action = ViewPCFragmentDirections.actionViewPCToEditPCPair(args)
+        findNavController().navigate(action)
+    }
+
+    private fun transitionBackToFileFragment(){
+        val action = ViewPCFragmentDirections.actionViewPCToFileFragment()
         findNavController().navigate(action)
     }
 
 
     companion object {
-
-        // TODO: Customize parameter argument names
         const val ARG_COLUMN_COUNT = "column-count"
 
-        // TODO: Customize parameter initialization
         @JvmStatic
         fun newInstance(columnCount: Int) =
             ViewPCFragment().apply {
@@ -178,33 +221,39 @@ class ViewPCFragment : Fragment(), ViewPCInterface {
     private fun getPairOptions(): List<Option>{
         return listOf(
             Option().apply {
-                id = PairOptions.DELETE.id
-                iconId = R.drawable.ic_baseline_delete_24
-                title = "Delete"
+                id = PairOptions.EDIT.id
+                iconId = R.drawable.ic_baseline_edit_24
+                title = getString(R.string.view_pc_option_edit_pair)
             },
             Option().apply {
-                id = PairOptions.EDIT.id
+                id = PairOptions.COPY_VALUE.id
+                iconId = R.drawable.ic_baseline_content_paste_24
+                title = getString(R.string.view_pc_option_pair_copy_value)
+            },
+            Option().apply {
+                id = PairOptions.DELETE.id
                 iconId = R.drawable.ic_baseline_delete_24
-                title = "Edit"
-            })
+                title = getString(R.string.view_pc_option_delete_pair)
+            }
+        )
     }
 
     fun getCategoryOptions(): List<Option>{
         return listOf(
             Option().apply {
                 id = CategoryOptions.EDIT.id
-                iconId = R.drawable.ic_baseline_delete_24
-                title = "Edit category"
+                iconId = R.drawable.ic_baseline_edit_24
+                title = getString(R.string.view_pc_option_edit_category)
             },
             Option().apply {
                 id = CategoryOptions.DELETE_ONLY_CAT.id
                 iconId = R.drawable.ic_baseline_delete_24
-                title = "Delete only category"
+                title = getString(R.string.view_pc_option_delete_only_category)
             },
             Option().apply {
                 id = CategoryOptions.DELETE_CAT_AND_PAIRS.id
-                iconId = R.drawable.ic_baseline_delete_24
-                title = "Delete category and child pairs"
+                iconId = R.drawable.ic_baseline_delete_sweep_24
+                title = getString(R.string.view_pc_option_delete_category_and_pairs)
             })
     }
 

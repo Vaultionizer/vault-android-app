@@ -64,6 +64,7 @@ class ViewPCRecyclerViewAdapter(
         val outerLayout: ConstraintLayout = view.findViewById(R.id.item_layout)
         val contentView: TextView = view.findViewById(R.id.content)
         val pairLayout: LinearLayout = view.findViewById(R.id.pair_container)
+        val totalLayout: ConstraintLayout = view.findViewById(R.id.item_layout)
         val context = view.context
 
         override fun toString(): String {
