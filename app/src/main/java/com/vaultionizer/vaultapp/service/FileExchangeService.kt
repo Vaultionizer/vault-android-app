@@ -55,4 +55,17 @@ class FileExchangeService @Inject constructor(
             uploadSession.disconnect()
         }
     }
+
+    suspend fun downloadFile(spaceRemoteId: Long, fileRemoteId: Long) {
+        withContext(Dispatchers.IO) {
+            val downloadSession = stompClient.connect(
+                String.format(
+                    WEB_SOCKET_URL_TEMPLATE,
+                    AuthRepository.user?.localUser?.endpoint
+                )
+            )
+
+            // downloadSession.subscribe()
+        }
+    }
 }
