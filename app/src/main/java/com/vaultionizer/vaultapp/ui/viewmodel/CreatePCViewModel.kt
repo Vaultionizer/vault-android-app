@@ -1,43 +1,49 @@
 package com.vaultionizer.vaultapp.ui.viewmodel
 
-import android.util.Log
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.vaultionizer.vaultapp.R
 import com.vaultionizer.vaultapp.repository.PCRepository
 import com.vaultionizer.vaultapp.ui.main.pc.InputFormState
+import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 
-class CreatePCViewModel @ViewModelInject constructor(
+@HiltViewModel
+class CreatePCViewModel @Inject constructor(
     val pcRepository: PCRepository
-): ViewModel() {
+) : ViewModel() {
     private val _pcCreationRes = MutableLiveData<InputFormState>()
     val pcCreationRes: LiveData<InputFormState> = _pcCreationRes
 
 
-    fun pcNameChanged(text: String){
+    fun pcNameChanged(text: String) {
         val name = text.trim()
 
-        if (name.length < 4){
+        if (name.length < 4) {
             _pcCreationRes.value = InputFormState(R.string.create_pc_too_short_name, false)
-        }
-        else{
-            _pcCreationRes.value = InputFormState(null,true)
+        } else {
+            _pcCreationRes.value = InputFormState(null, true)
         }
     }
 
-    fun createPersonalContainer(name: String){
+    fun createPersonalContainer(name: String) {
         pcRepository.createNewFile(name)
     }
 
     // for testing purposes only
-    fun addTestData(){
-        val testCategories = arrayOf("Financial data", "Phone numbers", "To do items", "Clothing sizes", "Stuff to watch")
+    fun addTestData() {
+        val testCategories = arrayOf(
+            "Financial data",
+            "Phone numbers",
+            "To do items",
+            "Clothing sizes",
+            "Stuff to watch"
+        )
         val categoryIds: ArrayList<Int> = ArrayList()
         for (cat in testCategories) {
             pcRepository.addCategory(cat)
-            val id = pcRepository.getCategoryIdByPos(pcRepository.getCatgoryNames().size-2)
+            val id = pcRepository.getCategoryIdByPos(pcRepository.getCatgoryNames().size - 2)
             if (id == null) continue
             categoryIds.add(id)
         }

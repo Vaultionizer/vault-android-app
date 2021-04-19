@@ -1,7 +1,6 @@
 package com.vaultionizer.vaultapp.ui.viewmodel
 
 import android.content.Context
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -11,35 +10,35 @@ import com.vaultionizer.vaultapp.data.model.domain.VNFile
 import com.vaultionizer.vaultapp.data.model.domain.VNSpace
 import com.vaultionizer.vaultapp.repository.PCRepository
 import com.vaultionizer.vaultapp.ui.main.pc.InputFormState
-import kotlinx.coroutines.Dispatchers
+import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import javax.inject.Inject
 
-class PCViewModel @ViewModelInject constructor(
+@HiltViewModel
+class PCViewModel @Inject constructor(
     val pcRepository: PCRepository
-): ViewModel() {
+) : ViewModel() {
     private val _pcCategoryNameRes = MutableLiveData<InputFormState>()
     val pcCategoryNameRes: LiveData<InputFormState> = _pcCategoryNameRes
 
     private val _pcPairRes = MutableLiveData<InputFormState>()
     val pcPairRes: LiveData<InputFormState> = _pcPairRes
 
-    fun pairKeyHasChanged(key: String){
-        if (key.trim().isEmpty()){
+    fun pairKeyHasChanged(key: String) {
+        if (key.trim().isEmpty()) {
             _pcPairRes.value = InputFormState(R.string.error_input_pc_pair_key, false)
-        }
-        else{
+        } else {
             _pcPairRes.value = InputFormState(null, true)
         }
     }
 
-    fun categoryChanged(text: String){
+    fun categoryChanged(text: String) {
         val content = text.trim()
-        if (content.isEmpty()){
+        if (content.isEmpty()) {
             _pcCategoryNameRes.value = InputFormState(R.string.input_pc_category_too_short, false)
             return
         }
-        if (pcRepository.findCategoryByName(content) != null){
+        if (pcRepository.findCategoryByName(content) != null) {
             _pcCategoryNameRes.value = InputFormState(R.string.error_create_category, false)
             return
         }
@@ -47,9 +46,9 @@ class PCViewModel @ViewModelInject constructor(
         _pcCategoryNameRes.value = InputFormState(null, true)
     }
 
-    fun saveFile(space: VNSpace?, parent: VNFile?, context: Context){
+    fun saveFile(space: VNSpace?, parent: VNFile?, context: Context) {
         if (space == null) return
-        if (pcRepository.changed){
+        if (pcRepository.changed) {
             viewModelScope.launch { pcRepository.saveFile(space, parent, context) }
         }
     }
