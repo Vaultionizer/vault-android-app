@@ -25,6 +25,7 @@ import com.vaultionizer.vaultapp.service.SyncRequestService
 import com.vaultionizer.vaultapp.util.Constants
 import com.vaultionizer.vaultapp.util.getFileName
 import com.vaultionizer.vaultapp.worker.DataEncryptionWorker
+import com.vaultionizer.vaultapp.worker.FileDownloadWorker
 import com.vaultionizer.vaultapp.worker.FileUploadWorker
 import com.vaultionizer.vaultapp.worker.ReferenceFileSyncWorker
 import kotlinx.coroutines.Dispatchers
@@ -212,6 +213,24 @@ class FileRepository @Inject constructor(
                 }
             }
         }.flowOn(Dispatchers.IO)
+    }
+
+    suspend fun downloadFile(file: VNFile) {
+        withContext(Dispatchers.IO) {
+            val workManager = WorkManager.getInstance(applicationContext)
+            val request = syncRequestService.createDownloadRequest(
+                file.space.id,
+                file.remoteId!!,
+                file.localId!!
+            )
+            val downloadWorkData = workDataOf(
+                Constants.WORKER_SYNC_REQUEST_ID to request.requestId
+            )
+
+            val downloadWorker =
+                OneTimeWorkRequestBuilder<FileDownloadWorker>().setInputData(downloadWorkData).build()
+            workManager.enqueue(downloadWorker)
+        }
     }
 
     fun getFile(spaceId: Long, fileId: Long) = fileCaches[spaceId]?.getFile(fileId)

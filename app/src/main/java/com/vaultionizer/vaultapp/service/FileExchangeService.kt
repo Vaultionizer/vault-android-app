@@ -1,13 +1,16 @@
 package com.vaultionizer.vaultapp.service
 
 import android.util.Base64
+import android.util.Log
 import com.google.gson.Gson
 import com.vaultionizer.vaultapp.repository.AuthRepository
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import org.hildan.krossbow.stomp.StompClient
 import org.hildan.krossbow.stomp.frame.FrameBody
 import org.hildan.krossbow.stomp.headers.StompSendHeaders
+import org.hildan.krossbow.stomp.headers.StompSubscribeHeaders
 import org.hildan.krossbow.websocket.okhttp.OkHttpWebSocketClient
 import org.json.JSONObject
 import javax.inject.Inject
@@ -19,7 +22,8 @@ class FileExchangeService @Inject constructor(
 ) {
 
     companion object {
-        const val WEB_SOCKET_URL_TEMPLATE = "https://%s:443/wss/websocket"
+        const val WEB_SOCKET_TEMPLATE = "https://%s:443/wss/websocket"
+        const val DOWNLOAD_CHANNEL = "/api/wsres/download/%s"
     }
 
     private var stompClient = StompClient(OkHttpWebSocketClient())
@@ -29,7 +33,7 @@ class FileExchangeService @Inject constructor(
             // Connect to server
             val uploadSession = stompClient.connect(
                 String.format(
-                    WEB_SOCKET_URL_TEMPLATE,
+                    WEB_SOCKET_TEMPLATE,
                     AuthRepository.user?.localUser?.endpoint
                 )
             )
@@ -60,12 +64,22 @@ class FileExchangeService @Inject constructor(
         withContext(Dispatchers.IO) {
             val downloadSession = stompClient.connect(
                 String.format(
-                    WEB_SOCKET_URL_TEMPLATE,
+                    WEB_SOCKET_TEMPLATE,
                     AuthRepository.user?.localUser?.endpoint
                 )
             )
 
-            // downloadSession.subscribe()
+            val frame = downloadSession.subscribe(
+                StompSubscribeHeaders(
+                    String.format(
+                        DOWNLOAD_CHANNEL,
+                        AuthRepository.user?.webSocketToken
+                    )
+                )
+            ).first()
+
+            Log.d("Vault", frame.bodyAsText)
+            downloadSession.disconnect()
         }
     }
 }
