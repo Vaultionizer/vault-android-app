@@ -45,6 +45,9 @@
     <string name="nav_header_desc">Navigation header</string>
     <string name="action_settings">Settings</string>
 
+    <string name="create_space_encryption_spinner_label">Encryption</string>
+    <string name="create_space_label_general">General</string>
+
     <string name="menu_home">Home</string>
     <string name="menu_gallery">Gallery</string>
     <string name="menu_slideshow">Slideshow</string>
@@ -64,6 +67,64 @@
     <string name="create_space_progress">Creating space</string>
 
     <string name="delete_file_progress_title">Are you sure?</string>
-    <string name="delete_file_progress_content">You wont be able to recover these files!</string>
+    <string name="delete_file_progress_content">You won\'t be able to recover these files!</string>
     <string name="delete_file_progress_confirm">Yes, delete the files</string>
+
+    <string name="delete_pair_content">You won\'t be able to recover the pair!</string>
+    <string name="delete_pair_confirm">Yes, delete this entry</string>
+
+    <string name="delete_only_category_content">You won\'t be able to recover the category!</string>
+    <string name="delete_only_category_confirm">Yes, delete only this category.</string>
+
+    <string name="delete_category_and_pairs_content">You won\'t be able to recover the category and child pairs!</string>
+    <string name="delete_category_and_pairs_confirm">Yes, delete category and pairs.</string>
+
+    <!-- PWD validator texts -->
+    <string name="pwd_validator_too_short">Password is too short!</string>
+    <string name="pwd_validator_too_few_uppercase">Password must contain at least 2 upper case letters!</string>
+    <string name="pwd_validator_too_few_special">Password must contain at least 3 special characters!</string>
+    <string name="pwd_validator_too_few_digits">Password must contain at least 3 digits!</string>
+    <string name="pwd_validator_no_whitespaces">Password must not contain whitespaces!</string>
+
+    <!-- Create personal container texts -->
+    <string name="createPCLabel">Enter the personal container\'s name</string>
+    <string name="createPCInputText">Personal container name</string>
+    <string name="createPCCheckboxText">Open personal container on create</string>
+    <string name="createPCButtonText">Create PC!</string>
+    <string name="create_pc_too_short_name">Personal container\'s name must be at least 4 characters long!</string>
+
+    <!-- Edit/Create category for personal container -->
+    <string name="label_pc_category_name">Enter new category name</string>
+    <string name="edit_pc_category_name">Category name</string>
+    <string name="button_pc_create_category_name">Create category!</string>
+    <string name="button_pc_edit_category_name">Update category!</string>
+    <string name="input_pc_category_too_short">Category must be at least 1 character long!</string>
+    <string name="error_create_category">Category exists already.</string>
+    <string name="error_toast_edit_category">Failed editing category...</string>
+    <string name="error_toast_create_category">Failed creating category...</string>
+
+    <!-- Edit/Create pair for personal container -->
+    <string name="label_create_pc_pair_category">Select category:</string>
+    <string name="label_create_pc_pair_key">Enter name:</string>
+    <string name="label_create_pc_pair_value">Enter content:</string>
+    <string name="input_create_pc_pair_key">Name</string>
+    <string name="input_create_pc_pair_value">Content</string>
+    <string name="button_create_pc_pair_create">Create pair!</string>
+    <string name="button_create_pc_pair_edit">Edit pair!</string>
+    <string name="error_input_pc_pair_key">Key must be at least 1 character long!</string>
+
+    <!-- Option texts (in view pc)-->
+    <string name="view_pc_option_edit_pair">Edit pair</string>
+    <string name="view_pc_option_delete_pair">Delete pair</string>
+    <string name="view_pc_option_pair_copy_value">Copy value to clipboard</string>
+    <string name="view_pc_option_edit_category">Edit category</string>
+    <string name="view_pc_option_delete_only_category">Delete only category</string>
+    <string name="view_pc_option_delete_category_and_pairs">Delete category and child pairs</string>
+
+    <string name="copied_pc_pair_value_successful">Copied value!</string>
+
+    <string name="save_pc_file_title">Save changes?</string>
+    <string name="save_pc_file_confirmation">Yes, save file!</string>
+    <string name="save_pc_file_content">Do you want to save your changes?</string>
+    <string name="just_no">No.</string>
 </resources>

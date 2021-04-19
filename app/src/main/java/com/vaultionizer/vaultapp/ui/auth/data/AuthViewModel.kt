@@ -8,6 +8,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vaultionizer.vaultapp.R
+import com.vaultionizer.vaultapp.cryptography.PasswordValidator
 import com.vaultionizer.vaultapp.data.model.rest.result.ManagedResult
 import com.vaultionizer.vaultapp.repository.AuthRepository
 import com.vaultionizer.vaultapp.repository.MiscRepository
@@ -54,7 +55,7 @@ class AuthViewModel @Inject constructor(
             return
         }
         viewModelScope.launch {
-            val ping = miscRepository.pingHost(host).first()
+            val ping = miscRepository.pingHost(formatHost(host)).first()
 
             if (ping is ManagedResult.MiscError.HostServerError) {
                 _hostFormState.value = HostFormState(
@@ -77,6 +78,18 @@ class AuthViewModel @Inject constructor(
                 _hostValidationResult.value = HostValidationResult(null)
             }
         }
+    }
+
+    private fun formatHost(host: String): String {
+        var formattedHost: String = host;
+        // remove protocol if existing and remove potential last "/"
+        if (formattedHost[host.length-1] == '/') {
+            formattedHost = formattedHost.dropLast(1);
+        }
+        if (host.contains("://")) {
+            formattedHost = formattedHost.split("://")[1]
+        }
+        return formattedHost
     }
 
     fun registerWithFormData() {
@@ -110,7 +123,7 @@ class AuthViewModel @Inject constructor(
 
     fun loginWithFormData() {
         viewModelScope.launch {
-            Log.e("Vauklt", "Login with ${authenticationFormData.host}")
+            Log.e("Vault", "Login with ${authenticationFormData.host}")
             val result = authRepository.login(
                 authenticationFormData.host,
                 authenticationFormData.username,
@@ -155,6 +168,7 @@ class AuthViewModel @Inject constructor(
             authenticationFormData.password = password
         }
 
+        Log.e("Vault", "Password valid? "+PasswordValidator().validatePassword(authenticationFormData.password).text)
         var usernameError: Int? = null
         var passwordError: Int? = null
 
@@ -163,9 +177,11 @@ class AuthViewModel @Inject constructor(
             Log.e("Vault", "Username too short!")
         }
 
-        if (authenticationFormData.password?.length?.compareTo(6) == -1 && !authenticationFormData.password?.isEmpty()) {
-            passwordError = R.string.invalid_password
-            Log.e("Vault", "Password too short!")
+
+        var validPwd = PasswordValidator().validatePassword(authenticationFormData.password)
+        if (validPwd.error && usernameError == null) {
+            passwordError = validPwd.text
+            Log.e("Vault", "Password invalid: "+validPwd.name)
         }
 
         password.let {
@@ -181,11 +197,6 @@ class AuthViewModel @Inject constructor(
 
     fun authKeyDataChanged(authKey: String) {
         authenticationFormData.authKey = authKey
-    }
-
-    private fun isPasswordValid(password: String): Boolean {
-        TODO()
-        return false
     }
 
     private fun isHostSyntaxValid(host: String): Boolean {

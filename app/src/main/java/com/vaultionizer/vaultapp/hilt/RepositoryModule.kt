@@ -78,4 +78,11 @@ object RepositoryModule {
     @Singleton
     fun provideSyncRequestService(localFileSyncRequestDao: LocalFileSyncRequestDao) =
         SyncRequestService(localFileSyncRequestDao)
+  
+    @Provides
+    @Singleton
+    fun providePCRepository(gson: Gson, fileRepository: FileRepository)
+            = PCRepository(gson, fileRepository)
+
+
 }

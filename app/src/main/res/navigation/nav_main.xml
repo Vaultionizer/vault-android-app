@@ -7,7 +7,11 @@
     <fragment
         android:id="@+id/fileFragment"
         android:name="com.vaultionizer.vaultapp.ui.main.file.FileFragment"
-        android:label="Files"/>
+        android:label="Files">
+        <action
+            android:id="@+id/action_fileFragment_to_createPersonalContainerFragment"
+            app:destination="@id/createPersonalContainerFragment" />
+    </fragment>
     <fragment
         android:id="@+id/keyManagementFragment"
         android:name="com.vaultionizer.vaultapp.ui.main.keys.KeyManagementFragment"
@@ -19,6 +23,66 @@
         android:label="Create new Space" >
         <action
             android:id="@+id/action_createSpaceFragment_to_fileFragment"
+            app:destination="@id/fileFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/createPersonalContainerFragment"
+        android:name="com.vaultionizer.vaultapp.ui.main.pc.CreatePC"
+        android:label="Create personal container" >
+        <action
+            android:id="@+id/action_createSpaceFragment_to_fileFragment"
+            app:destination="@id/fileFragment" />
+        <action
+            android:id="@+id/action_createPersonalContainerFragment_to_viewPC"
+            app:destination="@id/viewPC"
+            app:popUpTo="@id/fileFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
+    <fragment
+        android:id="@+id/editPCCategory"
+        android:name="com.vaultionizer.vaultapp.ui.main.pc.EditPCCategory"
+        android:label="Create PC Category"
+        tools:layout="@layout/edit_pc_category_fragment" >
+        <argument
+            android:name="parameters"
+            app:argType="com.vaultionizer.vaultapp.ui.main.pc.EditPCCategoryParameter"
+            android:defaultValue="@null"
+            app:nullable="true"/>
+        <action
+            android:id="@+id/action_editPCCategory_to_viewPC"
+            app:destination="@id/viewPC"
+            app:popUpTo="@id/viewPC"
+            app:popUpToInclusive="true" />
+    </fragment>
+    <fragment
+        android:id="@+id/editPCPair"
+        android:name="com.vaultionizer.vaultapp.ui.main.pc.EditPCPair"
+        android:label="Create PC Pair"
+        tools:layout="@layout/edit_pc_pair_fragment" >
+        <argument
+            android:name="parameters"
+            app:argType="com.vaultionizer.vaultapp.ui.main.pc.EditPCPairParameter"
+            android:defaultValue="@null"
+            app:nullable="true"/>
+        <action
+            android:id="@+id/action_editPCPair_to_viewPC"
+            app:destination="@id/viewPC"
+            app:popUpTo="@id/viewPC"
+            app:popUpToInclusive="true" />
+    </fragment>
+    <fragment
+        android:id="@+id/viewPC"
+        android:name="com.vaultionizer.vaultapp.ui.main.pc.ViewPCFragment"
+        android:label="View Personal Container"
+        tools:layout="@layout/view_pc_category_list">
+        <action
+            android:id="@+id/action_viewPC_to_editPCCategory"
+            app:destination="@id/editPCCategory" />
+        <action
+            android:id="@+id/action_viewPC_to_editPCPair"
+            app:destination="@id/editPCPair" />
+        <action
+            android:id="@+id/action_viewPC_to_fileFragment"
             app:destination="@id/fileFragment" />
     </fragment>
 </navigation>

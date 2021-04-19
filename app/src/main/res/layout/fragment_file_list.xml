@@ -71,6 +71,14 @@
             app:fab_orientation="portrait"
             app:label_text="Create folder"
             app:fab_icon="@drawable/ic_outline_folder_24"/>
+        <com.nambimobile.widgets.efab.FabOption
+            android:id="@+id/fab_option_create_pc"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:fab_orientation="portrait"
+            app:label_text="Create personal container"
+            app:fab_icon="@drawable/ic_baseline_description_24"/>
+
     </com.nambimobile.widgets.efab.ExpandableFabLayout>
 
     <com.mikepenz.iconics.view.IconicsImageView

@@ -1,0 +1,55 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "id": "https://vaultionizer.com",
+  "title": "Vaultionizer personal container",
+  "type": "object",
+  "properties": {
+    "categories": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/category"
+      }
+    },
+    "data": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/pair"
+      }
+    }
+  },
+  "definitions": {
+    "pair": {
+      "type": "object",
+      "properties": {
+        "pairId": {
+          "type": "integer"
+        },
+        "key": {
+          "type": "string",
+          "minLength": 0
+        },
+        "value": {
+          "type": "string",
+          "minLength": 0
+        },
+        "categoryId": {
+          "type": "integer"
+        }
+      },
+      "required": ["key", "value"]
+    },
+    "category": {
+      "type": "object",
+      "properties": {
+        "categoryId": {
+          "type": "integer"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 0
+        }
+      },
+      "required": ["id", "name"]
+    }
+  }
+}

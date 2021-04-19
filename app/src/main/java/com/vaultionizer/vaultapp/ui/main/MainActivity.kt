@@ -113,7 +113,7 @@ class MainActivity : AppCompatActivity() {
                             iconicsIcon = if (space.owner) {
                                 FontAwesome.Icon.faw_user
                             } else {
-                                FontAwesome.Icon.faw_share_alt
+                                FontAwesome.Icon.faw_users
                             }
 
                             identifier = nextIdentifier()

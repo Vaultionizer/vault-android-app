@@ -16,6 +16,7 @@ import javax.inject.Inject
 class MiscRepository @Inject constructor(val retrofit: Retrofit) {
 
     suspend fun pingHost(host: String): Flow<ManagedResult<NetworkVersion>> {
+
         return flow {
             val temp =
                 retrofit.newBuilder().baseUrl("https://$host/").client(OkHttpClient()).build()

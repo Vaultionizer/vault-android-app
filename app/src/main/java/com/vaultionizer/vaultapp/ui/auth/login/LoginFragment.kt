@@ -16,6 +16,7 @@ import androidx.navigation.fragment.findNavController
 import com.github.razir.progressbutton.attachTextChangeAnimator
 import com.github.razir.progressbutton.hideProgress
 import com.github.razir.progressbutton.showProgress
+import com.thedeanda.lorem.LoremIpsum
 import com.vaultionizer.vaultapp.R
 import com.vaultionizer.vaultapp.data.db.dao.LocalUserDao
 import com.vaultionizer.vaultapp.ui.auth.data.AuthViewModel
