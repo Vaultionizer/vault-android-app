@@ -83,7 +83,10 @@ class FileFragment : Fragment(), View.OnClickListener {
                 clickListener = { file ->
                     if (file.isFolder) {
                         viewModel.onDirectoryChange(file)
+                        return@FileRecyclerAdapter
                     }
+
+                    viewModel.requestDownload(file)
                 },
                 optionsClickListener = { file ->
                     showBottomSheetForFile(file)
