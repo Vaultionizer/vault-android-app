@@ -95,6 +95,12 @@ class MainActivityViewModel @Inject constructor(
         }
     }
 
+    fun requestDownload(file: VNFile) {
+        viewModelScope.launch {
+            fileRepository.downloadFile(file)
+        }
+    }
+
     fun requestFolder(name: String) {
         if (_selectedSpace.value != null && _currentDirectory.value != null) {
             viewModelScope.launch {
