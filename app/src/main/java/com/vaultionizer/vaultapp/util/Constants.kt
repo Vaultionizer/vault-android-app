@@ -6,6 +6,7 @@ object Constants {
      * Application
      */
     const val WORK_MANAGER_SCHEDULER_LIMIT = 3
+    const val DEFAULT_PROTOCOL = "https"
 
     /**
      * Meta
