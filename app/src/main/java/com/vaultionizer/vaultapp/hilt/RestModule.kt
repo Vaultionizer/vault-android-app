@@ -8,6 +8,7 @@ import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkFile
 import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkFolder
 import com.vaultionizer.vaultapp.data.model.rest.result.ApiCallFactory
 import com.vaultionizer.vaultapp.repository.AuthRepository
+import com.vaultionizer.vaultapp.util.Constants
 import com.vaultionizer.vaultapp.util.external.RuntimeTypeAdapterFactory
 import dagger.Module
 import dagger.Provides
@@ -35,14 +36,16 @@ object RestModule {
         set(value) {
             field = value.toHttpUrl().host
             relativePath = value.toHttpUrl().pathSegments.joinToString("/")
+            port = value.toHttpUrl().port
         }
     var relativePath: String = ""
+    var port: Int = 443
 
     @Provides
     @Singleton
     fun provideRetrofitBase(gson: Gson): Retrofit {
         return Retrofit.Builder()
-            .baseUrl("https://$host")
+            .baseUrl("https://$host:$port/$relativePath")
             .addConverterFactory(GsonConverterFactory.create(gson))
             .addCallAdapterFactory(ApiCallFactory())
             .client(provideOkHttpClient())
@@ -94,9 +97,19 @@ object RestModule {
                 "Vault",
                 "Proceed chain... $host $relativePath ${injectHostUrl(request).toUri().toString()}"
             )
-            return@addInterceptor it.proceed(
-                request.newBuilder().url(injectHostUrl(request)).post(requestBody).build()
-            )
+
+            when(request.method.toUpperCase()) {
+                "PUT" -> {
+                    return@addInterceptor it.proceed(
+                        request.newBuilder().url(injectHostUrl(request)).put(requestBody).build()
+                    )
+                }
+                else -> {
+                    return@addInterceptor it.proceed(
+                        request.newBuilder().url(injectHostUrl(request)).post(requestBody).build()
+                    )
+                }
+            }
         }
         .addInterceptor(HttpLoggingInterceptor().apply {
             level = HttpLoggingInterceptor.Level.BODY
@@ -118,6 +131,6 @@ object RestModule {
     }
 
     private fun injectHostUrl(request: Request): HttpUrl =
-        request.url.newBuilder().host(host).scheme("https").addPathSegments(relativePath).build()
+        request.url.newBuilder().host(host).port(port).scheme(Constants.DEFAULT_PROTOCOL).addPathSegments(relativePath).build()
 
 }
