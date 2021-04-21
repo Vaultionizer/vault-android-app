@@ -9,7 +9,7 @@ import javax.inject.Inject
 
 class SyncRequestService @Inject constructor(val localFileSyncRequestDao: LocalFileSyncRequestDao) {
 
-    fun createDownloadRequest(spaceId: Long, remoteFileId: Long, localFileId: Long): LocalFileSyncRequest {
+    suspend fun createDownloadRequest(spaceId: Long, remoteFileId: Long, localFileId: Long): LocalFileSyncRequest {
         val request = LocalFileSyncRequest(
             0,
             LocalFileSyncRequest.Type.DOWNLOAD,
@@ -25,7 +25,7 @@ class SyncRequestService @Inject constructor(val localFileSyncRequestDao: LocalF
         return request
     }
 
-    fun createUploadRequest(spaceId: Long, localUri: Uri, localFileId: Long, parentFileId: Long): LocalFileSyncRequest {
+    suspend fun createUploadRequest(spaceId: Long, localUri: Uri, localFileId: Long, parentFileId: Long): LocalFileSyncRequest {
         val request = LocalFileSyncRequest(
             0,
             LocalFileSyncRequest.Type.UPLOAD,
@@ -42,19 +42,19 @@ class SyncRequestService @Inject constructor(val localFileSyncRequestDao: LocalF
         return request
     }
 
-    fun updateRequest(request: LocalFileSyncRequest) {
+    suspend fun updateRequest(request: LocalFileSyncRequest) {
         localFileSyncRequestDao.updateRequest(request)
     }
 
-    fun updateRemoteFileId(requestId: Long, newRemoteFileId: Long) {
+    suspend fun updateRemoteFileId(requestId: Long, newRemoteFileId: Long) {
         localFileSyncRequestDao.updateRemoteFileId(requestId, newRemoteFileId)
     }
 
-    fun deleteRequest(request: LocalFileSyncRequest) {
+    suspend fun deleteRequest(request: LocalFileSyncRequest) {
         localFileSyncRequestDao.deleteRequest(request)
     }
 
-    fun getRequest(requestId: Long): LocalFileSyncRequest {
+    suspend fun getRequest(requestId: Long): LocalFileSyncRequest {
         return localFileSyncRequestDao.getById(requestId)
     }
 
