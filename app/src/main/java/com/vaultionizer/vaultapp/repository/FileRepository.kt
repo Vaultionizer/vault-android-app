@@ -49,7 +49,6 @@ class FileRepository @Inject constructor(
 
     /**
      * Simple in memory cache for files.
-     * Every spaceId maps to excactly one file cache.
      */
     private val fileCaches = mutableMapOf<Long, FileCache>()
 
@@ -65,8 +64,9 @@ class FileRepository @Inject constructor(
 
     suspend fun getFileTree(space: VNSpace): Flow<ManagedResult<VNFile>> {
         return flow {
-            val cache = fileCaches[space.id] ?: FileCache()
-            cache.getFile(ROOT_FOLDER_ID)?.let {
+            val cache = fileCaches[space.id] ?: FileCache(FileCache.IdCachingStrategy.LOCAL_ID)
+            fileCaches[space.id] = cache
+            cache.getRootFile()?.let {
                 emit(ManagedResult.Success(it))
                 return@flow
             }
@@ -77,7 +77,7 @@ class FileRepository @Inject constructor(
                     is ManagedResult.Success -> {
                         val affectedIds = mutableSetOf<Long>()
                         persistNetworkTree(it.data.elements, space, -1, affectedIds)
-                        localFileDao.deleteAllFilesExceptWithIds(affectedIds)
+                        localFileDao.deleteAllFilesOfSpaceExceptWithIds(affectedIds, space.id)
 
                         val localFiles =
                             localSpaceDao.getSpaceWithFiles(space.id).files.filter { it.remoteFileId != null }
@@ -229,6 +229,7 @@ class FileRepository @Inject constructor(
 
             val downloadWorker =
                 OneTimeWorkRequestBuilder<FileDownloadWorker>().setInputData(downloadWorkData)
+                    .addTag(Constants.WORKER_TAG_FILE)
                     .build()
             val referenceFileSyncWorker =
                 OneTimeWorkRequestBuilder<ReferenceFileSyncWorker>().setInputData(refWorkData)
@@ -238,7 +239,23 @@ class FileRepository @Inject constructor(
         }
     }
 
-    fun getFile(spaceId: Long, fileId: Long) = fileCaches[spaceId]?.getFile(fileId)
+    suspend fun getFile(fileId: Long): VNFile? {
+        fileCaches.values.forEach {
+            val file = it.getFileByStrategy(fileId, FileCache.IdCachingStrategy.LOCAL_ID)
+            if (file != null) {
+                return file
+            }
+        }
+
+        val localFile = localFileDao.getFileById(fileId)
+        if (localFile != null) {
+            // TODO(jatsqi): Return file if not cached.
+        }
+        return null
+    }
+
+    fun getFileByRemote(spaceId: Long, fileRemoteId: Long): VNFile? =
+        fileCaches[spaceId]?.getFile(fileRemoteId)
 
     suspend fun announceUpload(spaceId: Long): Flow<ManagedResult<Long>> {
         return flow {
@@ -275,7 +292,6 @@ class FileRepository @Inject constructor(
                             emit(ManagedResult.Success(file))
                         }
                         else -> {
-                            Log.e("Vault", it.javaClass.name)
                             emit(ManagedResult.Error(400)) // TODO(jatsqi): Error handling
                         }
                     }
@@ -314,29 +330,28 @@ class FileRepository @Inject constructor(
                         affectedLocalFiles
                     )
                 }
-                return
-            }
-
-            val type = if (it is NetworkFolder) {
-                LocalFile.Type.FOLDER
             } else {
-                LocalFile.Type.FILE
+                val type = if (it is NetworkFolder) {
+                    LocalFile.Type.FOLDER
+                } else {
+                    LocalFile.Type.FILE
+                }
+
+                val localFile = LocalFile(
+                    0,
+                    space.id,
+                    it.id,
+                    parentId,
+                    it.name,
+                    type,
+                    // TODO(jatsqi): Set correct timestamps
+                    System.currentTimeMillis(),
+                    System.currentTimeMillis(),
+                    System.currentTimeMillis()
+                )
+
+                affectedLocalFiles.add(localFileDao.createFile(localFile))
             }
-
-            val localFile = LocalFile(
-                0,
-                space.id,
-                it.id,
-                parentId,
-                it.name,
-                type,
-                // TODO(jatsqi): Set correct timestamps
-                System.currentTimeMillis(),
-                System.currentTimeMillis(),
-                System.currentTimeMillis()
-            )
-
-            affectedLocalFiles.add(localFileDao.createFile(localFile))
         }
     }
 
@@ -380,6 +395,8 @@ class FileRepository @Inject constructor(
                 lastSyncTimestamp = it.lastSyncTimestamp
             }
 
+            fileCaches[space.id]?.addFile(vnFile)
+
             if (children != null) {
                 flatChildrenTree[it.fileId] = children
             }
@@ -397,19 +414,18 @@ class FileRepository @Inject constructor(
     private suspend fun resyncRefFile(space: VNSpace): Flow<ManagedResult<NetworkReferenceFile>> {
         return flow {
             val cache = fileCaches[space.id]
-            if (cache?.getFile(ROOT_FOLDER_ID) == null) {
+            if (cache?.getRootFile() == null) {
                 emit(ManagedResult.ConsistencyError)
                 return@flow
             }
 
-            val root = cache.getFile(ROOT_FOLDER_ID)!!.mapToNetwork() as NetworkFolder
+            val root = cache.getRootFile()!!.mapToNetwork() as NetworkFolder
 
             val referenceFile = NetworkReferenceFile(
                 1,
                 root.content ?: mutableListOf()
             )
 
-            Log.e("Vault", "SYNC")
             emit(referenceFileRepository.uploadReferenceFile(referenceFile, space).first())
         }.flowOn(Dispatchers.IO)
     }
