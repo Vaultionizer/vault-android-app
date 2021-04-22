@@ -57,6 +57,9 @@ class FileRepository @Inject constructor(
     /**
      * In memory cache for the current minimum id of each space.
      * This id is used to determine the next id for a new folder.
+     * Folder id's are ALWAYS negative to avoid any conflict with the
+     * remoteFileId, because the server only knows files and is completely
+     * unaware of folders.
      * TODO(jatsqi): Merge file cache with minimum id cache
      */
     private val minimumIdCache = mutableMapOf<Long, Long>()
@@ -175,7 +178,7 @@ class FileRepository @Inject constructor(
         }
     }
 
-
+    // TODO(jatsqi): Refactor.
     fun uploadFolder(
         space: VNSpace,
         name: String,
@@ -226,14 +229,60 @@ class FileRepository @Inject constructor(
             val downloadWorkData = workDataOf(
                 Constants.WORKER_SYNC_REQUEST_ID to request.requestId
             )
+            val refWorkData = workDataOf(
+                Constants.WORKER_SPACE_ID to file.space.id
+            )
 
             val downloadWorker =
-                OneTimeWorkRequestBuilder<FileDownloadWorker>().setInputData(downloadWorkData).build()
-            workManager.enqueue(downloadWorker)
+                OneTimeWorkRequestBuilder<FileDownloadWorker>().setInputData(downloadWorkData)
+                    .build()
+            val referenceFileSyncWorker =
+                OneTimeWorkRequestBuilder<ReferenceFileSyncWorker>().setInputData(refWorkData)
+                    .build()
+
+            workManager.beginWith(downloadWorker).then(referenceFileSyncWorker).enqueue()
         }
     }
 
     fun getFile(spaceId: Long, fileId: Long) = fileCaches[spaceId]?.getFile(fileId)
+
+    suspend fun createLocalFile(
+        space: VNSpace,
+        parent: VNFile,
+        name: String,
+        fileRemoteId: Long?,
+        isVirtualFolder: Boolean = false,
+        initialState: VNFile.State = VNFile.State.AVAILABLE_REMOTE
+    ): VNFile? {
+        if (fileRemoteId != null && localFileDao.getFileByRemoteId(
+                space.id,
+                fileRemoteId
+            ) != null
+        ) {
+            return null
+        }
+
+        val vnFile = VNFile(
+            name,
+            space,
+            parent,
+            localId = null,
+            remoteId = fileRemoteId,
+            content = if(isVirtualFolder) mutableListOf() else null
+        )
+        vnFile.state = initialState
+
+        if(!isVirtualFolder) {
+            val local = vnFile.mapToLocal()!!
+            vnFile.localId = localFileDao.createFile(local)
+        }
+
+        val cache = fileCaches[space.id] ?: FileCache()
+        cache.addFile(vnFile)
+        fileCaches[space.id] = cache
+
+        return vnFile
+    }
 
     suspend fun announceUpload(spaceId: Long): Flow<ManagedResult<Long>> {
         return flow {
@@ -291,7 +340,7 @@ class FileRepository @Inject constructor(
     }
 
 
-    private fun buildTreeFromNetwork(
+    private suspend fun buildTreeFromNetwork(
         elements: List<NetworkElement>?,
         localFiles: Map<Long, LocalFile>,
         parent: VNFile,
