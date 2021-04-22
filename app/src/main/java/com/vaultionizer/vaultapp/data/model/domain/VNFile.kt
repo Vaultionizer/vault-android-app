@@ -1,6 +1,7 @@
 package com.vaultionizer.vaultapp.data.model.domain
 
 import android.content.Context
+import com.vaultionizer.vaultapp.data.db.entity.LocalFile
 import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkElement
 import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkFile
 import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkFolder
@@ -80,5 +81,17 @@ class VNFile(
                 size = 0
             )
         }
+    }
+
+    fun mapToLocal(): LocalFile? {
+        if (isFolder) {
+            return null
+        }
+
+        return LocalFile(
+            0, // Room treats 0 as not-set
+            space.id,
+            remoteId
+        )
     }
 }
