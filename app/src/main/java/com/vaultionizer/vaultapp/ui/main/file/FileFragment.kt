@@ -78,7 +78,6 @@ class FileFragment : Fragment(), View.OnClickListener {
         requireActivity().onBackPressedDispatcher.addCallback(backPressedCallback)
 
         viewModel.shownElements.observe(viewLifecycleOwner, Observer {
-
             fileAdapter = FileRecyclerAdapter(
                 clickListener = { file ->
                     if (file.isFolder) {
