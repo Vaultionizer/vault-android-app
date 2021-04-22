@@ -105,18 +105,7 @@ class MainActivityViewModel @Inject constructor(
         if (_selectedSpace.value != null && _currentDirectory.value != null) {
             viewModelScope.launch {
                 fileRepository.uploadFolder(_selectedSpace.value!!, name, _currentDirectory.value!!)
-                    .collect {
-                        when (it) {
-                            is ManagedResult.Success -> {
-                                updateCurrentFiles()
-                                _fileDialogState.value = FileDialogState(isValid = true)
-                            }
-                            else -> {
-                                _fileDialogState.value =
-                                    FileDialogState(fileError = R.string.host_error_network)
-                            }
-                        }
-                    }
+                updateCurrentFiles()
             }
         }
     }

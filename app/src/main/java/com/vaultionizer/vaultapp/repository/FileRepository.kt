@@ -75,10 +75,11 @@ class FileRepository @Inject constructor(
             referenceFile.collect {
                 when (it) {
                     is ManagedResult.Success -> {
+                        minimumIdCache[space.id] = -1
                         val affectedIds = mutableSetOf<Long>()
                         persistNetworkTree(it.data.elements, space, -1, affectedIds)
-                        localFileDao.deleteAllFilesOfSpaceExceptWithIds(affectedIds, space.id)
 
+                        localFileDao.deleteAllFilesOfSpaceExceptWithIds(affectedIds, space.id)
                         val localFiles =
                             localSpaceDao.getSpaceWithFiles(space.id).files.filter { it.remoteFileId != null }
                         val root = buildLocalFileTree(space, localFiles)
@@ -88,9 +89,6 @@ class FileRepository @Inject constructor(
                         //                      1) Query sync requests
                         //                      2) Add new VNFile to parent folder
                         cache.addFile(root)
-                        minimumIdCache[space.id] = -1
-
-                        Log.e("Vault", "CONTENT: ${root.content}")
                         emit(ManagedResult.Success(root))
                     }
                     else -> {
@@ -175,44 +173,53 @@ class FileRepository @Inject constructor(
         }
     }
 
-    // TODO(jatsqi): Refactor.
-    fun uploadFolder(
+    suspend fun uploadFolder(
         space: VNSpace,
         name: String,
         parent: VNFile
-    ): Flow<ManagedResult<VNFile>> {
-        return flow {
+    ) {
+        withContext(Dispatchers.IO) {
             if (!minimumIdCache.containsKey(space.id)) {
                 minimumIdCache[space.id] = -2
             } else {
                 minimumIdCache[space.id] = minimumIdCache[space.id]!! - 1
             }
 
+            val localFileId = localFileDao.createFile(
+                LocalFile(
+                    0,
+                    space.id,
+                    minimumIdCache[space.id]!!,
+                    parent.localId,
+                    name,
+                    LocalFile.Type.FOLDER,
+                    System.currentTimeMillis(),
+                    System.currentTimeMillis(),
+                    System.currentTimeMillis()
+                )
+            )
+
             val folder = VNFile(
                 name,
                 space,
                 parent,
+                localFileId,
                 minimumIdCache[space.id]!!,
-                null,
                 mutableListOf()
-            ).apply {
-                lastUpdated = System.currentTimeMillis()
-                createdAt = System.currentTimeMillis()
-            }
-            parent.content!!.add(folder)
+            )
 
-            resyncRefFile(space).collect {
-                when (it) {
-                    is ManagedResult.Success -> {
-                        emit(ManagedResult.Success(folder))
-                    }
-                    else -> {
-                        parent.content!!.remove(folder)
-                        emit(ManagedResult.Error(400)) // TODO(jatsqi): Error handling
-                    }
-                }
-            }
-        }.flowOn(Dispatchers.IO)
+            fileCaches[space.id]?.addFile(folder)
+            parent.content?.add(folder)
+
+            val refWorkData = workDataOf(
+                Constants.WORKER_SPACE_ID to space.id
+            )
+            val refWorker =
+                OneTimeWorkRequestBuilder<ReferenceFileSyncWorker>().setInputData(refWorkData)
+                    .build()
+
+            WorkManager.getInstance(applicationContext).enqueue(refWorker)
+        }
     }
 
     suspend fun downloadFile(file: VNFile) {
@@ -383,7 +390,7 @@ class FileRepository @Inject constructor(
             val childrenOfParent = flatChildrenTree[parentId] ?: mutableListOf()
 
             if (it.remoteFileId != null && minimumIdCache.containsKey(space.id)) {
-                if(minimumIdCache[space.id]!! > it.remoteFileId) {
+                if (minimumIdCache[space.id]!! > it.remoteFileId) {
                     minimumIdCache[space.id] = it.remoteFileId
                 }
             }
