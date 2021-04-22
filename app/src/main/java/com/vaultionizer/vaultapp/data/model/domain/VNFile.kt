@@ -11,6 +11,7 @@ import java.io.File
 class VNFile(
     val name: String,
     val space: VNSpace,
+    var localId: Long,
     val parent: VNFile? = null
 ) {
 
@@ -21,7 +22,6 @@ class VNFile(
         DOWNLOADING
     }
 
-    var localId: Long? = null
     var remoteId: Long? = null
 
     var content: MutableList<VNFile>? = null
@@ -39,10 +39,10 @@ class VNFile(
         name: String,
         space: VNSpace,
         parent: VNFile?,
-        localId: Long? = null,
+        localId: Long,
         remoteId: Long? = null,
         content: MutableList<VNFile>? = null
-    ) : this(name, space, parent) {
+    ) : this(name, space, localId, parent) {
         this.localId = localId
         this.remoteId = remoteId
         this.content = content
@@ -84,14 +84,12 @@ class VNFile(
     }
 
     fun mapToLocal(): LocalFile? {
-        if (isFolder) {
-            return null
-        }
-
         return LocalFile(
-            0, // Room treats 0 as not-set
+            localId, // Room treats 0 as not-set
             space.id,
             remoteId,
+            parent?.localId ?: -1,
+            name,
             if(isFolder) LocalFile.Type.FOLDER else LocalFile.Type.FILE,
             lastUpdated,
             createdAt,
