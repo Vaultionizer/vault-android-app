@@ -2,7 +2,6 @@ package com.vaultionizer.vaultapp.repository
 
 import android.content.Context
 import android.net.Uri
-import android.util.Log
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
@@ -391,10 +390,11 @@ class FileRepository @Inject constructor(
                 }
             val childrenOfParent = flatChildrenTree[parentId] ?: mutableListOf()
 
-            if (it.remoteFileId != null && minimumIdCache.containsKey(space.id)) {
-                if (minimumIdCache[space.id]!! > it.remoteFileId) {
-                    minimumIdCache[space.id] = it.remoteFileId
-                }
+            if (it.remoteFileId != null
+                && minimumIdCache.containsKey(space.id)
+                && minimumIdCache[space.id]!! > it.remoteFileId
+            ) {
+                minimumIdCache[space.id] = it.remoteFileId
             }
 
             val vnFile = VNFile(
