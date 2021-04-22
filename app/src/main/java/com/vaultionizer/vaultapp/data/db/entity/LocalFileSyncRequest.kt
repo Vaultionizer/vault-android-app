@@ -20,6 +20,9 @@ data class LocalFileSyncRequest(
     @ColumnInfo(name = "crypto_opt_done")
     val cryptographicOperationDone: Boolean = false,
 
+    @ColumnInfo(name = "remote_file_id")
+    val remoteFileId: Long?,
+
     /**
      * URI to the file in the local file system.
      * Only present if [type] is [Type.UPLOAD] and [isVirtualFolder] is false.
