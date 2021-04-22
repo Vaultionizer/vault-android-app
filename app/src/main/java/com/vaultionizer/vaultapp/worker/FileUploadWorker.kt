@@ -32,22 +32,18 @@ class FileUploadWorker @AssistedInject constructor(
 ) {
     override suspend fun doWork(): Result {
         return withContext(Dispatchers.IO) {
-            val fileBytes = inputData.getByteArray(Constants.WORKER_FILE_BYTES)
             val requestId = inputData.getLong(Constants.WORKER_SYNC_REQUEST_ID, -1)
-            if (requestId == -1L || fileBytes == null) {
+            if (requestId == -1L) {
                 return@withContext Result.failure()
             }
 
             val request = syncRequestService.getRequest(requestId)
-            val space = spaceRepository.getSpace(request.spaceId).first()
-
-            if (space !is ManagedResult.Success) {
-                return@withContext Result.failure()
-            }
+            val file =
+                fileRepository.getFile(request.localFileId) ?: return@withContext Result.failure()
 
             if (request.remoteFileId == null) {
                 val announceResponse =
-                    fileRepository.announceUpload(space.data.id).first()
+                    fileRepository.announceUpload(file.space.id).first()
 
                 if (announceResponse !is ManagedResult.Success) {
                     return@withContext Result.failure()
@@ -56,16 +52,14 @@ class FileUploadWorker @AssistedInject constructor(
                 request.remoteFileId = announceResponse.data
                 syncRequestService.updateRequest(request)
 
-                if (request.localFileId != null) {
-                    fileRepository.updateFileRemoteId(request.localFileId!!, announceResponse.data)
-                }
+                fileRepository.updateFileRemoteId(file.localId, announceResponse.data)
             }
 
             try {
                 fileExchangeService.uploadFile(
-                    space.data.remoteId,
+                    fileRepository.getFile(request.localFileId)?.space!!.id,
                     request.remoteFileId!!,
-                    fileBytes
+                    request.data ?: ByteArray(0)
                 )
             } catch (exception: Exception) {
                 return@withContext Result.failure()
@@ -75,14 +69,15 @@ class FileUploadWorker @AssistedInject constructor(
             writeFileToInternal(
                 applicationContext,
                 "${request.localFileId.toString()}.${Constants.VN_FILE_SUFFIX}",
-                fileBytes
+                request.data ?: ByteArray(0)
             )
 
-            val vnFile = fileRepository.getFile(space.data.id, request.localFileId!!)
+            val vnFile = fileRepository.getFile(request.localFileId)
             vnFile?.remoteId = request.remoteFileId
             vnFile?.state = VNFile.State.AVAILABLE_OFFLINE
 
             syncRequestService.deleteRequest(request)
+            fileRepository.updateFileRemoteId(request.localFileId, request.remoteFileId!!)
             return@withContext Result.success()
         }
     }

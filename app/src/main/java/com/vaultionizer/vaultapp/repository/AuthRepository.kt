@@ -13,6 +13,7 @@ import com.vaultionizer.vaultapp.data.model.rest.user.LoggedInUser
 import com.vaultionizer.vaultapp.data.model.rest.user.NetworkUserAuthPair
 import com.vaultionizer.vaultapp.hilt.RestModule
 import com.vaultionizer.vaultapp.service.UserService
+import com.vaultionizer.vaultapp.util.Constants
 import com.vaultionizer.vaultapp.util.extension.hashSha512
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -39,7 +40,7 @@ class AuthRepository @Inject constructor(
         username: String,
         password: String
     ): Flow<ManagedResult<LoggedInUser>> {
-        RestModule.host = "https://$host"
+        RestModule.host = "${Constants.DEFAULT_PROTOCOL}://$host"
 
         return flow {
             val response = userService.loginUser(LoginUserRequest(username, password.hashSha512()))
@@ -66,7 +67,7 @@ class AuthRepository @Inject constructor(
         password: String,
         authKey: String
     ): Flow<ManagedResult<LoggedInUser>> {
-        RestModule.host = "https://$host"
+        RestModule.host = "${Constants.DEFAULT_PROTOCOL}://$host"
 
         return flow {
             val response = userService.createUser(

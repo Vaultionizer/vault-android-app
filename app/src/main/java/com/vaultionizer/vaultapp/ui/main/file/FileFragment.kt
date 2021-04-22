@@ -78,12 +78,14 @@ class FileFragment : Fragment(), View.OnClickListener {
         requireActivity().onBackPressedDispatcher.addCallback(backPressedCallback)
 
         viewModel.shownElements.observe(viewLifecycleOwner, Observer {
-
             fileAdapter = FileRecyclerAdapter(
                 clickListener = { file ->
                     if (file.isFolder) {
                         viewModel.onDirectoryChange(file)
+                        return@FileRecyclerAdapter
                     }
+
+                    viewModel.requestDownload(file)
                 },
                 optionsClickListener = { file ->
                     showBottomSheetForFile(file)
@@ -201,7 +203,7 @@ class FileFragment : Fragment(), View.OnClickListener {
             && resultCode == Activity.RESULT_OK
         ) {
             data?.data?.also { uri ->
-                viewModel.requestUpload(uri, requireContext())
+                viewModel.requestUpload(uri)
             }
         }
     }

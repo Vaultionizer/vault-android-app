@@ -1,6 +1,8 @@
 package com.vaultionizer.vaultapp.data.cache
 
+import android.util.Log
 import com.vaultionizer.vaultapp.data.model.domain.VNFile
+import com.vaultionizer.vaultapp.repository.FileRepository
 
 class FileCache(private val strategy: IdCachingStrategy = IdCachingStrategy.LOCAL_ID) {
 
@@ -9,8 +11,10 @@ class FileCache(private val strategy: IdCachingStrategy = IdCachingStrategy.LOCA
         REMOTE_ID
     }
 
+    var spaceId: Long? = null
+        private set
+
     private var files = mutableMapOf<Long, VNFile>()
-    private var spaceId: Long? = null
 
     fun addFile(file: VNFile): Boolean {
         if (!checkConstraints(file)) {
@@ -18,8 +22,8 @@ class FileCache(private val strategy: IdCachingStrategy = IdCachingStrategy.LOCA
         }
 
         when (strategy) {
-            IdCachingStrategy.LOCAL_ID -> files.put(file.localId!!, file)
-            IdCachingStrategy.REMOTE_ID -> files.put(file.remoteId!!, file)
+            IdCachingStrategy.LOCAL_ID -> files[file.localId] = file
+            IdCachingStrategy.REMOTE_ID -> files[file.remoteId!!] = file
         }
 
         return true
@@ -27,11 +31,28 @@ class FileCache(private val strategy: IdCachingStrategy = IdCachingStrategy.LOCA
 
     fun getFile(id: Long): VNFile? = files[id]
 
+    fun getFileByStrategy(id: Long, strategy: IdCachingStrategy): VNFile? {
+        if (strategy == this.strategy) {
+            return getFile(id)
+        }
+
+        if (strategy == IdCachingStrategy.LOCAL_ID) {
+            return files.values.firstOrNull { id == it.localId }
+        }
+
+        return files.values.firstOrNull { id == it.remoteId }
+    }
+
+    fun getRootFile(): VNFile? =
+        getFileByStrategy(FileRepository.ROOT_FOLDER_ID, IdCachingStrategy.REMOTE_ID)
+
     private fun checkConstraints(file: VNFile): Boolean {
-        if (spaceId == null) {
-            spaceId = file.space.id
-        } else if (file.space.id != spaceId) {
-            return false
+        if (strategy == IdCachingStrategy.REMOTE_ID) {
+            if (spaceId == null) {
+                spaceId = file.space.id
+            } else if (file.space.id != spaceId) {
+                return false
+            }
         }
 
         return when (strategy) {

@@ -26,14 +26,13 @@ class DataEncryptionWorker @AssistedInject constructor(
      */
     override suspend fun doWork(): Result {
         return withContext(Dispatchers.IO) {
-            val spaceId = inputData.getLong(Constants.WORKER_SPACE_ID, -1)
-            val inputBytes = inputData.getByteArray(Constants.WORKER_FILE_BYTES)
-            if (spaceId == -1L || inputBytes == null) {
+            val spaceId = inputData.getLong(Constants.WORKER_SYNC_REQUEST_ID, -1)
+            if (spaceId == -1L) {
                 return@withContext Result.failure()
             }
 
-            // TODO(jatsqi): Encrypt [inputBytes]
-            return@withContext Result.success(workDataOf(Constants.WORKER_FILE_BYTES to inputBytes))
+            // TODO(jatsqi): Encrypt bytes stored in request.
+            return@withContext Result.success()
         }
     }
 }

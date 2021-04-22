@@ -3,7 +3,7 @@ package com.vaultionizer.vaultapp.data.db.entity
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import java.net.URI
+import com.vaultionizer.vaultapp.data.db.entity.LocalFileSyncRequest.Type
 
 @Entity
 data class LocalFileSyncRequest(
@@ -14,45 +14,21 @@ data class LocalFileSyncRequest(
     @ColumnInfo(name = "type")
     val type: Type,
 
-    @ColumnInfo(name = "user_id")
-    val userId: Long,
+    @ColumnInfo(name = "local_file_id")
+    val localFileId: Long,
 
-    @ColumnInfo(name = "space_id")
-    val spaceId: Long,
+    @ColumnInfo(name = "crypto_opt_done")
+    val cryptographicOperationDone: Boolean = false,
+
+    @ColumnInfo(name = "remote_file_id")
+    var remoteFileId: Long?,
 
     /**
      * URI to the file in the local file system.
      * Only present if [type] is [Type.UPLOAD] and [isVirtualFolder] is false.
      */
-    @ColumnInfo(name = "uri")
-    val uri: String?,
-
-    /**
-     * Remote ID of the file.
-     *
-     * If [type] is [Type.DOWNLOAD], then this id must be present.
-     *
-     * If [type] is [Type.UPLOAD] and this id is present, then the application already requested
-     * an file id but got interrupted during the upload process. Otherwise the upload has to be
-     * requested.
-     */
-    @ColumnInfo(name = "remote_file_id")
-    var remoteFileId: Long?,
-
-    /**
-     * Local ID of the file.
-     *
-     * Only present if [type] is [Type.UPLOAD]
-     */
-    @ColumnInfo(name = "local_file_id")
-    var localFileId: Long?,
-
-    /**
-     * Local id of the parent folder.
-     *
-     * Only present if [type] is [Type.UPLOAD]
-     */
-    var parentLocalFileId: Long?
+    @ColumnInfo(name = "data", typeAffinity = ColumnInfo.BLOB)
+    val data: ByteArray? = null,
 ) {
 
     enum class Type(val id: Int) {

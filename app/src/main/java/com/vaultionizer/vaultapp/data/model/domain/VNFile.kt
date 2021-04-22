@@ -1,6 +1,8 @@
 package com.vaultionizer.vaultapp.data.model.domain
 
 import android.content.Context
+import android.util.Log
+import com.vaultionizer.vaultapp.data.db.entity.LocalFile
 import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkElement
 import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkFile
 import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkFolder
@@ -10,6 +12,7 @@ import java.io.File
 class VNFile(
     val name: String,
     val space: VNSpace,
+    var localId: Long,
     val parent: VNFile? = null
 ) {
 
@@ -20,17 +23,16 @@ class VNFile(
         DOWNLOADING
     }
 
-    var localId: Long? = null
     var remoteId: Long? = null
 
     var content: MutableList<VNFile>? = null
     val isFolder: Boolean
-        get() = content != null && remoteId == null
+        get() = content != null
 
     // ==== Meta ====
-    var lastUpdated: Long? = System.currentTimeMillis()
-    var createdAt: Long? = System.currentTimeMillis()
-    var lastSyncTimestamp: Long? = null
+    var lastUpdated: Long = System.currentTimeMillis()
+    var createdAt: Long = System.currentTimeMillis()
+    var lastSyncTimestamp: Long = System.currentTimeMillis()
     var state: State? = State.AVAILABLE_REMOTE
 
     // TODO(jatsqi) Refactor constructors
@@ -38,10 +40,10 @@ class VNFile(
         name: String,
         space: VNSpace,
         parent: VNFile?,
-        localId: Long? = null,
+        localId: Long,
         remoteId: Long? = null,
         content: MutableList<VNFile>? = null
-    ) : this(name, space, parent) {
+    ) : this(name, space, localId, parent) {
         this.localId = localId
         this.remoteId = remoteId
         this.content = content
@@ -64,7 +66,7 @@ class VNFile(
         if (isFolder) {
             return NetworkFolder(
                 name = name,
-                id = localId!!,
+                id = remoteId ?: -1,
                 createdAt = createdAt,
                 content = content?.filter {
                     !(!it.isFolder && it.remoteId == null)
@@ -80,5 +82,19 @@ class VNFile(
                 size = 0
             )
         }
+    }
+
+    fun mapToLocal(): LocalFile? {
+        return LocalFile(
+            localId, // Room treats 0 as not-set
+            space.id,
+            remoteId,
+            parent?.localId ?: -1,
+            name,
+            if(isFolder) LocalFile.Type.FOLDER else LocalFile.Type.FILE,
+            lastUpdated,
+            createdAt,
+            lastSyncTimestamp
+        )
     }
 }

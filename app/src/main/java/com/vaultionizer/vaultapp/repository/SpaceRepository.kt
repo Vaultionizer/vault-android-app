@@ -14,6 +14,7 @@ import com.vaultionizer.vaultapp.data.model.rest.space.NetworkSpace
 import com.vaultionizer.vaultapp.service.SpaceService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class SpaceRepository @Inject constructor(
@@ -56,6 +57,12 @@ class SpaceRepository @Inject constructor(
                 }
             }
         }.flowOn(Dispatchers.IO)
+    }
+
+    suspend fun getSpaceRemoteId(spaceId: Long): Long? {
+        return withContext(Dispatchers.IO) {
+            return@withContext localSpaceDao.getSpaceById(spaceId)?.remoteSpaceId
+        }
     }
 
     suspend fun createSpace(name: String, isPrivate: Boolean): Flow<ManagedResult<VNSpace>> {
