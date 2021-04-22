@@ -125,7 +125,13 @@ class FileRepository @Inject constructor(
             // Create file in DB
             val fileLocalId = localFileDao.createFile(
                 LocalFile(
-                    0, space.id, null
+                    0,
+                    space.id,
+                    null,
+                    LocalFile.Type.FILE,
+                    System.currentTimeMillis(),
+                    System.currentTimeMillis(),
+                    System.currentTimeMillis()
                 )
             )
 
@@ -268,11 +274,11 @@ class FileRepository @Inject constructor(
             parent,
             localId = null,
             remoteId = fileRemoteId,
-            content = if(isVirtualFolder) mutableListOf() else null
+            content = if (isVirtualFolder) mutableListOf() else null
         )
         vnFile.state = initialState
 
-        if(!isVirtualFolder) {
+        if (!isVirtualFolder) {
             val local = vnFile.mapToLocal()!!
             vnFile.localId = localFileDao.createFile(local)
         }
@@ -339,7 +345,6 @@ class FileRepository @Inject constructor(
         minimumIdCache.remove(spaceId)
     }
 
-
     private suspend fun buildTreeFromNetwork(
         elements: List<NetworkElement>?,
         localFiles: Map<Long, LocalFile>,
@@ -377,6 +382,7 @@ class FileRepository @Inject constructor(
                 ).apply {
                     createdAt = it.createdAt
                     lastUpdated = it.updatedAt
+                    localId = localId ?: localFileDao.createFile(LocalFile(0, space.id, it.id))
                 }
 
                 fileCaches[space.id]?.apply {
@@ -386,10 +392,11 @@ class FileRepository @Inject constructor(
                 if (add.isDownloaded(ctx)) {
                     add.state = VNFile.State.AVAILABLE_OFFLINE
                 }
-                if (!add.isDownloaded(ctx) && add.localId != null) {
+
+                /*if (!add.isDownloaded(ctx) && add.localId != null) {
                     localFileDao.deleteFiles(localFiles[add.localId]!!)
                     add.localId = null
-                }
+                }*/
 
                 parent.content!!.add(add)
             }

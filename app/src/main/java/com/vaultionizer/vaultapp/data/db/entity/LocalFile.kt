@@ -19,5 +19,22 @@ data class LocalFile(
      * If this id is NULL, then this file has not been uploaded yet.
      */
     @ColumnInfo(name = "remote_file_id")
-    val remoteFileId: Long?
-)
+    val remoteFileId: Long?,
+
+    @ColumnInfo(name = "file_type")
+    val type: Type,
+
+    @ColumnInfo(name = "last_updated")
+    val lastUpdated: Long,
+
+    @ColumnInfo(name = "created_at")
+    val createdAt: Long,
+
+    @ColumnInfo(name = "last_sync")
+    val lastSyncTimestamp: Long
+) {
+    enum class Type(val id: Int) {
+        FILE(0),
+        FOLDER(1)
+    }
+}

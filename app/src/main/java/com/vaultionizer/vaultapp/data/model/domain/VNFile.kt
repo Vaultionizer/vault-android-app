@@ -29,9 +29,9 @@ class VNFile(
         get() = content != null && remoteId == null
 
     // ==== Meta ====
-    var lastUpdated: Long? = System.currentTimeMillis()
-    var createdAt: Long? = System.currentTimeMillis()
-    var lastSyncTimestamp: Long? = null
+    var lastUpdated: Long = System.currentTimeMillis()
+    var createdAt: Long = System.currentTimeMillis()
+    var lastSyncTimestamp: Long = System.currentTimeMillis()
     var state: State? = State.AVAILABLE_REMOTE
 
     // TODO(jatsqi) Refactor constructors
@@ -91,7 +91,11 @@ class VNFile(
         return LocalFile(
             0, // Room treats 0 as not-set
             space.id,
-            remoteId
+            remoteId,
+            if(isFolder) LocalFile.Type.FOLDER else LocalFile.Type.FILE,
+            lastUpdated,
+            createdAt,
+            lastSyncTimestamp
         )
     }
 }
