@@ -234,6 +234,8 @@ class FileRepository @Inject constructor(
                 Constants.WORKER_SPACE_ID to file.space.id
             )
 
+            file.state = VNFile.State.DOWNLOADING
+
             val downloadWorker =
                 OneTimeWorkRequestBuilder<FileDownloadWorker>().setInputData(downloadWorkData)
                     .addTag(Constants.WORKER_TAG_FILE)
