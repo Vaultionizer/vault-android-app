@@ -27,8 +27,8 @@ interface LocalFileDao {
     @Query("DELETE FROM LocalFile WHERE space_id = :spaceId")
     suspend fun deleteFilesBySpace(spaceId: Long)
 
-    @Query("DELETE FROM LocalFile WHERE file_id NOT IN (:ids) AND remote_file_id IS NOT NULL")
-    suspend fun deleteAllFilesExceptWithIds(ids: Set<Long>)
+    @Query("DELETE FROM LocalFile WHERE space_id = :spaceId AND file_id NOT IN (:ids) AND remote_file_id IS NOT NULL")
+    suspend fun deleteAllFilesOfSpaceExceptWithIds(ids: Set<Long>, spaceId: Long)
 
     @Query("UPDATE LocalFile SET remote_file_id = :remoteId WHERE file_id = :fileId")
     suspend fun updateFileRemoteId(fileId: Long, remoteId: Long)
