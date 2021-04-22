@@ -14,7 +14,6 @@ import com.vaultionizer.vaultapp.data.db.entity.LocalFile
 import com.vaultionizer.vaultapp.data.model.domain.VNFile
 import com.vaultionizer.vaultapp.data.model.domain.VNSpace
 import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkElement
-import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkFile
 import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkFolder
 import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkReferenceFile
 import com.vaultionizer.vaultapp.data.model.rest.request.UploadFileRequest
@@ -76,18 +75,13 @@ class FileRepository @Inject constructor(
             referenceFile.collect {
                 when (it) {
                     is ManagedResult.Success -> {
+                        val affectedIds = mutableSetOf<Long>()
+                        persistNetworkTree(it.data.elements, space, -1, affectedIds)
+                        localFileDao.deleteAllFilesExceptWithIds(affectedIds)
+
                         val localFiles =
                             localSpaceDao.getSpaceWithFiles(space.id).files.filter { it.remoteFileId != null }
-                                .map { it.remoteFileId!! to it }
-                                .toMap()
-
-                        val root = VNFile(
-                            name = "/",
-                            space = space,
-                            parent = null,
-                            localId = -1,
-                            content = mutableListOf()
-                        )
+                        val root = buildLocalFileTree(space, localFiles)
 
                         // TODO(jatsqi):    Add files that are being uploaded to local file tree.
                         //                  Steps:
@@ -95,13 +89,8 @@ class FileRepository @Inject constructor(
                         //                      2) Add new VNFile to parent folder
                         cache.addFile(root)
                         minimumIdCache[space.id] = -1
-                        buildTreeFromNetwork(
-                            it.data.elements,
-                            localFiles,
-                            root,
-                            space,
-                            applicationContext
-                        )
+
+                        Log.e("Vault", "CONTENT: ${root.content}")
                         emit(ManagedResult.Success(root))
                     }
                     else -> {
@@ -128,6 +117,8 @@ class FileRepository @Inject constructor(
                     0,
                     space.id,
                     null,
+                    parent.localId,
+                    applicationContext.contentResolver.getFileName(uri) ?: "UNKNOWN",
                     LocalFile.Type.FILE,
                     System.currentTimeMillis(),
                     System.currentTimeMillis(),
@@ -135,19 +126,28 @@ class FileRepository @Inject constructor(
                 )
             )
 
+            // Add temporary file to parent
+            val vnFile = VNFile(
+                applicationContext.contentResolver.getFileName(uri)!!,
+                space,
+                parent,
+                fileLocalId
+            )
+            vnFile.state = VNFile.State.UPLOADING
+
             // Create upload request
             val uploadRequest =
-                syncRequestService.createUploadRequest(space.id, uri, fileLocalId, parent.localId!!)
+                syncRequestService.createUploadRequest(
+                    vnFile, applicationContext.contentResolver.openInputStream(
+                        uri
+                    )?.readBytes() ?: ByteArray(0)
+                )
 
             val encryptionWorkData = workDataOf(
-                Constants.WORKER_SPACE_ID to space.id,
-                Constants.WORKER_FILE_BYTES to applicationContext.contentResolver.openInputStream(
-                    uri
-                )?.readBytes()
+                Constants.WORKER_SYNC_REQUEST_ID to uploadRequest.requestId,
             )
             val uploadWorkData = workDataOf(
                 Constants.WORKER_SYNC_REQUEST_ID to uploadRequest.requestId,
-                Constants.WORKER_FILE_LOCAL_ID to fileLocalId
             )
             val refWorkData = workDataOf(
                 Constants.WORKER_SPACE_ID to space.id
@@ -163,15 +163,6 @@ class FileRepository @Inject constructor(
             val referenceFileSyncWorker =
                 OneTimeWorkRequestBuilder<ReferenceFileSyncWorker>().setInputData(refWorkData)
                     .build()
-
-            // Add temporary file to parent
-            val vnFile = VNFile(
-                applicationContext.contentResolver.getFileName(uri)!!,
-                space,
-                parent,
-                fileLocalId
-            )
-            vnFile.state = VNFile.State.UPLOADING
 
             fileCaches[space.id]?.addFile(vnFile)
             parent.content?.add(vnFile)
@@ -227,11 +218,8 @@ class FileRepository @Inject constructor(
     suspend fun downloadFile(file: VNFile) {
         withContext(Dispatchers.IO) {
             val workManager = WorkManager.getInstance(applicationContext)
-            val request = syncRequestService.createDownloadRequest(
-                file.space.id,
-                file.remoteId!!,
-                file.localId!!
-            )
+            val request = syncRequestService.createDownloadRequest(file)
+
             val downloadWorkData = workDataOf(
                 Constants.WORKER_SYNC_REQUEST_ID to request.requestId
             )
@@ -251,44 +239,6 @@ class FileRepository @Inject constructor(
     }
 
     fun getFile(spaceId: Long, fileId: Long) = fileCaches[spaceId]?.getFile(fileId)
-
-    suspend fun createLocalFile(
-        space: VNSpace,
-        parent: VNFile,
-        name: String,
-        fileRemoteId: Long?,
-        isVirtualFolder: Boolean = false,
-        initialState: VNFile.State = VNFile.State.AVAILABLE_REMOTE
-    ): VNFile? {
-        if (fileRemoteId != null && localFileDao.getFileByRemoteId(
-                space.id,
-                fileRemoteId
-            ) != null
-        ) {
-            return null
-        }
-
-        val vnFile = VNFile(
-            name,
-            space,
-            parent,
-            localId = null,
-            remoteId = fileRemoteId,
-            content = if (isVirtualFolder) mutableListOf() else null
-        )
-        vnFile.state = initialState
-
-        if (!isVirtualFolder) {
-            val local = vnFile.mapToLocal()!!
-            vnFile.localId = localFileDao.createFile(local)
-        }
-
-        val cache = fileCaches[space.id] ?: FileCache()
-        cache.addFile(vnFile)
-        fileCaches[space.id] = cache
-
-        return vnFile
-    }
 
     suspend fun announceUpload(spaceId: Long): Flow<ManagedResult<Long>> {
         return flow {
@@ -345,62 +295,100 @@ class FileRepository @Inject constructor(
         minimumIdCache.remove(spaceId)
     }
 
-    private suspend fun buildTreeFromNetwork(
+    private suspend fun persistNetworkTree(
         elements: List<NetworkElement>?,
-        localFiles: Map<Long, LocalFile>,
-        parent: VNFile,
         space: VNSpace,
-        ctx: Context
+        parentId: Long,
+        affectedLocalFiles: MutableSet<Long>
     ) {
         elements?.forEach {
-            if (minimumIdCache[space.id]!! > it.id) minimumIdCache[space.id] = it.id
-
-            if (it is NetworkFolder) {
-                val folder = VNFile(
-                    it.name,
-                    space,
-                    parent,
-                    localId = it.id,
-                    content = mutableListOf()
-                ).apply {
-                    createdAt = it.createdAt
+            val file = localFileDao.getFileByRemoteId(space.id, it.id)
+            if (file != null) {
+                file.parentFileId = parentId
+                affectedLocalFiles.add(file.fileId)
+                if (it is NetworkFolder) {
+                    persistNetworkTree(
+                        it.content ?: listOf(),
+                        space,
+                        file.fileId,
+                        affectedLocalFiles
+                    )
                 }
-
-                fileCaches[space.id]?.apply {
-                    addFile(folder)
-                }
-
-                buildTreeFromNetwork(it.content, localFiles, folder, space, ctx)
-                parent.content!!.add(folder)
-            } else if (it is NetworkFile) {
-                val add = VNFile(
-                    it.name,
-                    space,
-                    parent,
-                    localId = localFiles[it.id]?.fileId,
-                    remoteId = it.id
-                ).apply {
-                    createdAt = it.createdAt
-                    lastUpdated = it.updatedAt
-                    localId = localId ?: localFileDao.createFile(LocalFile(0, space.id, it.id))
-                }
-
-                fileCaches[space.id]?.apply {
-                    addFile(add)
-                }
-
-                if (add.isDownloaded(ctx)) {
-                    add.state = VNFile.State.AVAILABLE_OFFLINE
-                }
-
-                /*if (!add.isDownloaded(ctx) && add.localId != null) {
-                    localFileDao.deleteFiles(localFiles[add.localId]!!)
-                    add.localId = null
-                }*/
-
-                parent.content!!.add(add)
+                return
             }
+
+            val type = if (it is NetworkFolder) {
+                LocalFile.Type.FOLDER
+            } else {
+                LocalFile.Type.FILE
+            }
+
+            val localFile = LocalFile(
+                0,
+                space.id,
+                it.id,
+                parentId,
+                it.name,
+                type,
+                // TODO(jatsqi): Set correct timestamps
+                System.currentTimeMillis(),
+                System.currentTimeMillis(),
+                System.currentTimeMillis()
+            )
+
+            affectedLocalFiles.add(localFileDao.createFile(localFile))
         }
+    }
+
+    private fun buildLocalFileTree(space: VNSpace, elements: List<LocalFile>): VNFile {
+        val files = mutableMapOf<Long, VNFile>()
+        val flatChildrenTree = mutableMapOf<Long, MutableList<VNFile>>()
+
+        // Init root folder
+        flatChildrenTree[-1] = mutableListOf()
+        files[-1] = VNFile(
+            "/",
+            space,
+            null,
+            -1,
+            null,
+            flatChildrenTree[-1]
+        )
+
+        elements.sortedBy {
+            it.parentFileId
+        }.forEach {
+            val parentId = it.parentFileId
+            val children: MutableList<VNFile>? =
+                if (it.type == LocalFile.Type.FOLDER) {
+                    flatChildrenTree[it.fileId] ?: mutableListOf()
+                } else {
+                    null
+                }
+            val childrenOfParent = flatChildrenTree[parentId] ?: mutableListOf()
+
+            val vnFile = VNFile(
+                it.name,
+                space,
+                files[parentId],
+                it.fileId,
+                it.remoteFileId,
+                children
+            ).apply {
+                createdAt = it.createdAt
+                lastUpdated = it.lastUpdated
+                lastSyncTimestamp = it.lastSyncTimestamp
+            }
+
+            if (children != null) {
+                flatChildrenTree[it.fileId] = children
+            }
+            childrenOfParent.add(vnFile)
+            files[it.fileId] = vnFile
+            flatChildrenTree[parentId] = childrenOfParent
+        }
+
+        return files[-1]!!
     }
 
     /**
