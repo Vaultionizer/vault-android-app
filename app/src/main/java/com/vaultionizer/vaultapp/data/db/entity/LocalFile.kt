@@ -21,6 +21,12 @@ data class LocalFile(
     @ColumnInfo(name = "remote_file_id")
     val remoteFileId: Long?,
 
+    @ColumnInfo(name = "parent_file_id")
+    var parentFileId: Long,
+
+    @ColumnInfo(name = "file_name")
+    val name: String,
+
     @ColumnInfo(name = "file_type")
     val type: Type,
 
