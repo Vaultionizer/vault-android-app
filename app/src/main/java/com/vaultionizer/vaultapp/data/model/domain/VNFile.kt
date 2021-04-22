@@ -26,7 +26,7 @@ class VNFile(
 
     var content: MutableList<VNFile>? = null
     val isFolder: Boolean
-        get() = content != null && remoteId == null
+        get() = content != null
 
     // ==== Meta ====
     var lastUpdated: Long = System.currentTimeMillis()
