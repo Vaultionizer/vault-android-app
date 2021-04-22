@@ -27,7 +27,7 @@ data class LocalFileSyncRequest(
      * URI to the file in the local file system.
      * Only present if [type] is [Type.UPLOAD] and [isVirtualFolder] is false.
      */
-    @ColumnInfo(name = "uri", typeAffinity = ColumnInfo.BLOB)
+    @ColumnInfo(name = "data", typeAffinity = ColumnInfo.BLOB)
     val data: ByteArray? = null,
 ) {
 
