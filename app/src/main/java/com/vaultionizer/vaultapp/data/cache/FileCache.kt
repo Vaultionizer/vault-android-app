@@ -9,8 +9,10 @@ class FileCache(private val strategy: IdCachingStrategy = IdCachingStrategy.LOCA
         REMOTE_ID
     }
 
+    var spaceId: Long? = null
+        private set
+
     private var files = mutableMapOf<Long, VNFile>()
-    private var spaceId: Long? = null
 
     fun addFile(file: VNFile): Boolean {
         if (!checkConstraints(file)) {
@@ -26,6 +28,18 @@ class FileCache(private val strategy: IdCachingStrategy = IdCachingStrategy.LOCA
     }
 
     fun getFile(id: Long): VNFile? = files[id]
+
+    fun getFileByStrategy(id: Long, strategy: IdCachingStrategy): VNFile? {
+        if(strategy == this.strategy) {
+            return getFile(id)
+        }
+
+        if(strategy == IdCachingStrategy.LOCAL_ID) {
+            return files.values.first { id == it.localId }
+        }
+
+        return files.values.first { id == it.remoteId }
+    }
 
     private fun checkConstraints(file: VNFile): Boolean {
         if (spaceId == null) {
