@@ -3,7 +3,7 @@ package com.vaultionizer.vaultapp.data.db.entity
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import java.net.URI
+import com.vaultionizer.vaultapp.data.db.entity.LocalFileSyncRequest.Type
 
 @Entity
 data class LocalFileSyncRequest(

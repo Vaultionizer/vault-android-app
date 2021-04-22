@@ -1,7 +1,6 @@
 package com.vaultionizer.vaultapp.service
 
 import android.util.Base64
-import android.util.Log
 import com.google.gson.Gson
 import com.vaultionizer.vaultapp.data.model.rest.request.DownloadFileRequest
 import com.vaultionizer.vaultapp.repository.AuthRepository
