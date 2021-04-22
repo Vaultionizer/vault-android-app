@@ -1,6 +1,7 @@
 package com.vaultionizer.vaultapp.data.model.domain
 
 import android.content.Context
+import android.util.Log
 import com.vaultionizer.vaultapp.data.db.entity.LocalFile
 import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkElement
 import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkFile
@@ -65,7 +66,7 @@ class VNFile(
         if (isFolder) {
             return NetworkFolder(
                 name = name,
-                id = localId!!,
+                id = remoteId ?: -1,
                 createdAt = createdAt,
                 content = content?.filter {
                     !(!it.isFolder && it.remoteId == null)

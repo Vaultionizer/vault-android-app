@@ -21,7 +21,7 @@ data class LocalFileSyncRequest(
     val cryptographicOperationDone: Boolean = false,
 
     @ColumnInfo(name = "remote_file_id")
-    val remoteFileId: Long?,
+    var remoteFileId: Long?,
 
     /**
      * URI to the file in the local file system.
