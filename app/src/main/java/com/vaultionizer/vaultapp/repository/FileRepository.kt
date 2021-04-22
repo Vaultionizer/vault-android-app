@@ -382,6 +382,12 @@ class FileRepository @Inject constructor(
                 }
             val childrenOfParent = flatChildrenTree[parentId] ?: mutableListOf()
 
+            if (it.remoteFileId != null && minimumIdCache.containsKey(space.id)) {
+                if(minimumIdCache[space.id]!! > it.remoteFileId) {
+                    minimumIdCache[space.id] = it.remoteFileId
+                }
+            }
+
             val vnFile = VNFile(
                 it.name,
                 space,
