@@ -28,6 +28,19 @@ class FileCache(private val strategy: IdCachingStrategy = IdCachingStrategy.LOCA
         return true
     }
 
+    fun deleteFile(file: VNFile): Boolean {
+        if (!checkConstraints(file)) {
+            return false
+        }
+
+        when (strategy) {
+            IdCachingStrategy.LOCAL_ID -> files.remove(file.localId)
+            IdCachingStrategy.REMOTE_ID -> files.remove(file.remoteId)
+        }
+
+        return true
+    }
+
     fun getFile(id: Long): VNFile? = files[id]
 
     fun getFileByStrategy(id: Long, strategy: IdCachingStrategy): VNFile? {
