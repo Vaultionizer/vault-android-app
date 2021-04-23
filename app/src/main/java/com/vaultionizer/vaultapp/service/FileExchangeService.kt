@@ -48,7 +48,8 @@ class FileExchangeService @Inject constructor(
                         ),
                         Pair("spaceID", spaceRemoteId.toString()),
                         Pair("saveIndex", fileRemoteId.toString()),
-                        Pair("sessionKey", AuthRepository.user!!.sessionToken)
+                        Pair("sessionKey", AuthRepository.user!!.sessionToken),
+                        Pair("websocketToken", AuthRepository.user!!.webSocketToken)
                     )
                 ), FrameBody.Text(JSONObject().apply {
                     put("content", Base64.encodeToString(data, Base64.NO_WRAP))
