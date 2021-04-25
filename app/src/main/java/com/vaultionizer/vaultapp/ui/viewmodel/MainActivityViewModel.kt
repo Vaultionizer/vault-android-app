@@ -87,9 +87,8 @@ class MainActivityViewModel @Inject constructor(
     fun requestUpload(uri: Uri) {
         viewModelScope.launch {
             fileRepository.uploadFile(
-                selectedSpace.value!!,
-                uri,
                 _currentDirectory.value!!,
+                uri
             )
             _fileDialogState.value = FileDialogState(isValid = true)
         }

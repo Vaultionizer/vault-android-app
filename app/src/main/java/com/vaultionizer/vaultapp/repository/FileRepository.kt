@@ -101,8 +101,8 @@ class FileRepository @Inject constructor(
     }
 
     suspend fun uploadFile(
-        space: VNSpace,
-        uri: Uri,
+        data: ByteArray,
+        name: String,
         parent: VNFile,
     ) {
         withContext(Dispatchers.IO) {
@@ -112,10 +112,10 @@ class FileRepository @Inject constructor(
             val fileLocalId = localFileDao.createFile(
                 LocalFile(
                     0,
-                    space.id,
+                    parent.space.id,
                     null,
                     parent.localId,
-                    applicationContext.contentResolver.getFileName(uri) ?: "UNKNOWN",
+                    name,
                     LocalFile.Type.FILE,
                     System.currentTimeMillis(),
                     System.currentTimeMillis(),
@@ -125,8 +125,8 @@ class FileRepository @Inject constructor(
 
             // Add temporary file to parent
             val vnFile = VNFile(
-                applicationContext.contentResolver.getFileName(uri)!!,
-                space,
+                name,
+                parent.space,
                 parent,
                 fileLocalId
             )
@@ -134,11 +134,7 @@ class FileRepository @Inject constructor(
 
             // Create upload request
             val uploadRequest =
-                syncRequestService.createUploadRequest(
-                    vnFile, applicationContext.contentResolver.openInputStream(
-                        uri
-                    )?.readBytes() ?: ByteArray(0)
-                )
+                syncRequestService.createUploadRequest(vnFile, data)
 
             val encryptionWorkData = workDataOf(
                 Constants.WORKER_SYNC_REQUEST_ID to uploadRequest.requestId,
@@ -147,7 +143,7 @@ class FileRepository @Inject constructor(
                 Constants.WORKER_SYNC_REQUEST_ID to uploadRequest.requestId,
             )
             val refWorkData = workDataOf(
-                Constants.WORKER_SPACE_ID to space.id
+                Constants.WORKER_SPACE_ID to parent.space.id
             )
 
             val encryptionWorker =
@@ -161,7 +157,7 @@ class FileRepository @Inject constructor(
                 OneTimeWorkRequestBuilder<ReferenceFileSyncWorker>().setInputData(refWorkData)
                     .build()
 
-            fileCaches[space.id]?.addFile(vnFile)
+            fileCaches[parent.space.id]?.addFile(vnFile)
             parent.content?.add(vnFile)
 
             workManager
@@ -170,6 +166,15 @@ class FileRepository @Inject constructor(
                 .then(referenceFileSyncWorker)
                 .enqueue()
         }
+    }
+
+    suspend fun uploadFile(parent: VNFile, uri: Uri) {
+        // TODO(jatsqi): Uri error handling
+        uploadFile(
+            applicationContext.contentResolver.openInputStream(uri)!!.readBytes(),
+            applicationContext.contentResolver.getFileName(uri) ?: "UNKNOWN",
+            parent
+        )
     }
 
     suspend fun uploadFolder(
