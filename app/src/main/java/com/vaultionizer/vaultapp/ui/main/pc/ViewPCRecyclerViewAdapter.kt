@@ -58,7 +58,7 @@ class ViewPCRecyclerViewAdapter(
 
     override fun getItemCount(): Int = file.categories.size + 1
 
-    inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+    class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val outerLayout: ConstraintLayout = view.findViewById(R.id.outerLayout)
         val itemLayout: ConstraintLayout = view.findViewById(R.id.item_layout)
         val contentView: TextView = view.findViewById(R.id.content)
@@ -74,7 +74,11 @@ class ViewPCRecyclerViewAdapter(
         holder.outerLayout.setOnClickListener {
             holder.pairLayout.visibility = if (holder.pairLayout.isVisible) GONE else VISIBLE
         }
-        if (category == null) return
+
+        if (category == null) {
+            return
+        }
+
         holder.outerLayout.setOnLongClickListener {
             fragment.openCategoryOptions(category)
             return@setOnLongClickListener true

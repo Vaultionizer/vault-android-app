@@ -1,3 +1,6 @@
 package com.vaultionizer.vaultapp.ui.main.pc
 
-data class EditPCCategoryParameter(val categoryName: String, val categoryId: Int = -1)
+import java.io.Serializable
+
+data class EditPCCategoryParameter(val categoryName: String, val categoryId: Int = -1) :
+    Serializable

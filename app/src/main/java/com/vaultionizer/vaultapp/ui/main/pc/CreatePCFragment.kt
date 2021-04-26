@@ -29,7 +29,7 @@ class CreatePCFragment : Fragment() {
 
     private val viewModel: CreatePCViewModel by viewModels()
     private val mainActivityViewModel: MainActivityViewModel by viewModels()
-    private val viewPCviewModel: PCViewModel by viewModels()
+    private val viewPCViewModel: PCViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -57,7 +57,7 @@ class CreatePCFragment : Fragment() {
             if (pcEditPCCheckbox.isChecked) {
                 action = CreatePCFragmentDirections.actionCreatePersonalContainerFragmentToViewPC()
             } else {
-                viewPCviewModel.saveFile(mainActivityViewModel.currentDirectory.value!!)
+                viewPCViewModel.saveFile(mainActivityViewModel.currentDirectory.value!!)
                 action = CreatePCFragmentDirections.actionCreateSpaceFragmentToFileFragment()
             }
             findNavController().navigate(action)
