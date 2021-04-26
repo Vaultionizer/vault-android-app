@@ -1,17 +1,14 @@
 package com.vaultionizer.vaultapp.ui.main.pc
 
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.View.*
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
-import android.widget.Toast
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
-import com.arthurivanets.bottomsheets.sheets.model.Option
 import com.vaultionizer.vaultapp.R
 import com.vaultionizer.vaultapp.data.pc.PCCategory
 import com.vaultionizer.vaultapp.data.pc.PCFile
@@ -34,11 +31,11 @@ class ViewPCRecyclerViewAdapter(
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         var categoryId: Int?
-        if (position == 0){
+        if (position == 0) {
             holder.contentView.text = "<Uncategorized>"
             setOuterLayoutListeners(holder, null)
             categoryId = null
-        }else {
+        } else {
             val category = file.categories[position - 1]
             holder.contentView.text = category.name
             setOuterLayoutListeners(holder, category)
@@ -47,13 +44,14 @@ class ViewPCRecyclerViewAdapter(
 
         val inflater = LayoutInflater.from(holder.context)
 
-        for (pair in file.pairs){
+        for (pair in file.pairs) {
             if (pair.categoryId != categoryId) continue
             initPairLayout(holder, inflater, pair)
         }
-        if (openedCategoryId != categoryId){
+
+        if (openedCategoryId != categoryId) {
             holder.pairLayout.visibility = GONE
-        }else{
+        } else {
             holder.pairLayout.visibility = VISIBLE
         }
     }
@@ -72,7 +70,7 @@ class ViewPCRecyclerViewAdapter(
         }
     }
 
-    private fun setOuterLayoutListeners(holder: ViewHolder, category: PCCategory?){
+    private fun setOuterLayoutListeners(holder: ViewHolder, category: PCCategory?) {
         holder.outerLayout.setOnClickListener {
             holder.pairLayout.visibility = if (holder.pairLayout.isVisible) GONE else VISIBLE
         }
@@ -83,7 +81,7 @@ class ViewPCRecyclerViewAdapter(
         }
     }
 
-    private fun initPairLayout(holder: ViewHolder, inflater: LayoutInflater, pair: PCPair){
+    private fun initPairLayout(holder: ViewHolder, inflater: LayoutInflater, pair: PCPair) {
         val frag = inflater.inflate(R.layout.sample_pair_view, null, false)
         val layout = frag.pairView.keyLayout
         frag.setOnLongClickListener {

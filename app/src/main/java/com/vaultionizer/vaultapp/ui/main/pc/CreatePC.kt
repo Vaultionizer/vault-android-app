@@ -1,14 +1,13 @@
 package com.vaultionizer.vaultapp.ui.main.pc
 
 import android.os.Bundle
-import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.EditText
 import androidx.core.widget.addTextChangedListener
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.observe
 import androidx.navigation.NavDirections
@@ -38,6 +37,7 @@ class CreatePC : Fragment() {
     ): View? {
         return inflater.inflate(R.layout.create_personal_container_fragment, container, false)
     }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -46,30 +46,29 @@ class CreatePC : Fragment() {
         val pcInputLayout = view.findViewById<TextInputLayout>(R.id.edit_pc_pair_key_layout)
         val pcEditPCCheckbox = view.findViewById<CheckBox>(R.id.open_pc_checkbox)
 
-        pcNameEdit.addTextChangedListener{
+        pcNameEdit.addTextChangedListener {
             viewModel.pcNameChanged(pcNameEdit.text.toString())
         }
 
         pcCreateButton.setOnClickListener {
             viewModel.createPersonalContainer(pcNameEdit.text.toString())
             viewModel.addTestData()
-            var action: NavDirections;
-            if (pcEditPCCheckbox.isChecked){
+            var action: NavDirections
+            if (pcEditPCCheckbox.isChecked) {
                 action = CreatePCDirections.actionCreatePersonalContainerFragmentToViewPC()
-            }
-            else  {
+            } else {
                 viewPCviewModel.saveFile(mainActivityViewModel.currentDirectory.value!!)
                 action = CreatePCDirections.actionCreateSpaceFragmentToFileFragment()
             }
             findNavController().navigate(action)
         }
 
-        viewModel.pcCreationRes.observe(viewLifecycleOwner){
+        viewModel.pcCreationRes.observe(viewLifecycleOwner) {
             pcCreateButton.isEnabled = it.isDataValid
-            if (it.nameError != null){
+            if (it.nameError != null) {
                 pcInputLayout.error = getString(it.nameError)
-            }else{
-                pcInputLayout.error = null;
+            } else {
+                pcInputLayout.error = null
             }
         }
     }

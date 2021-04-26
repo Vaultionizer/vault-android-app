@@ -32,13 +32,13 @@ import com.vaultionizer.vaultapp.ui.viewmodel.PCViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.android.synthetic.main.view_pc_category_list.view.*
 
-enum class PairOptions(val id: Long){
+enum class PairOptions(val id: Long) {
     DELETE(0),
     EDIT(1),
     COPY_VALUE(2)
 }
 
-enum class CategoryOptions(val id: Long){
+enum class CategoryOptions(val id: Long) {
     EDIT(0),
     DELETE_ONLY_CAT(1),
     DELETE_CAT_AND_PAIRS(2)
@@ -116,34 +116,46 @@ class ViewPCFragment : Fragment(), ViewPCInterface {
         refreshRecyclerView()
     }
 
-    private fun setBackPressedHandler(){
+    private fun setBackPressedHandler() {
         requireActivity().onBackPressedDispatcher.addCallback(backPressedCallback)
     }
 
-    private fun resetBackPressedHandler(){
+    private fun resetBackPressedHandler() {
         backPressedCallback.isEnabled = false
         backPressedCallback.remove()
     }
 
-    private fun handleNavigateBack(){
-        if (viewModel.pcRepository.changed){
-            showConfirmationCancelDialog(FileAlertDialogType.SAVE_FILE, getString(R.string.just_no), {
-                viewModel.saveFile(mainActivityViewModel.currentDirectory.value!!)
-                transitionBackToFileFragment()
-            },{ transitionBackToFileFragment() })
-        }
-        else transitionBackToFileFragment()
+    private fun handleNavigateBack() {
+        if (viewModel.pcRepository.changed) {
+            showConfirmationCancelDialog(
+                FileAlertDialogType.SAVE_FILE,
+                getString(R.string.just_no),
+                {
+                    viewModel.saveFile(mainActivityViewModel.currentDirectory.value!!)
+                    transitionBackToFileFragment()
+                },
+                { transitionBackToFileFragment() })
+        } else transitionBackToFileFragment()
     }
 
-    private fun refreshRecyclerView(openedCategoryId: Int? = null){
-        requireView().view_pc_category_list.adapter = ViewPCRecyclerViewAdapter(viewModel.pcRepository.getCurrentFile(), this, openedCategoryId)
+    private fun refreshRecyclerView(openedCategoryId: Int? = null) {
+        requireView().view_pc_category_list.adapter = ViewPCRecyclerViewAdapter(
+            viewModel.pcRepository.getCurrentFile(),
+            this,
+            openedCategoryId
+        )
     }
 
     fun showConfirmationDialog(type: FileAlertDialogType, onConfirmation: () -> Unit) {
         showConfirmationCancelDialog(type, null, onConfirmation, {})
     }
 
-    fun showConfirmationCancelDialog(type: FileAlertDialogType, cancelText: String?, onConfirmation: () -> Unit, onCancel: () -> Unit) {
+    fun showConfirmationCancelDialog(
+        type: FileAlertDialogType,
+        cancelText: String?,
+        onConfirmation: () -> Unit,
+        onCancel: () -> Unit
+    ) {
         dialog = SweetAlertDialog(requireContext(), SweetAlertDialog.WARNING_TYPE)
             .setTitleText(getString(type.titleTextId))
             .setContentText(getString(type.contentText))
@@ -160,10 +172,10 @@ class ViewPCFragment : Fragment(), ViewPCInterface {
     }
 
     override fun openPairOptions(pair: PCPair) {
-        bottomSheet = showActionPickerBottomSheet (
+        bottomSheet = showActionPickerBottomSheet(
             options = getPairOptions(),
             onItemSelectedListener = OnItemSelectedListener {
-                when(it.id){
+                when (it.id) {
                     PairOptions.DELETE.id -> {
                         showConfirmationDialog(FileAlertDialogType.DELETE_PAIR) {
                             viewModel.pcRepository.deletePair(pair.id)
@@ -171,14 +183,26 @@ class ViewPCFragment : Fragment(), ViewPCInterface {
                         }
                     }
                     PairOptions.EDIT.id -> {
-                        transitionToEditPair(EditPCPairParameter(pair.categoryId, pair.key, pair.value, pair.id))
+                        transitionToEditPair(
+                            EditPCPairParameter(
+                                pair.categoryId,
+                                pair.key,
+                                pair.value,
+                                pair.id
+                            )
+                        )
                     }
                     PairOptions.COPY_VALUE.id -> {
                         if (context == null) return@OnItemSelectedListener
-                        val clipboardManager: ClipboardManager = requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                        val clipboardManager: ClipboardManager =
+                            requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                         val clip = ClipData.newPlainText(pair.key, pair.value)
                         clipboardManager.setPrimaryClip(clip)
-                        Toast.makeText(context, R.string.copied_pc_pair_value_successful, Toast.LENGTH_SHORT).show()
+                        Toast.makeText(
+                            context,
+                            R.string.copied_pc_pair_value_successful,
+                            Toast.LENGTH_SHORT
+                        ).show()
                     }
                 }
                 bottomSheet?.dismiss()
@@ -187,12 +211,17 @@ class ViewPCFragment : Fragment(), ViewPCInterface {
     }
 
     override fun openCategoryOptions(category: PCCategory) {
-        bottomSheet = showActionPickerBottomSheet (
+        bottomSheet = showActionPickerBottomSheet(
             options = getCategoryOptions(),
             onItemSelectedListener = OnItemSelectedListener {
-                when(it.id){
+                when (it.id) {
                     CategoryOptions.EDIT.id -> {
-                        transitionToEditCategory(EditPCCategoryParameter(category.name, category.id))
+                        transitionToEditCategory(
+                            EditPCCategoryParameter(
+                                category.name,
+                                category.id
+                            )
+                        )
                     }
                     CategoryOptions.DELETE_ONLY_CAT.id -> {
                         showConfirmationDialog(FileAlertDialogType.DELETE_ONLY_CATEGORY) {
@@ -212,25 +241,25 @@ class ViewPCFragment : Fragment(), ViewPCInterface {
         )
     }
 
-    private fun transitionToEditCategory(args: EditPCCategoryParameter? = null){
+    private fun transitionToEditCategory(args: EditPCCategoryParameter? = null) {
         resetBackPressedHandler()
         val action = ViewPCFragmentDirections.actionViewPCToEditPCCategory(args)
         findNavController(this).navigate(action)
     }
 
-    private fun transitionToEditPair(args: EditPCPairParameter? = null){
+    private fun transitionToEditPair(args: EditPCPairParameter? = null) {
         resetBackPressedHandler()
         val action = ViewPCFragmentDirections.actionViewPCToEditPCPair(args)
         findNavController().navigate(action)
     }
 
-    private fun transitionBackToFileFragment(){
+    private fun transitionBackToFileFragment() {
         resetBackPressedHandler()
         val action = ViewPCFragmentDirections.actionViewPCToFileFragment()
         findNavController().navigate(action)
     }
 
-    private fun getPairOptions(): List<Option>{
+    private fun getPairOptions(): List<Option> {
         return listOf(
             Option().apply {
                 id = PairOptions.EDIT.id
@@ -250,7 +279,7 @@ class ViewPCFragment : Fragment(), ViewPCInterface {
         )
     }
 
-    fun getCategoryOptions(): List<Option>{
+    fun getCategoryOptions(): List<Option> {
         return listOf(
             Option().apply {
                 id = CategoryOptions.EDIT.id
