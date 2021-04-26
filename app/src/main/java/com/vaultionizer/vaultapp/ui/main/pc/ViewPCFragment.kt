@@ -4,21 +4,19 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.os.Bundle
-import android.util.Log
-import androidx.fragment.app.Fragment
-import androidx.recyclerview.widget.GridLayoutManager
-import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
-import androidx.core.content.ContextCompat.getSystemService
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.NavHostFragment.findNavController
 import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import cn.pedant.SweetAlert.SweetAlertDialog
 import com.arthurivanets.bottomsheets.ktx.showActionPickerBottomSheet
 import com.arthurivanets.bottomsheets.sheets.ActionPickerBottomSheet
@@ -29,7 +27,6 @@ import com.vaultionizer.vaultapp.R
 import com.vaultionizer.vaultapp.data.pc.PCCategory
 import com.vaultionizer.vaultapp.data.pc.PCPair
 import com.vaultionizer.vaultapp.ui.main.file.FileAlertDialogType
-import com.vaultionizer.vaultapp.ui.main.file.FileBottomSheetOption
 import com.vaultionizer.vaultapp.ui.viewmodel.MainActivityViewModel
 import com.vaultionizer.vaultapp.ui.viewmodel.PCViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -49,6 +46,19 @@ enum class CategoryOptions(val id: Long){
 
 @AndroidEntryPoint
 class ViewPCFragment : Fragment(), ViewPCInterface {
+
+    companion object {
+        const val ARG_COLUMN_COUNT = "column-count"
+
+        @JvmStatic
+        fun newInstance(columnCount: Int) =
+            ViewPCFragment().apply {
+                arguments = Bundle().apply {
+                    putInt(ARG_COLUMN_COUNT, columnCount)
+                }
+            }
+    }
+
     private var columnCount = 1
     private var dialog: SweetAlertDialog? = null
     private var bottomSheet: ActionPickerBottomSheet? = null
@@ -129,12 +139,9 @@ class ViewPCFragment : Fragment(), ViewPCInterface {
         requireView().view_pc_category_list.adapter = ViewPCRecyclerViewAdapter(viewModel.pcRepository.getCurrentFile(), this, openedCategoryId)
     }
 
-
-
     fun showConfirmationDialog(type: FileAlertDialogType, onConfirmation: () -> Unit) {
         showConfirmationCancelDialog(type, null, onConfirmation, {})
     }
-
 
     fun showConfirmationCancelDialog(type: FileAlertDialogType, cancelText: String?, onConfirmation: () -> Unit, onCancel: () -> Unit) {
         dialog = SweetAlertDialog(requireContext(), SweetAlertDialog.WARNING_TYPE)
@@ -151,7 +158,6 @@ class ViewPCFragment : Fragment(), ViewPCInterface {
             }
         dialog?.show()
     }
-
 
     override fun openPairOptions(pair: PCPair) {
         bottomSheet = showActionPickerBottomSheet (
@@ -222,19 +228,6 @@ class ViewPCFragment : Fragment(), ViewPCInterface {
         resetBackPressedHandler()
         val action = ViewPCFragmentDirections.actionViewPCToFileFragment()
         findNavController().navigate(action)
-    }
-
-
-    companion object {
-        const val ARG_COLUMN_COUNT = "column-count"
-
-        @JvmStatic
-        fun newInstance(columnCount: Int) =
-            ViewPCFragment().apply {
-                arguments = Bundle().apply {
-                    putInt(ARG_COLUMN_COUNT, columnCount)
-                }
-            }
     }
 
     private fun getPairOptions(): List<Option>{
