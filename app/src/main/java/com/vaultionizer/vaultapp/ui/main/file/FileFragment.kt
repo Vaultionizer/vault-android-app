@@ -28,8 +28,6 @@ import com.mikepenz.iconics.view.IconicsImageView
 import com.nambimobile.widgets.efab.ExpandableFabLayout
 import com.vaultionizer.vaultapp.R
 import com.vaultionizer.vaultapp.data.model.domain.VNFile
-import com.vaultionizer.vaultapp.ui.auth.login.LoginFragmentDirections
-import com.vaultionizer.vaultapp.ui.main.pc.CreatePC
 import com.vaultionizer.vaultapp.ui.viewmodel.MainActivityViewModel
 import dagger.hilt.android.AndroidEntryPoint
 

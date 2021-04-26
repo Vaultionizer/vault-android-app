@@ -21,10 +21,10 @@ import com.vaultionizer.vaultapp.ui.viewmodel.PCViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class CreatePC : Fragment() {
+class CreatePCFragment : Fragment() {
 
     companion object {
-        fun newInstance() = CreatePC()
+        fun newInstance() = CreatePCFragment()
     }
 
     private val viewModel: CreatePCViewModel by viewModels()
@@ -55,10 +55,10 @@ class CreatePC : Fragment() {
             viewModel.addTestData()
             var action: NavDirections
             if (pcEditPCCheckbox.isChecked) {
-                action = CreatePCDirections.actionCreatePersonalContainerFragmentToViewPC()
+                action = CreatePCFragmentDirections.actionCreatePersonalContainerFragmentToViewPC()
             } else {
                 viewPCviewModel.saveFile(mainActivityViewModel.currentDirectory.value!!)
-                action = CreatePCDirections.actionCreateSpaceFragmentToFileFragment()
+                action = CreatePCFragmentDirections.actionCreateSpaceFragmentToFileFragment()
             }
             findNavController().navigate(action)
         }

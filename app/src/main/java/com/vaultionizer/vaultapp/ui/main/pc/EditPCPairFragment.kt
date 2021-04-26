@@ -20,14 +20,14 @@ import com.vaultionizer.vaultapp.ui.viewmodel.PCViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class EditPCPair : Fragment() {
+class EditPCPairFragment : Fragment() {
 
     companion object {
-        fun newInstance() = EditPCPair()
+        fun newInstance() = EditPCPairFragment()
     }
 
     private val viewModel: PCViewModel by viewModels()
-    private val args: EditPCPairArgs by navArgs()
+    private val args: EditPCPairFragmentArgs by navArgs()
 
     private var editMode: Boolean = false
 
@@ -69,7 +69,7 @@ class EditPCPair : Fragment() {
                     viewModel.pcRepository.getCategoryIdByPos(spinner.selectedItemPosition - 1)
                 )
             }
-            val action = EditPCPairDirections.actionEditPCPairToViewPC()
+            val action = EditPCPairFragmentDirections.actionEditPCPairToViewPC()
             findNavController().navigate(action)
         }
 
@@ -90,6 +90,4 @@ class EditPCPair : Fragment() {
             }
         }
     }
-
-
 }

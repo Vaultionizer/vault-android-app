@@ -19,7 +19,7 @@ import kotlinx.android.synthetic.main.sample_pair_view.view.*
 
 class ViewPCRecyclerViewAdapter(
     private val file: PCFile,
-    private val fragment: ViewPCInterface,
+    private val fragment: ViewPCItemClickListener,
     private val openedCategoryId: Int? = null
 ) : RecyclerView.Adapter<ViewPCRecyclerViewAdapter.ViewHolder>() {
 

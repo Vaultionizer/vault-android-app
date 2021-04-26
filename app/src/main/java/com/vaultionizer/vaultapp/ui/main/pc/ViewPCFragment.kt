@@ -45,7 +45,7 @@ enum class CategoryOptions(val id: Long) {
 }
 
 @AndroidEntryPoint
-class ViewPCFragment : Fragment(), ViewPCInterface {
+class ViewPCFragment : Fragment(), ViewPCItemClickListener {
 
     companion object {
         const val ARG_COLUMN_COUNT = "column-count"
@@ -82,7 +82,7 @@ class ViewPCFragment : Fragment(), ViewPCInterface {
         val view = inflater.inflate(R.layout.view_pc_category_list, container, false)
 
         // Set the adapter
-        val frag = this as ViewPCInterface
+        val frag = this as ViewPCItemClickListener
         if (view.view_pc_category_list is RecyclerView) {
             with(view.view_pc_category_list) {
                 layoutManager = when {
