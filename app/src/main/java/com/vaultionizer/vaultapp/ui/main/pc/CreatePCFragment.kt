@@ -58,7 +58,7 @@ class CreatePCFragment : Fragment() {
                 action = CreatePCFragmentDirections.actionCreatePersonalContainerFragmentToViewPC()
             } else {
                 viewPCViewModel.saveFile(mainActivityViewModel.currentDirectory.value!!)
-                action = CreatePCFragmentDirections.actionCreateSpaceFragmentToFileFragment()
+                action = CreatePCFragmentDirections.actionCreatePersonalContainerFragmentToViewPC()
             }
             findNavController().navigate(action)
         }

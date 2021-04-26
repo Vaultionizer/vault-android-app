@@ -30,13 +30,9 @@
         android:name="com.vaultionizer.vaultapp.ui.main.pc.CreatePCFragment"
         android:label="Create personal container" >
         <action
-            android:id="@+id/action_createSpaceFragment_to_fileFragment"
-            app:destination="@id/fileFragment" />
-        <action
             android:id="@+id/action_createPersonalContainerFragment_to_viewPC"
             app:destination="@id/viewPC"
-            app:popUpTo="@id/fileFragment"
-            app:popUpToInclusive="true" />
+            app:popUpToInclusive="false" />
     </fragment>
     <fragment
         android:id="@+id/editPCCategory"
@@ -83,6 +79,8 @@
             app:destination="@id/editPCPair" />
         <action
             android:id="@+id/action_viewPC_to_fileFragment"
-            app:destination="@id/fileFragment" />
+            app:destination="@id/fileFragment"
+            app:popUpTo="@id/fileFragment"
+            app:popUpToInclusive="true" />
     </fragment>
 </navigation>
