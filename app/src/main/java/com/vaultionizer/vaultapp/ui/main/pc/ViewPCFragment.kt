@@ -15,6 +15,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.core.content.ContextCompat.getSystemService
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.NavHostFragment.findNavController
 import androidx.navigation.fragment.findNavController
@@ -62,7 +63,7 @@ class ViewPCFragment : Fragment(), ViewPCInterface {
     }
 
     private val viewModel: PCViewModel by viewModels()
-    private val mainActivityViewModel: MainActivityViewModel by viewModels()
+    private val mainActivityViewModel: MainActivityViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -81,6 +82,7 @@ class ViewPCFragment : Fragment(), ViewPCInterface {
                 adapter = ViewPCRecyclerViewAdapter(viewModel.pcRepository.getCurrentFile(), frag)
             }
         }
+        requireActivity()
         return view
     }
 
@@ -100,15 +102,27 @@ class ViewPCFragment : Fragment(), ViewPCInterface {
                 handleNavigateBack()
             }
         }
-        requireActivity().onBackPressedDispatcher.addCallback(backPressedCallback)
+        setBackPressedHandler()
         refreshRecyclerView()
     }
 
+    private fun setBackPressedHandler(){
+        requireActivity().onBackPressedDispatcher.addCallback(backPressedCallback)
+    }
+
+    private fun resetBackPressedHandler(){
+        backPressedCallback.isEnabled = false
+        backPressedCallback.remove()
+    }
+
     private fun handleNavigateBack(){
-        showConfirmationCancelDialog(FileAlertDialogType.SAVE_FILE, getString(R.string.just_no), {
-            viewModel.saveFile(mainActivityViewModel.selectedSpace.value, mainActivityViewModel.currentDirectory.value, requireContext())
-            transitionBackToFileFragment()
-        },{ transitionBackToFileFragment() })
+        if (viewModel.pcRepository.changed){
+            showConfirmationCancelDialog(FileAlertDialogType.SAVE_FILE, getString(R.string.just_no), {
+                viewModel.saveFile(mainActivityViewModel.currentDirectory.value!!)
+                transitionBackToFileFragment()
+            },{ transitionBackToFileFragment() })
+        }
+        else transitionBackToFileFragment()
     }
 
     private fun refreshRecyclerView(openedCategoryId: Int? = null){
@@ -181,8 +195,10 @@ class ViewPCFragment : Fragment(), ViewPCInterface {
                         }
                     }
                     CategoryOptions.DELETE_CAT_AND_PAIRS.id -> {
-                        viewModel.pcRepository.deleteCategoryAndPairs(category.id)
-                        refreshRecyclerView()
+                        showConfirmationDialog(FileAlertDialogType.DELETE_CATEGORY_AND_PAIRS) {
+                            viewModel.pcRepository.deleteCategoryAndPairs(category.id)
+                            refreshRecyclerView()
+                        }
                     }
                 }
                 bottomSheet?.dismiss()
@@ -191,16 +207,19 @@ class ViewPCFragment : Fragment(), ViewPCInterface {
     }
 
     private fun transitionToEditCategory(args: EditPCCategoryParameter? = null){
+        resetBackPressedHandler()
         val action = ViewPCFragmentDirections.actionViewPCToEditPCCategory(args)
         findNavController(this).navigate(action)
     }
 
     private fun transitionToEditPair(args: EditPCPairParameter? = null){
+        resetBackPressedHandler()
         val action = ViewPCFragmentDirections.actionViewPCToEditPCPair(args)
         findNavController().navigate(action)
     }
 
     private fun transitionBackToFileFragment(){
+        resetBackPressedHandler()
         val action = ViewPCFragmentDirections.actionViewPCToFileFragment()
         findNavController().navigate(action)
     }

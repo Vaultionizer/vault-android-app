@@ -46,10 +46,9 @@ class PCViewModel @Inject constructor(
         _pcCategoryNameRes.value = InputFormState(null, true)
     }
 
-    fun saveFile(space: VNSpace?, parent: VNFile?, context: Context) {
-        if (space == null) return
+    fun saveFile(parent: VNFile) {
         if (pcRepository.changed) {
-            viewModelScope.launch { pcRepository.saveFile(space, parent, context) }
+            viewModelScope.launch { pcRepository.saveFile(parent) }
         }
     }
 }

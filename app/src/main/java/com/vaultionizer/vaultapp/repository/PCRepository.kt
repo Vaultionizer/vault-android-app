@@ -1,6 +1,7 @@
 package com.vaultionizer.vaultapp.repository
 
 import android.content.Context
+import android.util.Log
 import com.google.gson.Gson
 import com.vaultionizer.vaultapp.data.model.domain.VNFile
 import com.vaultionizer.vaultapp.data.model.domain.VNSpace
@@ -25,6 +26,11 @@ class PCRepository @Inject constructor(
 
     fun createNewFile(name: String) {
         fileName = name
+        reset()
+        changed = true
+    }
+
+    fun reset(){
         categories.clear()
         pairs.clear()
         categoryIdsUsed.clear()
@@ -35,9 +41,9 @@ class PCRepository @Inject constructor(
         return PCFile(categories, pairs)
     }
 
-    suspend fun saveFile(space: VNSpace, parent: VNFile?, context: Context) {
-        // TODO(jatsqi, keksklauer): Add additional method for uploading data which is not stored in the local file system.
-        // fileRepository.uploadFile(space, parent, gson.toJson(PCFile(categories, pairs)).toByteArray(), fileName, context)
+    suspend fun saveFile(parent: VNFile) {
+        fileRepository.uploadFile(gson.toJson(PCFile(categories, pairs)).toByteArray(), fileName, parent)
+        reset()
     }
 
     fun replacePair(newKey: String, newValue: String, newCategoryId: Int?, id: Int): Boolean {

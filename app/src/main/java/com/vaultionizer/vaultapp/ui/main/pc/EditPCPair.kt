@@ -73,7 +73,7 @@ class EditPCPair : Fragment() {
             editMode = true
             keyInput.setText(args.parameters!!.key)
             valInput.setText(args.parameters!!.value)
-            createButton.setText(R.string.button_pc_edit_category_name)
+            createButton.setText(R.string.button_create_pc_pair_edit)
             spinner.setSelection(viewModel.pcRepository.getCategoryPosById(args.parameters!!.category))
         }
 

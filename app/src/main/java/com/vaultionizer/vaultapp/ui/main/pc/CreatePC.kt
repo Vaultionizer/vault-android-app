@@ -17,6 +17,8 @@ import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputLayout
 import com.vaultionizer.vaultapp.R
 import com.vaultionizer.vaultapp.ui.viewmodel.CreatePCViewModel
+import com.vaultionizer.vaultapp.ui.viewmodel.MainActivityViewModel
+import com.vaultionizer.vaultapp.ui.viewmodel.PCViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -27,6 +29,8 @@ class CreatePC : Fragment() {
     }
 
     private val viewModel: CreatePCViewModel by viewModels()
+    private val mainActivityViewModel: MainActivityViewModel by viewModels()
+    private val viewPCviewModel: PCViewModel by viewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -54,6 +58,7 @@ class CreatePC : Fragment() {
                 action = CreatePCDirections.actionCreatePersonalContainerFragmentToViewPC()
             }
             else  {
+                viewPCviewModel.saveFile(mainActivityViewModel.currentDirectory.value!!)
                 action = CreatePCDirections.actionCreateSpaceFragmentToFileFragment()
             }
             findNavController().navigate(action)

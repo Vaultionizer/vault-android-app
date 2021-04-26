@@ -107,7 +107,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="48dp"
             android:enabled="false"
-            android:text="@string/button_pc_create_category_name"
+            android:text="@string/button_create_pc_pair_create"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/edit_pc_pair_value_layout" />

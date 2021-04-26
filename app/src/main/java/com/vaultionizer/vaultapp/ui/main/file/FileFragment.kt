@@ -259,7 +259,6 @@ class FileFragment : Fragment(), View.OnClickListener {
     }
 
     private fun onClickCreatePC(view: View) {
-        Log.e("Vault", "Creating PC...")
         val action = FileFragmentDirections.actionFileFragmentToCreatePersonalContainerFragment()
         findNavController().navigate(action)
     }
