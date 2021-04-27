@@ -1,18 +1,13 @@
 package com.vaultionizer.vaultapp.repository
 
-import android.content.Context
-import android.util.Log
 import com.google.gson.Gson
 import com.vaultionizer.vaultapp.data.model.domain.VNFile
-import com.vaultionizer.vaultapp.data.model.domain.VNSpace
 import com.vaultionizer.vaultapp.data.pc.PCCategory
 import com.vaultionizer.vaultapp.data.pc.PCFile
 import com.vaultionizer.vaultapp.data.pc.PCPair
 import java.util.*
 import javax.inject.Inject
 import kotlin.collections.ArrayList
-import kotlin.collections.indices
-import kotlin.collections.last
 
 class PCRepository @Inject constructor(
     val gson: Gson,
@@ -87,6 +82,7 @@ class PCRepository @Inject constructor(
             if (pairs[pairIdx].categoryId != categoryId) continue
             pairs.removeAt(pairIdx)
         }
+
         for (categoryIdx in categories.indices) {
             if (categories[categoryIdx].id == categoryId) {
                 categories.removeAt(categoryIdx)
@@ -124,7 +120,10 @@ class PCRepository @Inject constructor(
     }
 
     fun addCategory(name: String, categoryId: Int? = null): Boolean {
-        if (categoryId == null && findCategoryByName(name) != null) return false
+        if (categoryId == null && findCategoryByName(name) != null) {
+            return false
+        }
+
         changed = true
         if (categoryId != null) {
             val index = findCategoryById(categoryId) ?: return false
@@ -133,6 +132,7 @@ class PCRepository @Inject constructor(
             categories.add(PCCategory(findUnusedCategoryId(), name))
             categoryIdsUsed.add(categories.last().id)
         }
+
         return true
     }
 

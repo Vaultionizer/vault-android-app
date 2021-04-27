@@ -10,7 +10,6 @@ import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.observe
-import androidx.navigation.NavDirections
 import androidx.navigation.fragment.findNavController
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputLayout
@@ -53,13 +52,12 @@ class CreatePCFragment : Fragment() {
         pcCreateButton.setOnClickListener {
             viewModel.createPersonalContainer(pcNameEdit.text.toString())
             viewModel.addTestData()
-            var action: NavDirections
-            if (pcEditPCCheckbox.isChecked) {
-                action = CreatePCFragmentDirections.actionCreatePersonalContainerFragmentToViewPC()
-            } else {
+
+            if (!pcEditPCCheckbox.isChecked) {
                 viewPCViewModel.saveFile(mainActivityViewModel.currentDirectory.value!!)
-                action = CreatePCFragmentDirections.actionCreatePersonalContainerFragmentToViewPC()
             }
+
+            var action = CreatePCFragmentDirections.actionCreatePersonalContainerFragmentToViewPC()
             findNavController().navigate(action)
         }
 
