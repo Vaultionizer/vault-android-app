@@ -17,7 +17,9 @@ class PCRepository @Inject constructor(
     private var categories: ArrayList<PCCategory> = ArrayList()
     private var pairs: ArrayList<PCPair> = ArrayList()
     private var categoryIdsUsed: HashSet<Int> = HashSet()
+
     var changed: Boolean = false
+        private set
 
     fun createNewFile(name: String) {
         fileName = name
