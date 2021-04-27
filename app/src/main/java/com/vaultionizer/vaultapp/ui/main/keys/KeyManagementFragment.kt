@@ -42,7 +42,7 @@ class KeyManagementFragment : Fragment() {
             if (adapter != null) {
                 if (adapter is KeyManagementAdapter) {
                     adapter.updateSpaces(viewModel.userSpaces.value!!.filter {
-                        Cryptography().isKeyAvailable(
+                        Cryptography().existsKey(
                             it.id
                         )
                     }.toMutableList())
@@ -54,7 +54,7 @@ class KeyManagementFragment : Fragment() {
             val adapter = list.adapter
             if (adapter != null) {
                 if (adapter is KeyManagementAdapter) {
-                    adapter.updateSpaces(it.filter { Cryptography().isKeyAvailable(it.id) }
+                    adapter.updateSpaces(it.filter { Cryptography().existsKey(it.id) }
                         .toMutableList())
                 }
             }

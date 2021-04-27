@@ -20,7 +20,7 @@ abstract class CryptoClass {
         val importExportKey = importExportKeyAndSalt.key
         val importExportSalt = importExportKeyAndSalt.salt
 
-        val pairIvCipher = AesGcmNopadding().encrypt(importExportKey, secretKey.encoded)
+        val pairIvCipher = AesGcmNopadding().encrypt(importExportKey, ByteArray(16) + secretKey.encoded)
         val iv = pairIvCipher.iv
         val cipher = pairIvCipher.cipher
 
