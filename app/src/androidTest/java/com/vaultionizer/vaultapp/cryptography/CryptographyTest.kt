@@ -59,6 +59,9 @@ class CryptographyTest {
             CryptoPadding.NoPadding,
             "0"
         )
+        val saltIvcipher = Cryptography().desalter(transferBytes)
+
+        assertThat(saltIvcipher.salt.size).isEqualTo(16)
 
     }
 
@@ -74,15 +77,12 @@ class CryptographyTest {
         )
 
         val secretKey = Cryptography().getKey(testingSpaceID)
-
-        //val ivCipher = Cryptography().encryptData(secretKey, Cryptography().padder(message))
         val ivCipher = AesGcmNopadding().encrypt(secretKey, message.toByteArray())
         Cryptography().deleteKey(testingSpaceID)
 
         // Perspective Person B
 
         Cryptography().importKey(testingSpaceID, transferBytes, password)
-        
         val result = Cryptography().decryptData(Cryptography().getKey(testingSpaceID), ivCipher.iv, ivCipher.cipher)
 
         assertThat(result).isEqualTo("This is a secret!".toByteArray())

@@ -39,22 +39,9 @@ class Cryptography {
         cryptoMode: CryptoMode,
         cryptoPadding: CryptoPadding
     ) {
-        if (!existsKey(spaceID)){
+        if (!existsKey(spaceID)) {
             if (cryptoType == CryptoType.AES) {
-                if (cryptoMode == CryptoMode.GCM) {
-                    if (cryptoPadding == CryptoPadding.NoPadding) {
-
-                        AesGcmNopadding().generateSingleUserKey("${Constants.VN_KEY_PREFIX}$spaceID")
-                        return
-                    }
-                }
-                if (cryptoMode == CryptoMode.CBC) {
-                    if (cryptoPadding == CryptoPadding.NoPadding) {
-
-                        AesCbcNopadding().generateSingleUserKey("${Constants.VN_KEY_PREFIX}$spaceID")
-                        return
-                    }
-                }
+                singeKeyAlgorithmAES(spaceID, cryptoMode, cryptoPadding)
             }
             throw RuntimeException("Unsupported Key Type")
         }
@@ -102,6 +89,27 @@ class Cryptography {
         throw RuntimeException("Unsupported Key Type")
     }
 
+    fun singeKeyAlgorithmAES(
+        spaceID: Long,
+        cryptoMode: CryptoMode,
+        cryptoPadding: CryptoPadding
+    ) {
+        if (cryptoMode == CryptoMode.GCM) {
+            if (cryptoPadding == CryptoPadding.NoPadding) {
+
+                AesGcmNopadding().generateSingleUserKey("${Constants.VN_KEY_PREFIX}$spaceID")
+                return
+            }
+        }
+        if (cryptoMode == CryptoMode.CBC) {
+            if (cryptoPadding == CryptoPadding.NoPadding) {
+
+                AesCbcNopadding().generateSingleUserKey("${Constants.VN_KEY_PREFIX}$spaceID")
+                return
+            }
+        }
+    }
+
     fun importKey(spaceID: Long, bytes: ByteArray, password: String): Boolean {
         val saltIvcipher = desalter(bytes)
         val importKey =
@@ -111,7 +119,7 @@ class Cryptography {
             saltIvcipher.ivcipher.iv,
             saltIvcipher.ivcipher.cipher
         )
-        if (validate(keyPlainUnchecked)){
+        if (validate(keyPlainUnchecked)) {
             val keyPlain = keyPlainUnchecked.sliceArray(16 until keyPlainUnchecked.size)
             val secretKey = SecretKeySpec(keyPlain, "AES")
             AesGcmNopadding().addKeyToKeyStore(secretKey, "${Constants.VN_KEY_PREFIX}$spaceID")
@@ -143,7 +151,7 @@ class Cryptography {
         val keyStore: KeyStore = KeyStore.getInstance(Constants.VN_KEYSTORE_PROVIDER)
         keyStore.load(null)
 
-        if (existsKey(spaceID)){
+        if (existsKey(spaceID)) {
             try {
                 keyStore.deleteEntry("${Constants.VN_KEY_PREFIX}$spaceID")
             } catch (e: KeyStoreException) {
@@ -156,7 +164,7 @@ class Cryptography {
             }
             return true
         }
-    return false
+        return false
     }
 
 
@@ -167,10 +175,10 @@ class Cryptography {
         return KeySalt(SecretKeySpec(Hashing().sha256(password.toByteArray() + salt), "AES"), salt)
     }
 
-    fun validate(keyPlainUnchecked : ByteArray) : Boolean {
+    fun validate(keyPlainUnchecked: ByteArray): Boolean {
         val checkMark = keyPlainUnchecked.sliceArray(0 until 16)
         checkMark.forEach {
-            if (it != 0.toByte()){
+            if (it != 0.toByte()) {
                 throw RuntimeException("Incorrect Password")
             }
         }
