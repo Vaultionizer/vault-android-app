@@ -1,17 +1,13 @@
 package com.vaultionizer.vaultapp.repository
 
-import android.content.Context
 import com.google.gson.Gson
 import com.vaultionizer.vaultapp.data.model.domain.VNFile
-import com.vaultionizer.vaultapp.data.model.domain.VNSpace
 import com.vaultionizer.vaultapp.data.pc.PCCategory
 import com.vaultionizer.vaultapp.data.pc.PCFile
 import com.vaultionizer.vaultapp.data.pc.PCPair
 import java.util.*
 import javax.inject.Inject
 import kotlin.collections.ArrayList
-import kotlin.collections.indices
-import kotlin.collections.last
 
 class PCRepository @Inject constructor(
     val gson: Gson,
@@ -21,10 +17,17 @@ class PCRepository @Inject constructor(
     private var categories: ArrayList<PCCategory> = ArrayList()
     private var pairs: ArrayList<PCPair> = ArrayList()
     private var categoryIdsUsed: HashSet<Int> = HashSet()
+
     var changed: Boolean = false
+        private set
 
     fun createNewFile(name: String) {
         fileName = name
+        reset()
+        changed = true
+    }
+
+    fun reset(){
         categories.clear()
         pairs.clear()
         categoryIdsUsed.clear()
@@ -35,9 +38,9 @@ class PCRepository @Inject constructor(
         return PCFile(categories, pairs)
     }
 
-    suspend fun saveFile(space: VNSpace, parent: VNFile?, context: Context) {
-        // TODO(jatsqi, keksklauer): Add additional method for uploading data which is not stored in the local file system.
-        // fileRepository.uploadFile(space, parent, gson.toJson(PCFile(categories, pairs)).toByteArray(), fileName, context)
+    suspend fun saveFile(parent: VNFile) {
+        fileRepository.uploadFile(gson.toJson(PCFile(categories, pairs)).toByteArray(), fileName, parent)
+        reset()
     }
 
     fun replacePair(newKey: String, newValue: String, newCategoryId: Int?, id: Int): Boolean {
@@ -81,6 +84,7 @@ class PCRepository @Inject constructor(
             if (pairs[pairIdx].categoryId != categoryId) continue
             pairs.removeAt(pairIdx)
         }
+
         for (categoryIdx in categories.indices) {
             if (categories[categoryIdx].id == categoryId) {
                 categories.removeAt(categoryIdx)
@@ -118,7 +122,10 @@ class PCRepository @Inject constructor(
     }
 
     fun addCategory(name: String, categoryId: Int? = null): Boolean {
-        if (categoryId == null && findCategoryByName(name) != null) return false
+        if (categoryId == null && findCategoryByName(name) != null) {
+            return false
+        }
+
         changed = true
         if (categoryId != null) {
             val index = findCategoryById(categoryId) ?: return false
@@ -127,6 +134,7 @@ class PCRepository @Inject constructor(
             categories.add(PCCategory(findUnusedCategoryId(), name))
             categoryIdsUsed.add(categories.last().id)
         }
+
         return true
     }
 

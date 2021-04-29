@@ -1,7 +1,6 @@
 package com.vaultionizer.vaultapp.ui.main.pc
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,6 +8,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
 import androidx.core.widget.addTextChangedListener
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.observe
 import androidx.navigation.fragment.findNavController
@@ -19,14 +19,14 @@ import com.vaultionizer.vaultapp.ui.viewmodel.PCViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class EditPCCategory : Fragment() {
+class EditPCCategoryFragment : Fragment() {
 
     companion object {
-        fun newInstance() = EditPCCategory()
+        fun newInstance() = EditPCCategoryFragment()
     }
 
     private val viewModel: PCViewModel by viewModels()
-    private val args: EditPCCategoryArgs? by navArgs()
+    private val args: EditPCCategoryFragmentArgs? by navArgs()
     private var editMode: Boolean = false
 
     override fun onCreateView(
@@ -41,36 +41,43 @@ class EditPCCategory : Fragment() {
         val pcCatInputLayout = view.findViewById<TextInputLayout>(R.id.edit_pc_category_layout)
         val createButton = view.findViewById<Button>(R.id.edit_pc_category_button)
 
-        categoryInput.addTextChangedListener{
+        categoryInput.addTextChangedListener {
             viewModel.categoryChanged(categoryInput.text.toString())
         }
 
         createButton.setOnClickListener {
-            if (editMode){
-                val res = viewModel.pcRepository.addCategory(categoryInput.text.toString(), args!!.parameters?.categoryId)
-                if (!res){
-                    Toast.makeText(context, R.string.error_toast_edit_category, Toast.LENGTH_SHORT).show()
+            if (editMode) {
+                val res = viewModel.pcRepository.addCategory(
+                    categoryInput.text.toString(),
+                    args!!.parameters?.categoryId
+                )
+                if (!res) {
+                    Toast.makeText(context, R.string.error_toast_edit_category, Toast.LENGTH_SHORT)
+                        .show()
                     return@setOnClickListener
                 }
-            }
-            else {
+            } else {
                 val res = viewModel.pcRepository.addCategory(categoryInput.text.toString())
-                if (!res){
-                    Toast.makeText(context, R.string.error_toast_create_category, Toast.LENGTH_SHORT).show()
+                if (!res) {
+                    Toast.makeText(
+                        context,
+                        R.string.error_toast_create_category,
+                        Toast.LENGTH_SHORT
+                    ).show()
                     return@setOnClickListener
                 }
             }
-            val action = EditPCCategoryDirections.actionEditPCCategoryToViewPC()
+            val action = EditPCCategoryFragmentDirections.actionEditPCCategoryToViewPC()
             findNavController().navigate(action)
         }
 
-        if (args != null && args!!.parameters != null){
+        if (args != null && args!!.parameters != null) {
             editMode = true
             categoryInput.setText(args!!.parameters!!.categoryName)
             createButton.setText(R.string.button_pc_edit_category_name)
         }
 
-        viewModel.pcCategoryNameRes.observe(viewLifecycleOwner){
+        viewModel.pcCategoryNameRes.observe(viewLifecycleOwner) {
             createButton.isEnabled = it.isDataValid
             if (it.nameError != null) {
                 pcCatInputLayout.error = getString(it.nameError)

@@ -3,6 +3,7 @@ package com.vaultionizer.vaultapp.ui.main
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
+import android.view.MenuItem
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
@@ -33,6 +34,7 @@ import com.vaultionizer.vaultapp.data.model.domain.VNSpace
 import com.vaultionizer.vaultapp.repository.AuthRepository
 import com.vaultionizer.vaultapp.ui.viewmodel.MainActivityViewModel
 import dagger.hilt.android.AndroidEntryPoint
+
 
 @AndroidEntryPoint
 class MainActivity : AppCompatActivity() {
@@ -182,5 +184,14 @@ class MainActivity : AppCompatActivity() {
                 }
             )
         }
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        val mapFragment = (supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment).navController.currentDestination?.id
+        if (mapFragment == R.id.viewPC && item.itemId == android.R.id.home){
+            onBackPressed()
+            return true
+        }
+        return super.onOptionsItemSelected(item)
     }
 }

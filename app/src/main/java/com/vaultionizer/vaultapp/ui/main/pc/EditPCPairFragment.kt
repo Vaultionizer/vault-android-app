@@ -1,8 +1,6 @@
 package com.vaultionizer.vaultapp.ui.main.pc
 
 import android.os.Bundle
-import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,6 +9,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.Spinner
 import androidx.core.widget.addTextChangedListener
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.observe
 import androidx.navigation.fragment.findNavController
@@ -21,14 +20,14 @@ import com.vaultionizer.vaultapp.ui.viewmodel.PCViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class EditPCPair : Fragment() {
+class EditPCPairFragment : Fragment() {
 
     companion object {
-        fun newInstance() = EditPCPair()
+        fun newInstance() = EditPCPairFragment()
     }
 
     private val viewModel: PCViewModel by viewModels()
-    private val args: EditPCPairArgs by navArgs()
+    private val args: EditPCPairFragmentArgs by navArgs()
 
     private var editMode: Boolean = false
 
@@ -51,33 +50,38 @@ class EditPCPair : Fragment() {
             viewModel.pcRepository.getCatgoryNames()
         )
 
-        keyInput.addTextChangedListener{
+        keyInput.addTextChangedListener {
             viewModel.pairKeyHasChanged(keyInput.text.toString())
         }
 
         createButton.setOnClickListener {
             // write to pc repository
-            if (editMode){
-                viewModel.pcRepository.replacePair(keyInput.text.toString(), valInput.text.toString(),
-                    viewModel.pcRepository.getCategoryIdByPos(spinner.selectedItemPosition - 1), args.parameters?.id!!)
+            if (editMode) {
+                viewModel.pcRepository.replacePair(
+                    keyInput.text.toString(),
+                    valInput.text.toString(),
+                    viewModel.pcRepository.getCategoryIdByPos(spinner.selectedItemPosition - 1),
+                    args.parameters?.id!!
+                )
+            } else {
+                viewModel.pcRepository.addNewPair(
+                    keyInput.text.toString(), valInput.text.toString(),
+                    viewModel.pcRepository.getCategoryIdByPos(spinner.selectedItemPosition - 1)
+                )
             }
-            else{
-                viewModel.pcRepository.addNewPair(keyInput.text.toString(), valInput.text.toString(),
-                    viewModel.pcRepository.getCategoryIdByPos(spinner.selectedItemPosition - 1));
-            }
-            val action = EditPCPairDirections.actionEditPCPairToViewPC()
+            val action = EditPCPairFragmentDirections.actionEditPCPairToViewPC()
             findNavController().navigate(action)
         }
 
-        if (args.parameters != null){
+        if (args.parameters != null) {
             editMode = true
             keyInput.setText(args.parameters!!.key)
             valInput.setText(args.parameters!!.value)
-            createButton.setText(R.string.button_pc_edit_category_name)
+            createButton.setText(R.string.button_create_pc_pair_edit)
             spinner.setSelection(viewModel.pcRepository.getCategoryPosById(args.parameters!!.category))
         }
 
-        viewModel.pcPairRes.observe(viewLifecycleOwner){
+        viewModel.pcPairRes.observe(viewLifecycleOwner) {
             createButton.isEnabled = it.isDataValid
             if (it.nameError != null) {
                 pcKeyInputLayout.error = getString(it.nameError)
@@ -86,6 +90,4 @@ class EditPCPair : Fragment() {
             }
         }
     }
-
-
 }

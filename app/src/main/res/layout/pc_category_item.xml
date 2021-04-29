@@ -5,10 +5,10 @@
     android:id="@+id/item_layout"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:clickable="true"
+    android:background="?android:attr/selectableItemBackground"
+    android:clickable="false"
     android:focusable="true"
-    android:orientation="horizontal"
-    android:background="?android:attr/selectableItemBackground" >
+    android:orientation="horizontal">
     <!-- TODO: remove line above (remove ripple effect android:background) when size bug fixed.-->
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -16,19 +16,19 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="?android:attr/selectableItemBackground"
-        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
         <TextView
             android:id="@+id/content"
-            android:layout_width="241dp"
-            android:layout_height="21dp"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
             android:layout_margin="@dimen/text_margin"
             android:focusable="auto"
             android:textAppearance="?attr/textAppearanceListItem"
             app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/pc_expand_icon"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             tools:text="@tools:sample/cities" />
