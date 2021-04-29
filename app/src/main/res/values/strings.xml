@@ -13,6 +13,8 @@
     <string name="all_learn_more">Learn more</string>
     <string name="all_continue">Continue</string>
     <string name="all_finish">Finish</string>
+    <string name="all_cancel">Cancel</string>
+    <string name="all_confirm">Confirm</string>
 
     <string name="login_header">Login</string>
     <string name="login_login">Login</string>
