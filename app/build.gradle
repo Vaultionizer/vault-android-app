@@ -156,6 +156,7 @@ dependencies {
     androidTestImplementation 'info.cukes:cucumber-android:1.2.5@jar'
     androidTestImplementation 'info.cukes:cucumber-picocontainer:1.2.5'
     androidTestImplementation 'com.android.support:support-annotations:26.1.0'
+    androidTestImplementation 'com.google.truth:truth:1.0.1'
 
     // Startup
     implementation "androidx.startup:startup-runtime:1.0.0"

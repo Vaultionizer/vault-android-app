@@ -41,7 +41,7 @@ class CreateSpaceViewModel @Inject constructor(val spaceRepository: SpaceReposit
                             it.data.id,
                             CryptoType.AES,
                             CryptoMode.GCM,
-                            CryptoPadding.NONE
+                            CryptoPadding.NoPadding
                         )
                     }
                     else -> {
