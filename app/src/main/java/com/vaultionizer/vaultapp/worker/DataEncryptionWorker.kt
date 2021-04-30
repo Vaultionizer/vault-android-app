@@ -4,6 +4,8 @@ import android.content.Context
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import com.vaultionizer.vaultapp.cryptography.Cryptography
+import com.vaultionizer.vaultapp.repository.FileRepository
 import com.vaultionizer.vaultapp.repository.SyncRequestRepository
 import com.vaultionizer.vaultapp.util.Constants
 import dagger.assisted.Assisted
@@ -15,7 +17,8 @@ import kotlinx.coroutines.withContext
 class DataEncryptionWorker @AssistedInject constructor(
     @Assisted appContext: Context,
     @Assisted params: WorkerParameters,
-    val syncRequestService: SyncRequestRepository
+    val syncRequestService: SyncRequestRepository,
+    val fileRepository: FileRepository
 ) : CoroutineWorker(appContext, params) {
 
     /**
@@ -23,11 +26,17 @@ class DataEncryptionWorker @AssistedInject constructor(
      */
     override suspend fun doWork(): Result {
         return withContext(Dispatchers.IO) {
-            val spaceId = inputData.getLong(Constants.WORKER_SYNC_REQUEST_ID, -1)
-            if (spaceId == -1L) {
+            val requestId = inputData.getLong(Constants.WORKER_SYNC_REQUEST_ID, -1)
+            if (requestId == -1L) {
                 return@withContext Result.failure()
             }
-
+            val request = syncRequestService.getRequest(requestId)
+            val file = fileRepository.getFile(request.localFileId) ?: return@withContext Result.failure()
+            try {
+                Cryptography().encryptor(file.space.id, request.data!!)
+            } catch (e : RuntimeException) {
+                return@withContext Result.failure()
+            }
             // TODO(jatsqi): Encrypt bytes stored in request.
             return@withContext Result.success()
         }
