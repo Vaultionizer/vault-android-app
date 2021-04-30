@@ -452,9 +452,6 @@ class FileRepository @Inject constructor(
         }.flowOn(Dispatchers.IO)
     }
 
-    private fun buildDefaultNetworkConstraints() =
-        Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()
-
     private fun resolveFileNameConflicts(parent: VNFile, name: String): String {
         val nameSet = parent.content?.map { it.name }?.toSet() ?: return name
 
