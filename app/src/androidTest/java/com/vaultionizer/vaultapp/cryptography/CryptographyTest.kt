@@ -6,11 +6,12 @@ import com.vaultionizer.vaultapp.cryptography.crypto.CryptoPadding
 import com.vaultionizer.vaultapp.cryptography.crypto.CryptoType
 import org.junit.Before
 import org.junit.Test
+import javax.crypto.AEADBadTagException
 
 class CryptographyTest {
 
     private val testingSpaceID = 1337133713371337
-    private val message = "This is a secret!"
+    private val message = "This is a secret!."
     private val password = "00000"
 
     @Before
@@ -67,7 +68,6 @@ class CryptographyTest {
 
     @Test
     fun testCryptography_importExport() {
-        // Perspective Person A
         val transferBytes = Cryptography().createSharedKey(
             testingSpaceID,
             CryptoType.AES,
@@ -75,17 +75,30 @@ class CryptographyTest {
             CryptoPadding.NoPadding,
             password
         )
-
         val secretKey = Cryptography().getKey(testingSpaceID)
         val ivCipher = AesGcmNopadding().encrypt(secretKey, message.toByteArray())
         Cryptography().deleteKey(testingSpaceID)
 
-        // Perspective Person B
-
         Cryptography().importKey(testingSpaceID, transferBytes, password)
-        val result = Cryptography().decryptData(Cryptography().getKey(testingSpaceID), ivCipher.iv, ivCipher.cipher)
+        val result = Cryptography().decryptData(
+            Cryptography().getKey(testingSpaceID),
+            ivCipher.iv,
+            ivCipher.cipher
+        )
 
-        assertThat(result).isEqualTo("This is a secret!".toByteArray())
+        assertThat(result).isEqualTo(message.toByteArray())
+    }
+
+    @Test(expected = AEADBadTagException::class)
+    fun testCryptography_importExportFalsePassword() {
+        val transferBytes = Cryptography().createSharedKey(
+            testingSpaceID,
+            CryptoType.AES,
+            CryptoMode.GCM,
+            CryptoPadding.NoPadding,
+            password
+        )
+        Cryptography().importKey(testingSpaceID, transferBytes, password + 0)
     }
 
 
