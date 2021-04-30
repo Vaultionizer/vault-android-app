@@ -36,7 +36,7 @@ enum class FileAlertDialogType(
     DELETE_CATEGORY_AND_PAIRS(
         R.string.delete_file_progress_title,
         R.string.delete_category_and_pairs_content,
-        R.string.delete_category_and_pairs_confirm
+        R.string.delete_category_and_pairs_confirm,
     ),
 
     SAVE_FILE(
@@ -57,6 +57,7 @@ enum class FileAlertDialogType(
                 positiveIcon
             ) { inf, which ->
                 positiveClick(inf, which)
+                inf.dismiss()
             }
 
         negativeButtonTextId?.let {
@@ -68,6 +69,7 @@ enum class FileAlertDialogType(
                     negativeClick?.let {
                         negativeClick(inf, which)
                     }
+                    inf.dismiss()
                 }
             } else {
                 dialog.setNegativeButton(
@@ -76,6 +78,7 @@ enum class FileAlertDialogType(
                     negativeClick?.let {
                         negativeClick(inf, which)
                     }
+                    inf.dismiss()
                 }
             }
         }
