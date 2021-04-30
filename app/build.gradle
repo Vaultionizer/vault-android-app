@@ -141,7 +141,6 @@ dependencies {
 
     // Sweet Alerts
     implementation 'dev.shreyaspatil.MaterialDialog:MaterialDialog:2.2.2'
-    implementation 'com.airbnb.android:lottie:3.3.6'
 
     // WorkManager
     def work_version = "2.5.0"
