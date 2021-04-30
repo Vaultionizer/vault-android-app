@@ -42,6 +42,7 @@ class Cryptography {
         if (!existsKey(spaceID)) {
             if (cryptoType == CryptoType.AES) {
                 singeKeyAlgorithmAES(spaceID, cryptoMode, cryptoPadding)
+                return
             }
             throw RuntimeException("Unsupported Key Type")
         }
@@ -89,7 +90,7 @@ class Cryptography {
         throw RuntimeException("Unsupported Key Type")
     }
 
-    fun singeKeyAlgorithmAES(
+    private fun singeKeyAlgorithmAES(
         spaceID: Long,
         cryptoMode: CryptoMode,
         cryptoPadding: CryptoPadding
@@ -179,7 +180,7 @@ class Cryptography {
         val checkMark = keyPlainUnchecked.sliceArray(0 until 16)
         checkMark.forEach {
             if (it != 0.toByte()) {
-                throw RuntimeException("Incorrect Password")
+                throw RuntimeException("Unsuccessful Transfer: Check mark failed")
             }
         }
         return true
