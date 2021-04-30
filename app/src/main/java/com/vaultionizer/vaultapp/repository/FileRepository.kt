@@ -1,10 +1,9 @@
+
 package com.vaultionizer.vaultapp.repository
 
 import android.content.Context
 import android.net.Uri
-import androidx.work.OneTimeWorkRequestBuilder
-import androidx.work.WorkManager
-import androidx.work.workDataOf
+import androidx.work.*
 import com.google.gson.Gson
 import com.vaultionizer.vaultapp.data.cache.FileCache
 import com.vaultionizer.vaultapp.data.db.dao.LocalFileDao
@@ -107,6 +106,7 @@ class FileRepository @Inject constructor(
     ) {
         withContext(Dispatchers.IO) {
             val workManager = WorkManager.getInstance(applicationContext)
+            val name = resolveFileNameConflicts(parent, name)
 
             // Create file in DB
             val fileLocalId = localFileDao.createFile(
@@ -188,6 +188,8 @@ class FileRepository @Inject constructor(
             } else {
                 minimumIdCache[space.id] = minimumIdCache[space.id]!! - 1
             }
+
+            val name = resolveFileNameConflicts(parent, name)
 
             val localFileId = localFileDao.createFile(
                 LocalFile(
@@ -450,4 +452,24 @@ class FileRepository @Inject constructor(
         }.flowOn(Dispatchers.IO)
     }
 
+    private fun buildDefaultNetworkConstraints() =
+        Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()
+
+    private fun resolveFileNameConflicts(parent: VNFile, name: String): String {
+        val nameSet = parent.content?.map { it.name }?.toSet() ?: return name
+
+        nameSet.forEach {
+            if (it == name) {
+                var currentIndex = 1
+                while (nameSet.contains(buildDuplicateFileName(name, currentIndex)))
+                    ++currentIndex
+
+                return buildDuplicateFileName(name, currentIndex)
+            }
+        }
+
+        return name
+    }
+
+    private fun buildDuplicateFileName(name: String, index: Int) = "($index) $name"
 }
