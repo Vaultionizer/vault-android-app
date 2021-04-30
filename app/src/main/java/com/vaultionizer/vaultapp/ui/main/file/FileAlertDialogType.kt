@@ -1,11 +1,17 @@
 package com.vaultionizer.vaultapp.ui.main.file
 
+import android.app.Activity
 import com.vaultionizer.vaultapp.R
+import dev.shreyaspatil.MaterialDialog.MaterialDialog
+import dev.shreyaspatil.MaterialDialog.interfaces.DialogInterface
 
 enum class FileAlertDialogType(
     val titleTextId: Int,
-    val contentText: Int,
-    val confirmText: Int
+    val messageTextId: Int?,
+    val positiveButtonTextId: Int = R.string.all_confirm,
+    val negativeButtonTextId: Int = R.string.all_cancel,
+    val positiveIcon: Int = R.drawable.ic_baseline_check_white_24,
+    val negativeIcon: Int = R.drawable.ic_baseline_clear_white_24
 ) {
 
     DELETE_FILE(
@@ -36,6 +42,33 @@ enum class FileAlertDialogType(
         R.string.save_pc_file_title,
         R.string.save_pc_file_content,
         R.string.save_pc_file_confirmation
-    )
+    );
+
+    fun createDialog(
+        activity: Activity,
+        positiveClick: (DialogInterface, Int) -> Unit,
+        negativeClick: (DialogInterface, Int) -> Unit
+    ): MaterialDialog {
+        val dialog = MaterialDialog.Builder(activity)
+            .setTitle(activity.getString(titleTextId))
+            .setPositiveButton(
+                activity.getString(positiveButtonTextId),
+                positiveIcon
+            ) { inf, which ->
+                positiveClick(inf, which)
+            }
+            .setNegativeButton(
+                activity.getString(negativeButtonTextId),
+                negativeIcon
+            ) { inf, which ->
+                negativeClick(inf, which)
+            }
+
+        messageTextId?.let {
+            dialog.setMessage(activity.getString(messageTextId))
+        }
+
+        return dialog.build()
+    }
 }
 
