@@ -17,7 +17,6 @@ import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import cn.pedant.SweetAlert.SweetAlertDialog
 import com.arthurivanets.bottomsheets.BottomSheet
 import com.arthurivanets.bottomsheets.ktx.showActionPickerBottomSheet
 import com.arthurivanets.bottomsheets.sheets.listeners.OnItemSelectedListener
@@ -30,6 +29,7 @@ import com.vaultionizer.vaultapp.R
 import com.vaultionizer.vaultapp.data.model.domain.VNFile
 import com.vaultionizer.vaultapp.ui.viewmodel.MainActivityViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import dev.shreyaspatil.MaterialDialog.MaterialDialog
 
 private const val OPEN_FILE_INTENT_RC = 0
 
@@ -46,7 +46,7 @@ class FileFragment : Fragment(), View.OnClickListener {
     private lateinit var backPressedCallback: OnBackPressedCallback
 
     private var bottomSheet: BottomSheet? = null
-    private var backgroundProgressDialog: SweetAlertDialog? = null
+    private var backgroundProgressDialog: MaterialDialog? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -143,11 +143,11 @@ class FileFragment : Fragment(), View.OnClickListener {
             if (backgroundProgressDialog != null) {
                 if (it.isValid) {
                     Log.e("Vault", "Hiding...")
-                    backgroundProgressDialog?.hide()
+                    // backgroundProgressDialog?.hide()
                 } else {
-                    backgroundProgressDialog?.changeAlertType(SweetAlertDialog.ERROR_TYPE)
+                    /* backgroundProgressDialog?.changeAlertType(SweetAlertDialog.ERROR_TYPE)
                     backgroundProgressDialog?.setTitle(it.fileError!!)
-                    backgroundProgressDialog?.showContentText(false)
+                    backgroundProgressDialog?.showContentText(false) */
                 }
             }
         }
@@ -216,38 +216,18 @@ class FileFragment : Fragment(), View.OnClickListener {
 
     private fun onClickFolderUpload(view: View) {
         val tempView = EditText(requireContext())
-        SweetAlertDialog(requireContext(), SweetAlertDialog.NORMAL_TYPE)
+        /*SweetAlertDialog(requireContext(), SweetAlertDialog.NORMAL_TYPE)
             .setTitleText("Create folder")
             .setConfirmText("Create")
             .setCustomView(tempView)
             .setConfirmClickListener {
                 if (!tempView.text.trim().isEmpty()) {
                     it.dismiss()
-                    showProgressDialog("Creating folder")
                     viewModel.requestFolder(tempView.text.trim().toString())
                 }
             }
             .setCancelClickListener(null)
-            .show()
-    }
-
-    private fun showProgressDialog(text: String) {
-        backgroundProgressDialog =
-            SweetAlertDialog(requireContext(), SweetAlertDialog.PROGRESS_TYPE).setTitleText(text)
-        backgroundProgressDialog?.show()
-    }
-
-    private fun showConfirmationDialog(type: FileAlertDialogType, onConfirmation: () -> Unit) {
-        backgroundProgressDialog = SweetAlertDialog(requireContext(), SweetAlertDialog.WARNING_TYPE)
-            .setTitleText(getString(type.titleTextId))
-            .setContentText(getString(type.contentText))
-            .setConfirmText(getString(type.confirmText))
-            .setConfirmClickListener { sDialog ->
-                sDialog.changeAlertType(SweetAlertDialog.PROGRESS_TYPE)
-                sDialog.hideConfirmButton()
-                onConfirmation()
-            }
-        backgroundProgressDialog?.show()
+            .show()*/
     }
 
     private fun onClickFileUpload(view: View) {
@@ -276,9 +256,9 @@ class FileFragment : Fragment(), View.OnClickListener {
             options = getActionOptions(),
             onItemSelectedListener = OnItemSelectedListener {
                 if (it.id == FileBottomSheetOption.DELETE.id) {
-                    showConfirmationDialog(FileAlertDialogType.DELETE_FILE) {
+                    /*showConfirmationDialog(FileAlertDialogType.DELETE_FILE) {
                         viewModel.requestDeletion(file)
-                    }
+                    }*/
                 }
                 bottomSheet?.dismiss()
             }
