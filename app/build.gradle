@@ -96,7 +96,7 @@ dependencies {
     // Material drawer
     implementation "com.mikepenz:materialdrawer:8.1.8"
 
-    //required support lib modules
+    // Required support lib modules
     implementation "androidx.recyclerview:recyclerview:1.2.0-alpha06"
 
     // Add for NavController support
@@ -139,8 +139,10 @@ dependencies {
     kapt "androidx.room:room-compiler:$room_version"
     implementation "androidx.room:room-ktx:$room_version"
 
-    // Sweet Alerts
-    implementation 'com.github.f0ris.sweetalert:library:1.6.2'
+    // Material Dialogs
+    implementation 'com.afollestad.material-dialogs:core:3.3.0'
+    implementation 'com.afollestad.material-dialogs:input:3.3.0'
+    implementation 'com.afollestad.material-dialogs:files:3.3.0'
 
     // WorkManager
     def work_version = "2.5.0"

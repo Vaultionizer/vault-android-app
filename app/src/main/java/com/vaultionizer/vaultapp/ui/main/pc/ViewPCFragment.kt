@@ -17,7 +17,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import cn.pedant.SweetAlert.SweetAlertDialog
+import com.afollestad.materialdialogs.MaterialDialog
 import com.arthurivanets.bottomsheets.ktx.showActionPickerBottomSheet
 import com.arthurivanets.bottomsheets.sheets.ActionPickerBottomSheet
 import com.arthurivanets.bottomsheets.sheets.listeners.OnItemSelectedListener
@@ -27,6 +27,7 @@ import com.vaultionizer.vaultapp.R
 import com.vaultionizer.vaultapp.data.pc.PCCategory
 import com.vaultionizer.vaultapp.data.pc.PCPair
 import com.vaultionizer.vaultapp.ui.main.file.FileAlertDialogType
+import com.vaultionizer.vaultapp.ui.main.file.showDialog
 import com.vaultionizer.vaultapp.ui.viewmodel.MainActivityViewModel
 import com.vaultionizer.vaultapp.ui.viewmodel.PCViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -60,7 +61,7 @@ class ViewPCFragment : Fragment(), ViewPCItemClickListener {
     }
 
     private var columnCount = 1
-    private var dialog: SweetAlertDialog? = null
+    private var dialog: MaterialDialog? = null
     private var bottomSheet: ActionPickerBottomSheet? = null
     private lateinit var backPressedCallback: OnBackPressedCallback
 
@@ -127,14 +128,16 @@ class ViewPCFragment : Fragment(), ViewPCItemClickListener {
 
     private fun handleNavigateBack() {
         if (viewModel.pcRepository.changed) {
-            showConfirmationCancelDialog(
-                FileAlertDialogType.SAVE_FILE,
-                getString(R.string.just_no),
-                {
+            FileAlertDialogType.SAVE_FILE.createDialog(
+                requireActivity(),
+                { _ ->
                     viewModel.saveFile(mainActivityViewModel.currentDirectory.value!!)
                     transitionBackToFileFragment()
                 },
-                { transitionBackToFileFragment() })
+                { _ ->
+                    transitionBackToFileFragment()
+                }
+            ).show()
         } else transitionBackToFileFragment()
     }
 
@@ -146,38 +149,13 @@ class ViewPCFragment : Fragment(), ViewPCItemClickListener {
         )
     }
 
-    fun showConfirmationDialog(type: FileAlertDialogType, onConfirmation: () -> Unit) {
-        showConfirmationCancelDialog(type, null, onConfirmation, {})
-    }
-
-    fun showConfirmationCancelDialog(
-        type: FileAlertDialogType,
-        cancelText: String?,
-        onConfirmation: () -> Unit,
-        onCancel: () -> Unit
-    ) {
-        dialog = SweetAlertDialog(requireContext(), SweetAlertDialog.WARNING_TYPE)
-            .setTitleText(getString(type.titleTextId))
-            .setContentText(getString(type.contentText))
-            .setCancelText(cancelText)
-            .setConfirmText(getString(type.confirmText))
-            .setConfirmClickListener {
-                onConfirmation()
-                dialog?.hide()
-            }.setCancelClickListener {
-                onCancel()
-                dialog?.hide()
-            }
-        dialog?.show()
-    }
-
     override fun openPairOptions(pair: PCPair) {
         bottomSheet = showActionPickerBottomSheet(
             options = getPairOptions(),
             onItemSelectedListener = OnItemSelectedListener {
                 when (it.id) {
                     PairOptions.DELETE.id -> {
-                        showConfirmationDialog(FileAlertDialogType.DELETE_PAIR) {
+                        showDialog(FileAlertDialogType.DELETE_FILE) { _ ->
                             viewModel.pcRepository.deletePair(pair.id)
                             refreshRecyclerView(pair.categoryId)
                         }
@@ -224,13 +202,13 @@ class ViewPCFragment : Fragment(), ViewPCItemClickListener {
                         )
                     }
                     CategoryOptions.DELETE_ONLY_CAT.id -> {
-                        showConfirmationDialog(FileAlertDialogType.DELETE_ONLY_CATEGORY) {
+                        showDialog(FileAlertDialogType.DELETE_ONLY_CATEGORY) { _ ->
                             viewModel.pcRepository.deleteOnlyCategory(category.id)
                             refreshRecyclerView()
                         }
                     }
                     CategoryOptions.DELETE_CAT_AND_PAIRS.id -> {
-                        showConfirmationDialog(FileAlertDialogType.DELETE_CATEGORY_AND_PAIRS) {
+                        showDialog(FileAlertDialogType.DELETE_CATEGORY_AND_PAIRS) { _ ->
                             viewModel.pcRepository.deleteCategoryAndPairs(category.id)
                             refreshRecyclerView()
                         }
