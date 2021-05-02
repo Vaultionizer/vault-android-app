@@ -2,16 +2,15 @@ package com.vaultionizer.vaultapp.hilt
 
 import android.content.Context
 import com.google.gson.Gson
+import com.vaultionizer.vaultapp.data.cache.AuthCache
 import com.vaultionizer.vaultapp.data.db.dao.LocalFileDao
 import com.vaultionizer.vaultapp.data.db.dao.LocalFileSyncRequestDao
 import com.vaultionizer.vaultapp.data.db.dao.LocalSpaceDao
-import com.vaultionizer.vaultapp.repository.AuthRepository
 import com.vaultionizer.vaultapp.repository.impl.*
 import com.vaultionizer.vaultapp.service.FileService
 import com.vaultionizer.vaultapp.service.ReferenceFileService
 import com.vaultionizer.vaultapp.service.SpaceService
 import com.vaultionizer.vaultapp.service.SyncRequestService
-import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -22,11 +21,7 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-abstract class RepositoryModule {
-
-    @Binds
-    @Singleton
-    abstract fun bindAuthRepository(authRepositoryImpl: AuthRepositoryImpl): AuthRepository
+object RepositoryModule {
 
     @Provides
     @Singleton
@@ -49,8 +44,8 @@ abstract class RepositoryModule {
         localSpaceDao: LocalSpaceDao,
         localFileDao: LocalFileDao,
         gson: Gson,
-        authRepository: AuthRepository
-    ) = SpaceRepository(spaceService, localSpaceDao, localFileDao, gson, authRepository)
+        authCache: AuthCache
+    ) = SpaceRepository(spaceService, localSpaceDao, localFileDao, gson, authCache)
 
     @Provides
     @Singleton

@@ -2,8 +2,8 @@ package com.vaultionizer.vaultapp.service
 
 import android.util.Base64
 import com.google.gson.Gson
+import com.vaultionizer.vaultapp.data.cache.AuthCache
 import com.vaultionizer.vaultapp.data.model.rest.request.DownloadFileRequest
-import com.vaultionizer.vaultapp.repository.AuthRepository
 import com.vaultionizer.vaultapp.util.Constants
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.first
@@ -16,7 +16,7 @@ import org.json.JSONObject
 import javax.inject.Inject
 
 class FileExchangeService @Inject constructor(
-    val authRepository: AuthRepository,
+    val authCache: AuthCache,
     val fileService: FileService,
     val gson: Gson
 ) {
@@ -34,7 +34,7 @@ class FileExchangeService @Inject constructor(
             val uploadSession = stompClient.connect(
                 String.format(
                     WEB_SOCKET_TEMPLATE,
-                    authRepository.loggedInUser?.localUser?.endpoint
+                    authCache.loggedInUser?.localUser?.endpoint
                 )
             )
 
@@ -44,12 +44,12 @@ class FileExchangeService @Inject constructor(
                     "/api/ws/upload", customHeaders = mapOf(
                         Pair(
                             "userID",
-                            authRepository.loggedInUser!!.localUser.remoteUserId.toString()
+                            authCache.loggedInUser!!.localUser.remoteUserId.toString()
                         ),
                         Pair("spaceID", spaceRemoteId.toString()),
                         Pair("saveIndex", fileRemoteId.toString()),
-                        Pair("sessionKey", authRepository.loggedInUser!!.sessionToken),
-                        Pair("websocketToken", authRepository.loggedInUser!!.webSocketToken)
+                        Pair("sessionKey", authCache.loggedInUser!!.sessionToken),
+                        Pair("websocketToken", authCache.loggedInUser!!.webSocketToken)
                     )
                 ), FrameBody.Text(JSONObject().apply {
                     put("content", Base64.encodeToString(data, Base64.NO_WRAP))
@@ -66,19 +66,19 @@ class FileExchangeService @Inject constructor(
             val downloadSession = stompClient.connect(
                 String.format(
                     WEB_SOCKET_TEMPLATE,
-                    authRepository.loggedInUser!!.localUser?.endpoint
+                    authCache.loggedInUser!!.localUser?.endpoint
                 )
             )
 
             val channel = String.format(
                 DOWNLOAD_CHANNEL,
-                authRepository.loggedInUser!!.webSocketToken
+                authCache.loggedInUser!!.webSocketToken
             )
 
             val headers = StompSubscribeHeaders(
                 channel, customHeaders = mapOf(
-                    "userID" to authRepository.loggedInUser?.localUser?.remoteUserId.toString(),
-                    "sessionKey" to authRepository.loggedInUser?.sessionToken.toString()
+                    "userID" to authCache.loggedInUser?.localUser?.remoteUserId.toString(),
+                    "sessionKey" to authCache.loggedInUser?.sessionToken.toString()
                 )
             )
 

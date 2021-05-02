@@ -6,8 +6,6 @@ import kotlinx.coroutines.flow.Flow
 
 interface AuthRepository {
 
-    var loggedInUser: LoggedInUser?
-
     suspend fun login(
         host: String,
         username: String,

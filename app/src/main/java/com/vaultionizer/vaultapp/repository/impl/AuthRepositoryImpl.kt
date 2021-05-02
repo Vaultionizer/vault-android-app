@@ -2,6 +2,7 @@ package com.vaultionizer.vaultapp.repository.impl
 
 import android.util.Log
 import com.google.gson.Gson
+import com.vaultionizer.vaultapp.data.cache.AuthCache
 import com.vaultionizer.vaultapp.data.db.dao.LocalUserDao
 import com.vaultionizer.vaultapp.data.db.entity.LocalUser
 import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkReferenceFile
@@ -25,10 +26,9 @@ import javax.inject.Inject
 class AuthRepositoryImpl @Inject constructor(
     val userService: UserService,
     val gson: Gson,
-    val localUserDao: LocalUserDao
+    val localUserDao: LocalUserDao,
+    val authCache: AuthCache
 ) : AuthRepository {
-
-    override var loggedInUser: LoggedInUser? = null
 
     override suspend fun login(
         host: String,
@@ -44,7 +44,7 @@ class AuthRepositoryImpl @Inject constructor(
                 is ApiResult.Success -> {
                     updateLocalUser(username, host, response.data)
 
-                    emit(ManagedResult.Success(loggedInUser!!))
+                    emit(ManagedResult.Success(authCache.loggedInUser!!))
                 }
                 is ApiResult.NetworkError -> {
                     emit(ManagedResult.NetworkError(response.exception))
@@ -77,7 +77,7 @@ class AuthRepositoryImpl @Inject constructor(
                 is ApiResult.Success -> {
                     updateLocalUser(username, host, response.data)
 
-                    emit(ManagedResult.Success(loggedInUser!!))
+                    emit(ManagedResult.Success(authCache.loggedInUser!!))
                 }
                 is ApiResult.NetworkError -> {
                     emit(ManagedResult.NetworkError(response.exception))
@@ -113,7 +113,8 @@ class AuthRepositoryImpl @Inject constructor(
 
         if (localUser != null) {
             localUser.lastLogin = System.currentTimeMillis()
-            loggedInUser = LoggedInUser(localUser, authPair.sessionKey, authPair.websocketToken)
+            authCache.loggedInUser =
+                LoggedInUser(localUser, authPair.sessionKey, authPair.websocketToken)
         }
     }
 

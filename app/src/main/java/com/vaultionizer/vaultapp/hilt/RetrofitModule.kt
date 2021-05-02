@@ -1,7 +1,7 @@
 package com.vaultionizer.vaultapp.hilt
 
 import com.google.gson.Gson
-import com.vaultionizer.vaultapp.repository.AuthRepository
+import com.vaultionizer.vaultapp.data.cache.AuthCache
 import com.vaultionizer.vaultapp.service.*
 import dagger.Module
 import dagger.Provides
@@ -36,9 +36,9 @@ object RetrofitModule {
     @Provides
     @Singleton
     fun provideFileExchangeService(
-        authRepository: AuthRepository,
+        authCache: AuthCache,
         fileService: FileService,
         gson: Gson
-    ) = FileExchangeService(authRepository, fileService, gson)
+    ) = FileExchangeService(authCache, fileService, gson)
 
 }

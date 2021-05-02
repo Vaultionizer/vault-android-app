@@ -2,6 +2,7 @@ package com.vaultionizer.vaultapp.repository.impl
 
 import com.google.gson.Gson
 import com.thedeanda.lorem.LoremIpsum
+import com.vaultionizer.vaultapp.data.cache.AuthCache
 import com.vaultionizer.vaultapp.data.db.dao.LocalFileDao
 import com.vaultionizer.vaultapp.data.db.dao.LocalSpaceDao
 import com.vaultionizer.vaultapp.data.db.entity.LocalSpace
@@ -11,7 +12,6 @@ import com.vaultionizer.vaultapp.data.model.rest.request.CreateSpaceRequest
 import com.vaultionizer.vaultapp.data.model.rest.result.ApiResult
 import com.vaultionizer.vaultapp.data.model.rest.result.ManagedResult
 import com.vaultionizer.vaultapp.data.model.rest.space.NetworkSpace
-import com.vaultionizer.vaultapp.repository.AuthRepository
 import com.vaultionizer.vaultapp.service.SpaceService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
@@ -23,7 +23,7 @@ class SpaceRepository @Inject constructor(
     val localSpaceDao: LocalSpaceDao,
     val localFileDao: LocalFileDao,
     val gson: Gson,
-    val authRepository: AuthRepository
+    val authCache: AuthCache
 ) {
     suspend fun getAllSpaces(): Flow<ManagedResult<List<VNSpace>>> {
         return flow {
@@ -117,14 +117,14 @@ class SpaceRepository @Inject constructor(
     ): VNSpace {
         var space =
             localSpaceDao.getSpaceByRemoteId(
-                authRepository.loggedInUser!!.localUser.userId,
+                authCache.loggedInUser!!.localUser.userId,
                 remoteSpaceId
             )
         if (space == null) {
             space = LocalSpace(
                 0,
                 remoteSpaceId,
-                authRepository.loggedInUser!!.localUser.userId,
+                authCache.loggedInUser!!.localUser.userId,
                 name,
                 null,
                 0

@@ -3,11 +3,11 @@ package com.vaultionizer.vaultapp.hilt
 import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
+import com.vaultionizer.vaultapp.data.cache.AuthCache
 import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkElement
 import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkFile
 import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkFolder
 import com.vaultionizer.vaultapp.data.model.rest.result.ApiCallFactory
-import com.vaultionizer.vaultapp.repository.AuthRepository
 import com.vaultionizer.vaultapp.util.Constants
 import com.vaultionizer.vaultapp.util.external.RuntimeTypeAdapterFactory
 import dagger.Module
@@ -43,12 +43,12 @@ object RestModule {
 
     @Provides
     @Singleton
-    fun provideRetrofitBase(gson: Gson, authRepository: AuthRepository): Retrofit {
+    fun provideRetrofitBase(gson: Gson, okHttpClient: OkHttpClient): Retrofit {
         return Retrofit.Builder()
             .baseUrl("https://$host:$port/$relativePath")
             .addConverterFactory(GsonConverterFactory.create(gson))
             .addCallAdapterFactory(ApiCallFactory())
-            .client(provideOkHttpClient(authRepository))
+            .client(okHttpClient)
             .build()
     }
 
@@ -66,7 +66,7 @@ object RestModule {
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(authRepository: AuthRepository) = OkHttpClient.Builder()
+    fun provideOkHttpClient(authCache: AuthCache) = OkHttpClient.Builder()
         .addInterceptor {
             val request = it.request()
             if (request.body == null || request.body?.contentType()?.subtype?.contains("json") == false) {
@@ -83,11 +83,11 @@ object RestModule {
 
             var jsonBody = JSONObject(requestBodyToString(it.request().body))
             jsonBody.put("auth", JSONObject().apply {
-                put("sessionKey", authRepository.loggedInUser?.sessionToken)
-                put("userID", authRepository.loggedInUser?.localUser?.remoteUserId)
+                put("sessionKey", authCache.loggedInUser?.sessionToken)
+                put("userID", authCache.loggedInUser?.localUser?.remoteUserId)
                 Log.e(
                     "Vault",
-                    "User: ${authRepository.loggedInUser?.localUser?.remoteUserId} Token: ${authRepository.loggedInUser?.sessionToken.toString()}"
+                    "User: ${authCache.loggedInUser?.localUser?.remoteUserId} Token: ${authCache.loggedInUser?.sessionToken.toString()}"
                 )
             })
 
