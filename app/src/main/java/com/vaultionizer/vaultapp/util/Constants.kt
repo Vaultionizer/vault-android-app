@@ -35,6 +35,7 @@ object Constants {
      * WorkManager
      */
     const val WORKER_TAG_FILE = "FILE_WORKER"
+    const val WORKER_TAG_REFERENCE_FILE = "REFERENCE_FILE_WORKER"
     const val WORKER_FILE_PARENT_ID = "FILE_PARENT_ID"
     const val WORKER_FILE_LOCAL_ID = "FILE_LOCAL_ID"
     const val WORKER_FILE_URI = "FILE_URI"
