@@ -85,7 +85,7 @@ class FileFragment : Fragment(), View.OnClickListener {
                         return@FileRecyclerAdapter
                     }
 
-                    if (!file.isBusy) {
+                    if (!file.isBusy && file.state != VNFile.State.AVAILABLE_OFFLINE) {
                         viewModel.requestDownload(file)
                     }
                 },
