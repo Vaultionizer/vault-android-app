@@ -61,7 +61,9 @@
     <string name="menu_keys_description">Create and delete cryptographic keys</string>
 
     <string name="menu_section_vaults">Your spaces</string>
-    
+
+    <string name="file_viewer_create_folder_title">What would you like to call the folder?</string>
+
     <string name="create_space_name">Name</string>
     <string name="create_space_shared_vault">Shared vault</string>
     <string name="create_space_create">Create space</string>

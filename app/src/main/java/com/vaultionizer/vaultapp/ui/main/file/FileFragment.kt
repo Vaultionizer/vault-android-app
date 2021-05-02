@@ -2,11 +2,11 @@ package com.vaultionizer.vaultapp.ui.main.file
 
 import android.app.Activity
 import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.view.*
 import android.view.animation.AnimationUtils
-import android.widget.EditText
 import android.widget.ProgressBar
 import android.widget.SearchView
 import android.widget.TextView
@@ -18,6 +18,8 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.afollestad.materialdialogs.MaterialDialog
+import com.afollestad.materialdialogs.input.getInputField
+import com.afollestad.materialdialogs.input.input
 import com.arthurivanets.bottomsheets.BottomSheet
 import com.arthurivanets.bottomsheets.ktx.showActionPickerBottomSheet
 import com.arthurivanets.bottomsheets.sheets.listeners.OnItemSelectedListener
@@ -202,19 +204,15 @@ class FileFragment : Fragment(), View.OnClickListener {
     }
 
     private fun onClickFolderUpload(view: View) {
-        val tempView = EditText(requireContext())
-        /*SweetAlertDialog(requireContext(), SweetAlertDialog.NORMAL_TYPE)
-            .setTitleText("Create folder")
-            .setConfirmText("Create")
-            .setCustomView(tempView)
-            .setConfirmClickListener {
-                if (!tempView.text.trim().isEmpty()) {
-                    it.dismiss()
-                    viewModel.requestFolder(tempView.text.trim().toString())
-                }
+        val dialog = MaterialDialog(requireContext()).show {
+            input { dialog, text ->
+                viewModel.requestFolder(text.toString())
             }
-            .setCancelClickListener(null)
-            .show()*/
+            title(R.string.file_viewer_create_folder_title)
+            positiveButton(R.string.all_confirm)
+        }
+        dialog.getInputField().setBackgroundColor(Color.WHITE)
+        dialog.show()
     }
 
     private fun onClickFileUpload(view: View) {
