@@ -12,7 +12,6 @@ import com.vaultionizer.vaultapp.data.model.domain.VNFile
 import com.vaultionizer.vaultapp.data.model.domain.VNSpace
 import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkElement
 import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkFolder
-import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkReferenceFile
 import com.vaultionizer.vaultapp.data.model.rest.request.UploadFileRequest
 import com.vaultionizer.vaultapp.data.model.rest.result.ApiResult
 import com.vaultionizer.vaultapp.data.model.rest.result.ManagedResult
@@ -141,20 +140,17 @@ class FileRepositoryImpl @Inject constructor(
             val uploadWorkData = workDataOf(
                 Constants.WORKER_SYNC_REQUEST_ID to uploadRequest.requestId,
             )
-            val refWorkData = workDataOf(
-                Constants.WORKER_SPACE_ID to parent.space.id
-            )
 
             val encryptionWorker =
-                OneTimeWorkRequestBuilder<DataEncryptionWorker>().setInputData(encryptionWorkData)
+                OneTimeWorkRequestBuilder<DataEncryptionWorker>()
+                    .setInputData(encryptionWorkData)
                     .addTag(Constants.WORKER_TAG_FILE)
                     .build()
             val uploadWorker =
-                OneTimeWorkRequestBuilder<FileUploadWorker>().setInputData(uploadWorkData)
+                OneTimeWorkRequestBuilder<FileUploadWorker>()
+                    .setInputData(uploadWorkData)
+                    .setConstraints(buildDefaultNetworkConstraints())
                     .addTag(Constants.WORKER_TAG_FILE).build()
-            val referenceFileSyncWorker =
-                OneTimeWorkRequestBuilder<ReferenceFileSyncWorker>().setInputData(refWorkData)
-                    .build()
 
             fileCaches[parent.space.id]?.addFile(vnFile)
             parent.content?.add(vnFile)
@@ -162,7 +158,7 @@ class FileRepositoryImpl @Inject constructor(
             workManager
                 .beginWith(encryptionWorker)
                 .then(uploadWorker)
-                .then(referenceFileSyncWorker)
+                .then(buildReferenceFileWorker(parent.space))
                 .enqueue()
         }
     }
@@ -216,14 +212,7 @@ class FileRepositoryImpl @Inject constructor(
             fileCaches[space.id]?.addFile(folder)
             parent.content?.add(folder)
 
-            val refWorkData = workDataOf(
-                Constants.WORKER_SPACE_ID to space.id
-            )
-            val refWorker =
-                OneTimeWorkRequestBuilder<ReferenceFileSyncWorker>().setInputData(refWorkData)
-                    .build()
-
-            WorkManager.getInstance(applicationContext).enqueue(refWorker)
+            WorkManager.getInstance(applicationContext).enqueue(buildReferenceFileWorker(space))
         }
     }
 
@@ -235,21 +224,18 @@ class FileRepositoryImpl @Inject constructor(
             val downloadWorkData = workDataOf(
                 Constants.WORKER_SYNC_REQUEST_ID to request.requestId
             )
-            val refWorkData = workDataOf(
-                Constants.WORKER_SPACE_ID to file.space.id
-            )
 
             file.state = VNFile.State.DOWNLOADING
 
             val downloadWorker =
-                OneTimeWorkRequestBuilder<FileDownloadWorker>().setInputData(downloadWorkData)
+                OneTimeWorkRequestBuilder<FileDownloadWorker>()
+                    .setInputData(downloadWorkData)
+                    .setConstraints(buildDefaultNetworkConstraints())
                     .addTag(Constants.WORKER_TAG_FILE)
                     .build()
-            val referenceFileSyncWorker =
-                OneTimeWorkRequestBuilder<ReferenceFileSyncWorker>().setInputData(refWorkData)
-                    .build()
 
-            workManager.beginWith(downloadWorker).then(referenceFileSyncWorker).enqueue()
+            workManager.beginWith(downloadWorker).then(buildReferenceFileWorker(file.space))
+                .enqueue()
         }
     }
 
@@ -296,22 +282,15 @@ class FileRepositoryImpl @Inject constructor(
     /**
      * TODO(jatsqi): Create background worker for this.
      */
-    override suspend fun deleteFile(file: VNFile): Flow<ManagedResult<VNFile>> {
-        return flow {
-            if (file.parent != null) {
-                file.parent.content?.remove(file)
-                resyncRefFile(file.space).collect {
-                    when (it) {
-                        is ManagedResult.Success -> {
-                            emit(ManagedResult.Success(file))
-                        }
-                        else -> {
-                            emit(ManagedResult.Error(400)) // TODO(jatsqi): Error handling
-                        }
-                    }
-                }
-            }
+    override suspend fun deleteFile(file: VNFile) {
+        localFileDao.deleteFile(file.localId)
+        fileCaches[file.space.id]?.deleteFile(file)
+
+        if (file.parent != null) {
+            file.parent.content?.remove(file)
         }
+
+        WorkManager.getInstance(applicationContext).enqueue(buildReferenceFileWorker(file.space))
     }
 
     override suspend fun updateFileRemoteId(fileId: Long, remoteId: Long) {
@@ -424,27 +403,16 @@ class FileRepositoryImpl @Inject constructor(
         return files[-1]!!
     }
 
-    /**
-     * TODO(jatsqi): Remove and create background worker for this
-     */
-    private suspend fun resyncRefFile(space: VNSpace): Flow<ManagedResult<NetworkReferenceFile>> {
-        return flow {
-            val cache = fileCaches[space.id]
-            if (cache?.getRootFile() == null) {
-                emit(ManagedResult.ConsistencyError)
-                return@flow
-            }
+    private fun buildReferenceFileWorker(space: VNSpace) =
+        OneTimeWorkRequestBuilder<ReferenceFileSyncWorker>().addTag(Constants.WORKER_TAG_REFERENCE_FILE)
+            .setInputData(
+                workDataOf(
+                    Constants.WORKER_SPACE_ID to space.id
+                )
+            ).setConstraints(buildDefaultNetworkConstraints()).build()
 
-            val root = cache.getRootFile()!!.mapToNetwork() as NetworkFolder
-
-            val referenceFile = NetworkReferenceFile(
-                1,
-                root.content ?: mutableListOf()
-            )
-
-            emit(referenceFileRepository.uploadReferenceFile(referenceFile, space).first())
-        }.flowOn(Dispatchers.IO)
-    }
+    private fun buildDefaultNetworkConstraints() =
+        Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()
 
     private fun resolveFileNameConflicts(parent: VNFile, name: String): String {
         val nameSet = parent.content?.map { it.name }?.toSet() ?: return name
