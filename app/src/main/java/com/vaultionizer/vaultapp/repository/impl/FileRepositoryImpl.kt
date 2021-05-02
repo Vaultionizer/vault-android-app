@@ -27,13 +27,14 @@ import com.vaultionizer.vaultapp.worker.DataEncryptionWorker
 import com.vaultionizer.vaultapp.worker.FileDownloadWorker
 import com.vaultionizer.vaultapp.worker.FileUploadWorker
 import com.vaultionizer.vaultapp.worker.ReferenceFileSyncWorker
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class FileRepositoryImpl @Inject constructor(
-    val applicationContext: Context,
+    @ApplicationContext val applicationContext: Context,
     val gson: Gson,
     val referenceFileRepository: ReferenceFileRepository,
     val spaceRepository: SpaceRepository,
