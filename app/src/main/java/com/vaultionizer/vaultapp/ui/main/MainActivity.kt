@@ -34,6 +34,7 @@ import com.vaultionizer.vaultapp.data.model.domain.VNSpace
 import com.vaultionizer.vaultapp.repository.AuthRepository
 import com.vaultionizer.vaultapp.ui.viewmodel.MainActivityViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 
 @AndroidEntryPoint
@@ -43,6 +44,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var appBarConfiguration: AppBarConfiguration
 
     // Models
+    @Inject
+    lateinit var authRepository: AuthRepository
     val viewModel: MainActivityViewModel by viewModels()
 
     // UI
@@ -63,8 +66,8 @@ class MainActivity : AppCompatActivity() {
             (supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment).navController
 
         val userProfile = ProfileDrawerItem().apply {
-            nameText = AuthRepository.user?.localUser?.username ?: "Unknown"
-            descriptionText = "User ID: ${AuthRepository.user?.localUser?.userId}"
+            nameText = authRepository.loggedInUser?.localUser?.username ?: "Unknown"
+            descriptionText = "User ID: ${authRepository.loggedInUser?.localUser?.userId}"
             icon = null
             identifier = nextIdentifier()
         }

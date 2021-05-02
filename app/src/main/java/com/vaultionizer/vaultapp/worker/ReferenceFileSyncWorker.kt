@@ -4,8 +4,8 @@ import android.content.Context
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import com.vaultionizer.vaultapp.repository.FileRepository
-import com.vaultionizer.vaultapp.repository.ReferenceFileRepository
+import com.vaultionizer.vaultapp.repository.impl.FileRepository
+import com.vaultionizer.vaultapp.repository.impl.ReferenceFileRepository
 import com.vaultionizer.vaultapp.util.Constants
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject

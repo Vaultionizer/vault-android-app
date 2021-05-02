@@ -10,7 +10,7 @@ import com.vaultionizer.vaultapp.cryptography.crypto.CryptoMode
 import com.vaultionizer.vaultapp.cryptography.crypto.CryptoPadding
 import com.vaultionizer.vaultapp.cryptography.crypto.CryptoType
 import com.vaultionizer.vaultapp.data.model.rest.result.ManagedResult
-import com.vaultionizer.vaultapp.repository.SpaceRepository
+import com.vaultionizer.vaultapp.repository.impl.SpaceRepository
 import com.vaultionizer.vaultapp.ui.main.space.SpaceCreationResult
 import com.vaultionizer.vaultapp.ui.main.space.SpaceFormState
 import dagger.hilt.android.lifecycle.HiltViewModel

@@ -34,7 +34,7 @@ class FileExchangeService @Inject constructor(
             val uploadSession = stompClient.connect(
                 String.format(
                     WEB_SOCKET_TEMPLATE,
-                    AuthRepository.user?.localUser?.endpoint
+                    authRepository.loggedInUser?.localUser?.endpoint
                 )
             )
 
@@ -44,12 +44,12 @@ class FileExchangeService @Inject constructor(
                     "/api/ws/upload", customHeaders = mapOf(
                         Pair(
                             "userID",
-                            AuthRepository.user!!.localUser.remoteUserId.toString()
+                            authRepository.loggedInUser!!.localUser.remoteUserId.toString()
                         ),
                         Pair("spaceID", spaceRemoteId.toString()),
                         Pair("saveIndex", fileRemoteId.toString()),
-                        Pair("sessionKey", AuthRepository.user!!.sessionToken),
-                        Pair("websocketToken", AuthRepository.user!!.webSocketToken)
+                        Pair("sessionKey", authRepository.loggedInUser!!.sessionToken),
+                        Pair("websocketToken", authRepository.loggedInUser!!.webSocketToken)
                     )
                 ), FrameBody.Text(JSONObject().apply {
                     put("content", Base64.encodeToString(data, Base64.NO_WRAP))
@@ -66,19 +66,19 @@ class FileExchangeService @Inject constructor(
             val downloadSession = stompClient.connect(
                 String.format(
                     WEB_SOCKET_TEMPLATE,
-                    AuthRepository.user?.localUser?.endpoint
+                    authRepository.loggedInUser!!.localUser?.endpoint
                 )
             )
 
             val channel = String.format(
                 DOWNLOAD_CHANNEL,
-                AuthRepository.user?.webSocketToken
+                authRepository.loggedInUser!!.webSocketToken
             )
 
             val headers = StompSubscribeHeaders(
                 channel, customHeaders = mapOf(
-                    "userID" to AuthRepository.user?.localUser?.remoteUserId.toString(),
-                    "sessionKey" to AuthRepository.user?.sessionToken.toString()
+                    "userID" to authRepository.loggedInUser?.localUser?.remoteUserId.toString(),
+                    "sessionKey" to authRepository.loggedInUser?.sessionToken.toString()
                 )
             )
 

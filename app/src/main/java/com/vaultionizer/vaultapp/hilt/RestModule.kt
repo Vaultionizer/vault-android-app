@@ -43,12 +43,12 @@ object RestModule {
 
     @Provides
     @Singleton
-    fun provideRetrofitBase(gson: Gson): Retrofit {
+    fun provideRetrofitBase(gson: Gson, authRepository: AuthRepository): Retrofit {
         return Retrofit.Builder()
             .baseUrl("https://$host:$port/$relativePath")
             .addConverterFactory(GsonConverterFactory.create(gson))
             .addCallAdapterFactory(ApiCallFactory())
-            .client(provideOkHttpClient())
+            .client(provideOkHttpClient(authRepository))
             .build()
     }
 
@@ -66,7 +66,7 @@ object RestModule {
 
     @Provides
     @Singleton
-    fun provideOkHttpClient() = OkHttpClient.Builder()
+    fun provideOkHttpClient(authRepository: AuthRepository) = OkHttpClient.Builder()
         .addInterceptor {
             val request = it.request()
             if (request.body == null || request.body?.contentType()?.subtype?.contains("json") == false) {
@@ -83,11 +83,11 @@ object RestModule {
 
             var jsonBody = JSONObject(requestBodyToString(it.request().body))
             jsonBody.put("auth", JSONObject().apply {
-                put("sessionKey", AuthRepository.user?.sessionToken)
-                put("userID", AuthRepository.user?.localUser?.remoteUserId)
+                put("sessionKey", authRepository.loggedInUser?.sessionToken)
+                put("userID", authRepository.loggedInUser?.localUser?.remoteUserId)
                 Log.e(
                     "Vault",
-                    "User: ${AuthRepository.user?.localUser?.remoteUserId} Token: ${AuthRepository.user?.sessionToken.toString()}"
+                    "User: ${authRepository.loggedInUser?.localUser?.remoteUserId} Token: ${authRepository.loggedInUser?.sessionToken.toString()}"
                 )
             })
 

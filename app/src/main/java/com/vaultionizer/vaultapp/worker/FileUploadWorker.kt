@@ -6,8 +6,8 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.vaultionizer.vaultapp.data.model.domain.VNFile
 import com.vaultionizer.vaultapp.data.model.rest.result.ManagedResult
-import com.vaultionizer.vaultapp.repository.FileRepository
-import com.vaultionizer.vaultapp.repository.SpaceRepository
+import com.vaultionizer.vaultapp.repository.impl.FileRepository
+import com.vaultionizer.vaultapp.repository.impl.SpaceRepository
 import com.vaultionizer.vaultapp.service.FileExchangeService
 import com.vaultionizer.vaultapp.service.SyncRequestService
 import com.vaultionizer.vaultapp.util.Constants

@@ -13,8 +13,8 @@ import com.vaultionizer.vaultapp.R
 import com.vaultionizer.vaultapp.data.model.domain.VNFile
 import com.vaultionizer.vaultapp.data.model.domain.VNSpace
 import com.vaultionizer.vaultapp.data.model.rest.result.ManagedResult
-import com.vaultionizer.vaultapp.repository.FileRepository
-import com.vaultionizer.vaultapp.repository.SpaceRepository
+import com.vaultionizer.vaultapp.repository.impl.FileRepository
+import com.vaultionizer.vaultapp.repository.impl.SpaceRepository
 import com.vaultionizer.vaultapp.ui.main.file.FileDialogState
 import com.vaultionizer.vaultapp.util.Constants
 import dagger.hilt.android.lifecycle.HiltViewModel

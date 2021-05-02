@@ -11,7 +11,7 @@ import com.vaultionizer.vaultapp.R
 import com.vaultionizer.vaultapp.cryptography.PasswordValidator
 import com.vaultionizer.vaultapp.data.model.rest.result.ManagedResult
 import com.vaultionizer.vaultapp.repository.AuthRepository
-import com.vaultionizer.vaultapp.repository.MiscRepository
+import com.vaultionizer.vaultapp.repository.impl.MiscRepository
 import com.vaultionizer.vaultapp.ui.auth.login.LoginResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext

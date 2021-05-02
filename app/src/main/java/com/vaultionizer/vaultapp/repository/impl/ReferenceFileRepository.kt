@@ -1,4 +1,4 @@
-package com.vaultionizer.vaultapp.repository
+package com.vaultionizer.vaultapp.repository.impl
 
 import android.util.Log
 import com.google.gson.Gson

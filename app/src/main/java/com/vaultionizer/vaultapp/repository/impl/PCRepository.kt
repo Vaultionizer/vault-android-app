@@ -1,4 +1,4 @@
-package com.vaultionizer.vaultapp.repository
+package com.vaultionizer.vaultapp.repository.impl
 
 import com.google.gson.Gson
 import com.vaultionizer.vaultapp.data.model.domain.VNFile
