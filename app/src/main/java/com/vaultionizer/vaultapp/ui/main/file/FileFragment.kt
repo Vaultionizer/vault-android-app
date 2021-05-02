@@ -241,9 +241,9 @@ class FileFragment : Fragment(), View.OnClickListener {
             options = getActionOptions(),
             onItemSelectedListener = OnItemSelectedListener {
                 if (it.id == FileBottomSheetOption.DELETE.id) {
-                    /*showConfirmationDialog(FileAlertDialogType.DELETE_FILE) {
+                    showDialog(FileAlertDialogType.DELETE_FILE, positiveClick = { _ ->
                         viewModel.requestDeletion(file)
-                    }*/
+                    })
                 }
                 bottomSheet?.dismiss()
             }
