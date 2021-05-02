@@ -1,14 +1,11 @@
 package com.vaultionizer.vaultapp.worker
 
 import android.content.Context
-import android.net.Uri
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import androidx.work.workDataOf
-import com.vaultionizer.vaultapp.service.SyncRequestService
+import com.vaultionizer.vaultapp.repository.SyncRequestRepository
 import com.vaultionizer.vaultapp.util.Constants
-import com.vaultionizer.vaultapp.util.writeFileToInternal
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers
@@ -18,7 +15,7 @@ import kotlinx.coroutines.withContext
 class DataEncryptionWorker @AssistedInject constructor(
     @Assisted appContext: Context,
     @Assisted params: WorkerParameters,
-    val syncRequestService: SyncRequestService
+    val syncRequestService: SyncRequestRepository
 ) : CoroutineWorker(appContext, params) {
 
     /**

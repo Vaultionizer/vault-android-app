@@ -30,10 +30,11 @@ import com.mikepenz.materialdrawer.util.setupWithNavController
 import com.mikepenz.materialdrawer.widget.AccountHeaderView
 import com.mikepenz.materialdrawer.widget.MaterialDrawerSliderView
 import com.vaultionizer.vaultapp.R
+import com.vaultionizer.vaultapp.data.cache.AuthCache
 import com.vaultionizer.vaultapp.data.model.domain.VNSpace
-import com.vaultionizer.vaultapp.repository.AuthRepository
 import com.vaultionizer.vaultapp.ui.viewmodel.MainActivityViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 
 @AndroidEntryPoint
@@ -43,6 +44,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var appBarConfiguration: AppBarConfiguration
 
     // Models
+    @Inject
+    lateinit var authCache: AuthCache
     val viewModel: MainActivityViewModel by viewModels()
 
     // UI
@@ -63,8 +66,8 @@ class MainActivity : AppCompatActivity() {
             (supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment).navController
 
         val userProfile = ProfileDrawerItem().apply {
-            nameText = AuthRepository.user?.localUser?.username ?: "Unknown"
-            descriptionText = "User ID: ${AuthRepository.user?.localUser?.userId}"
+            nameText = authCache.loggedInUser?.localUser?.username ?: "Unknown"
+            descriptionText = "User ID: ${authCache.loggedInUser?.localUser?.userId}"
             icon = null
             identifier = nextIdentifier()
         }

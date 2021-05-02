@@ -8,8 +8,8 @@ import com.vaultionizer.vaultapp.data.model.domain.VNFile
 import com.vaultionizer.vaultapp.data.model.rest.result.ManagedResult
 import com.vaultionizer.vaultapp.repository.FileRepository
 import com.vaultionizer.vaultapp.repository.SpaceRepository
+import com.vaultionizer.vaultapp.repository.SyncRequestRepository
 import com.vaultionizer.vaultapp.service.FileExchangeService
-import com.vaultionizer.vaultapp.service.SyncRequestService
 import com.vaultionizer.vaultapp.util.Constants
 import com.vaultionizer.vaultapp.util.writeFileToInternal
 import dagger.assisted.Assisted
@@ -22,7 +22,7 @@ import kotlinx.coroutines.withContext
 class FileUploadWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted workerParams: WorkerParameters,
-    val syncRequestService: SyncRequestService,
+    val syncRequestService: SyncRequestRepository,
     val fileExchangeService: FileExchangeService,
     val spaceRepository: SpaceRepository,
     val fileRepository: FileRepository

@@ -135,7 +135,6 @@ class MainActivityViewModel @Inject constructor(
                         val spaces = _userSpaces.value!!.toMutableList()
                         spaces.remove(it)
 
-                        fileRepository.cacheEvict(it.data.id)
                         _selectedSpace.value = spaces[0]
                         _currentDirectory.value = null
                         updateUserSpaces()

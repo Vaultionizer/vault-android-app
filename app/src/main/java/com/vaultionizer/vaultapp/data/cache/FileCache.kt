@@ -1,6 +1,5 @@
 package com.vaultionizer.vaultapp.data.cache
 
-import android.util.Log
 import com.vaultionizer.vaultapp.data.model.domain.VNFile
 import com.vaultionizer.vaultapp.repository.FileRepository
 
