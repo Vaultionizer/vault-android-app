@@ -1,7 +1,7 @@
 package com.vaultionizer.vaultapp.data.cache
 
 import com.vaultionizer.vaultapp.data.model.domain.VNFile
-import com.vaultionizer.vaultapp.repository.impl.FileRepository
+import com.vaultionizer.vaultapp.repository.FileRepository
 
 class FileCache(private val strategy: IdCachingStrategy = IdCachingStrategy.LOCAL_ID) {
 
