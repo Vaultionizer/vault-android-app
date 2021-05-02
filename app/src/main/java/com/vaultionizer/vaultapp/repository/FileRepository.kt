@@ -27,7 +27,7 @@ interface FileRepository {
 
     suspend fun announceUpload(spaceId: Long): Flow<ManagedResult<Long>>
 
-    suspend fun deleteFile(file: VNFile): Flow<ManagedResult<VNFile>>
+    suspend fun deleteFile(file: VNFile)
 
     suspend fun updateFileRemoteId(fileId: Long, remoteId: Long)
 }
