@@ -4,6 +4,7 @@ import android.util.Log
 import com.vaultionizer.vaultapp.data.model.rest.misc.NetworkVersion
 import com.vaultionizer.vaultapp.data.model.rest.result.ApiResult
 import com.vaultionizer.vaultapp.data.model.rest.result.ManagedResult
+import com.vaultionizer.vaultapp.repository.MiscRepository
 import com.vaultionizer.vaultapp.service.MiscService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -13,9 +14,9 @@ import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import javax.inject.Inject
 
-class MiscRepository @Inject constructor(val retrofit: Retrofit) {
+class MiscRepositoryImpl @Inject constructor(val retrofit: Retrofit) : MiscRepository {
 
-    suspend fun pingHost(host: String): Flow<ManagedResult<NetworkVersion>> {
+    override suspend fun pingHost(host: String): Flow<ManagedResult<NetworkVersion>> {
 
         return flow {
             val temp =

@@ -17,8 +17,11 @@ import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkReferenceFile
 import com.vaultionizer.vaultapp.data.model.rest.request.UploadFileRequest
 import com.vaultionizer.vaultapp.data.model.rest.result.ApiResult
 import com.vaultionizer.vaultapp.data.model.rest.result.ManagedResult
+import com.vaultionizer.vaultapp.repository.FileRepository
+import com.vaultionizer.vaultapp.repository.ReferenceFileRepository
+import com.vaultionizer.vaultapp.repository.SpaceRepository
+import com.vaultionizer.vaultapp.repository.SyncRequestRepository
 import com.vaultionizer.vaultapp.service.FileService
-import com.vaultionizer.vaultapp.service.SyncRequestService
 import com.vaultionizer.vaultapp.util.Constants
 import com.vaultionizer.vaultapp.util.getFileName
 import com.vaultionizer.vaultapp.worker.DataEncryptionWorker
@@ -30,7 +33,7 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
-class FileRepository @Inject constructor(
+class FileRepositoryImpl @Inject constructor(
     val applicationContext: Context,
     val gson: Gson,
     val referenceFileRepository: ReferenceFileRepository,
@@ -38,8 +41,8 @@ class FileRepository @Inject constructor(
     val localFileDao: LocalFileDao,
     val localSpaceDao: LocalSpaceDao,
     val fileService: FileService,
-    val syncRequestService: SyncRequestService,
-) {
+    val syncRequestService: SyncRequestRepository,
+) : FileRepository {
 
     companion object {
         const val ROOT_FOLDER_ID = -1L
@@ -60,7 +63,7 @@ class FileRepository @Inject constructor(
      */
     private val minimumIdCache = mutableMapOf<Long, Long>()
 
-    suspend fun getFileTree(space: VNSpace): Flow<ManagedResult<VNFile>> {
+    override suspend fun getFileTree(space: VNSpace): Flow<ManagedResult<VNFile>> {
         return flow {
             val cache = fileCaches[space.id] ?: FileCache(FileCache.IdCachingStrategy.LOCAL_ID)
             fileCaches[space.id] = cache
@@ -99,7 +102,7 @@ class FileRepository @Inject constructor(
         }.flowOn(Dispatchers.IO)
     }
 
-    suspend fun uploadFile(
+    override suspend fun uploadFile(
         data: ByteArray,
         name: String,
         parent: VNFile,
@@ -168,7 +171,7 @@ class FileRepository @Inject constructor(
         }
     }
 
-    suspend fun uploadFile(parent: VNFile, uri: Uri) {
+    override suspend fun uploadFile(parent: VNFile, uri: Uri) {
         // TODO(jatsqi): Uri error handling
         uploadFile(
             applicationContext.contentResolver.openInputStream(uri)!!.readBytes(),
@@ -177,7 +180,7 @@ class FileRepository @Inject constructor(
         )
     }
 
-    suspend fun uploadFolder(
+    override suspend fun uploadFolder(
         space: VNSpace,
         name: String,
         parent: VNFile
@@ -228,7 +231,7 @@ class FileRepository @Inject constructor(
         }
     }
 
-    suspend fun downloadFile(file: VNFile) {
+    override suspend fun downloadFile(file: VNFile) {
         withContext(Dispatchers.IO) {
             val workManager = WorkManager.getInstance(applicationContext)
             val request = syncRequestService.createDownloadRequest(file)
@@ -254,7 +257,7 @@ class FileRepository @Inject constructor(
         }
     }
 
-    suspend fun getFile(fileId: Long): VNFile? {
+    override suspend fun getFile(fileId: Long): VNFile? {
         fileCaches.values.forEach {
             val file = it.getFileByStrategy(fileId, FileCache.IdCachingStrategy.LOCAL_ID)
             if (file != null) {
@@ -269,10 +272,10 @@ class FileRepository @Inject constructor(
         return null
     }
 
-    fun getFileByRemote(spaceId: Long, fileRemoteId: Long): VNFile? =
+    override fun getFileByRemote(spaceId: Long, fileRemoteId: Long): VNFile? =
         fileCaches[spaceId]?.getFile(fileRemoteId)
 
-    suspend fun announceUpload(spaceId: Long): Flow<ManagedResult<Long>> {
+    override suspend fun announceUpload(spaceId: Long): Flow<ManagedResult<Long>> {
         return flow {
             when (val response = fileService.uploadFile(
                 UploadFileRequest(
@@ -297,7 +300,7 @@ class FileRepository @Inject constructor(
     /**
      * TODO(jatsqi): Create background worker for this.
      */
-    suspend fun deleteFile(file: VNFile): Flow<ManagedResult<VNFile>> {
+    override suspend fun deleteFile(file: VNFile): Flow<ManagedResult<VNFile>> {
         return flow {
             if (file.parent != null) {
                 file.parent.content?.remove(file)
@@ -315,15 +318,10 @@ class FileRepository @Inject constructor(
         }
     }
 
-    suspend fun updateFileRemoteId(fileId: Long, remoteId: Long) {
+    override suspend fun updateFileRemoteId(fileId: Long, remoteId: Long) {
         withContext(Dispatchers.IO) {
             localFileDao.updateFileRemoteId(fileId, remoteId)
         }
-    }
-
-    fun cacheEvict(spaceId: Long) {
-        fileCaches.remove(spaceId)
-        minimumIdCache.remove(spaceId)
     }
 
     private suspend fun persistNetworkTree(

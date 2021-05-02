@@ -1,13 +1,15 @@
-package com.vaultionizer.vaultapp.service
+package com.vaultionizer.vaultapp.repository.impl
 
 import com.vaultionizer.vaultapp.data.db.dao.LocalFileSyncRequestDao
 import com.vaultionizer.vaultapp.data.db.entity.LocalFileSyncRequest
 import com.vaultionizer.vaultapp.data.model.domain.VNFile
+import com.vaultionizer.vaultapp.repository.SyncRequestRepository
 import javax.inject.Inject
 
-class SyncRequestService @Inject constructor(val localFileSyncRequestDao: LocalFileSyncRequestDao) {
+class SyncRequestRepositoryImpl @Inject constructor(val localFileSyncRequestDao: LocalFileSyncRequestDao) :
+    SyncRequestRepository {
 
-    suspend fun createDownloadRequest(localFileRef: VNFile): LocalFileSyncRequest {
+    override suspend fun createDownloadRequest(localFileRef: VNFile): LocalFileSyncRequest {
         val request = LocalFileSyncRequest(
             0,
             LocalFileSyncRequest.Type.DOWNLOAD,
@@ -20,7 +22,10 @@ class SyncRequestService @Inject constructor(val localFileSyncRequestDao: LocalF
         return request
     }
 
-    suspend fun createUploadRequest(localFileRef: VNFile, data: ByteArray): LocalFileSyncRequest {
+    override suspend fun createUploadRequest(
+        localFileRef: VNFile,
+        data: ByteArray
+    ): LocalFileSyncRequest {
         val request = LocalFileSyncRequest(
             0,
             LocalFileSyncRequest.Type.UPLOAD,
@@ -34,19 +39,19 @@ class SyncRequestService @Inject constructor(val localFileSyncRequestDao: LocalF
         return request
     }
 
-    suspend fun updateRequest(request: LocalFileSyncRequest) {
+    override suspend fun updateRequest(request: LocalFileSyncRequest) {
         localFileSyncRequestDao.updateRequest(request)
     }
 
-    suspend fun updateRemoteFileId(requestId: Long, newRemoteFileId: Long) {
+    override suspend fun updateRemoteFileId(requestId: Long, newRemoteFileId: Long) {
         localFileSyncRequestDao.updateRemoteFileId(requestId, newRemoteFileId)
     }
 
-    suspend fun deleteRequest(request: LocalFileSyncRequest) {
+    override suspend fun deleteRequest(request: LocalFileSyncRequest) {
         localFileSyncRequestDao.deleteRequest(request)
     }
 
-    suspend fun getRequest(requestId: Long): LocalFileSyncRequest {
+    override suspend fun getRequest(requestId: Long): LocalFileSyncRequest {
         return localFileSyncRequestDao.getById(requestId)
     }
 

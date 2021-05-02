@@ -5,14 +5,16 @@ import com.vaultionizer.vaultapp.data.model.domain.VNFile
 import com.vaultionizer.vaultapp.data.pc.PCCategory
 import com.vaultionizer.vaultapp.data.pc.PCFile
 import com.vaultionizer.vaultapp.data.pc.PCPair
+import com.vaultionizer.vaultapp.repository.FileRepository
+import com.vaultionizer.vaultapp.repository.PCRepository
 import java.util.*
 import javax.inject.Inject
 import kotlin.collections.ArrayList
 
-class PCRepository @Inject constructor(
+class PCRepositoryImpl @Inject constructor(
     val gson: Gson,
     val fileRepository: FileRepository
-) {
+) : PCRepository {
     private var fileName: String = ""
     private var categories: ArrayList<PCCategory> = ArrayList()
     private var pairs: ArrayList<PCPair> = ArrayList()
@@ -21,29 +23,38 @@ class PCRepository @Inject constructor(
     var changed: Boolean = false
         private set
 
-    fun createNewFile(name: String) {
+    override fun createNewFile(name: String) {
         fileName = name
         reset()
         changed = true
     }
 
-    fun reset(){
+    override fun reset() {
         categories.clear()
         pairs.clear()
         categoryIdsUsed.clear()
         changed = false
     }
 
-    fun getCurrentFile(): PCFile {
+    override fun getCurrentFile(): PCFile {
         return PCFile(categories, pairs)
     }
 
-    suspend fun saveFile(parent: VNFile) {
-        fileRepository.uploadFile(gson.toJson(PCFile(categories, pairs)).toByteArray(), fileName, parent)
+    override suspend fun saveFile(parent: VNFile) {
+        fileRepository.uploadFile(
+            gson.toJson(PCFile(categories, pairs)).toByteArray(),
+            fileName,
+            parent
+        )
         reset()
     }
 
-    fun replacePair(newKey: String, newValue: String, newCategoryId: Int?, id: Int): Boolean {
+    override fun replacePair(
+        newKey: String,
+        newValue: String,
+        newCategoryId: Int?,
+        id: Int
+    ): Boolean {
         changed = true
         for (pairIdx in pairs.indices) {
             if (pairs[pairIdx].id == id) {
@@ -54,7 +65,7 @@ class PCRepository @Inject constructor(
         return false
     }
 
-    fun deletePair(pairId: Int) {
+    override fun deletePair(pairId: Int) {
         changed = true
         for (pairIdx in pairs.indices) {
             if (pairs[pairIdx].id == pairId) {
@@ -64,7 +75,7 @@ class PCRepository @Inject constructor(
         }
     }
 
-    fun deleteOnlyCategory(categoryId: Int) {
+    override fun deleteOnlyCategory(categoryId: Int) {
         changed = true
         for (pair in pairs) {
             if (pair.categoryId != categoryId) continue
@@ -78,7 +89,7 @@ class PCRepository @Inject constructor(
         }
     }
 
-    fun deleteCategoryAndPairs(categoryId: Int) {
+    override fun deleteCategoryAndPairs(categoryId: Int) {
         changed = true
         for (pairIdx in pairs.size..0) {
             if (pairs[pairIdx].categoryId != categoryId) continue
@@ -93,14 +104,14 @@ class PCRepository @Inject constructor(
         }
     }
 
-    fun getCategoryIdByPos(pos: Int): Int? {
+    override fun getCategoryIdByPos(pos: Int): Int? {
         if (categories.size > pos && pos >= 0) {
             return categories[pos].id
         }
         return null
     }
 
-    fun getCategoryPosById(categoryId: Int?): Int {
+    override fun getCategoryPosById(categoryId: Int?): Int {
         if (categoryId == null) return 0
         for (cat in categories.indices) {
             if (categories[cat].id == categoryId) return cat + 1
@@ -108,20 +119,20 @@ class PCRepository @Inject constructor(
         return 0
     }
 
-    fun getCatgoryNames(): Array<String> {
+    override fun getCatgoryNames(): Array<String> {
         return Array(categories.size + 1) {
             if (it == 0) "<Uncategorized>"
             else categories[it - 1].name
         }
     }
 
-    fun addNewPair(key: String, value: String, categoryId: Int?) {
+    override fun addNewPair(key: String, value: String, categoryId: Int?) {
         changed = true
         val newID = if (pairs.isEmpty()) 0 else pairs.last().id + 1
         pairs.add(PCPair(newID, key, value, categoryId))
     }
 
-    fun addCategory(name: String, categoryId: Int? = null): Boolean {
+    override fun addCategory(name: String, categoryId: Int?): Boolean {
         if (categoryId == null && findCategoryByName(name) != null) {
             return false
         }
@@ -138,7 +149,7 @@ class PCRepository @Inject constructor(
         return true
     }
 
-    fun findCategoryByName(name: String): Int? {
+    override fun findCategoryByName(name: String): Int? {
         for (i in categories.indices) {
             if (categories[i].name == name) return i
         }

@@ -11,6 +11,8 @@ import com.vaultionizer.vaultapp.data.model.rest.request.DownloadReferenceFileRe
 import com.vaultionizer.vaultapp.data.model.rest.request.UploadReferenceFileRequest
 import com.vaultionizer.vaultapp.data.model.rest.result.ApiResult
 import com.vaultionizer.vaultapp.data.model.rest.result.ManagedResult
+import com.vaultionizer.vaultapp.repository.ReferenceFileRepository
+import com.vaultionizer.vaultapp.repository.SpaceRepository
 import com.vaultionizer.vaultapp.service.ReferenceFileService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
@@ -19,14 +21,14 @@ import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
 import javax.inject.Inject
 
-class ReferenceFileRepository @Inject constructor(
+class ReferenceFileRepositoryImpl @Inject constructor(
     val referenceFileService: ReferenceFileService,
     val gson: Gson,
     val localSpaceDao: LocalSpaceDao,
     val spaceRepository: SpaceRepository
-) {
+) : ReferenceFileRepository {
 
-    suspend fun downloadReferenceFile(space: VNSpace): Flow<ManagedResult<NetworkReferenceFile>> {
+    override suspend fun downloadReferenceFile(space: VNSpace): Flow<ManagedResult<NetworkReferenceFile>> {
         return flow {
             val response =
                 referenceFileService.downloadReferenceFile(DownloadReferenceFileRequest(space.remoteId))
@@ -51,7 +53,7 @@ class ReferenceFileRepository @Inject constructor(
         }.flowOn(Dispatchers.IO)
     }
 
-    suspend fun uploadReferenceFile(
+    override suspend fun uploadReferenceFile(
         referenceFile: NetworkReferenceFile,
         space: VNSpace
     ): Flow<ManagedResult<NetworkReferenceFile>> {
@@ -79,7 +81,10 @@ class ReferenceFileRepository @Inject constructor(
         }.flowOn(Dispatchers.IO)
     }
 
-    suspend fun syncReferenceFile(spaceId: Long, root: VNFile): Flow<ManagedResult<NetworkReferenceFile>> {
+    override suspend fun syncReferenceFile(
+        spaceId: Long,
+        root: VNFile
+    ): Flow<ManagedResult<NetworkReferenceFile>> {
         return flow {
             val spaceResult = spaceRepository.getSpace(spaceId)
             spaceResult.collect {

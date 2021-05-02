@@ -12,20 +12,21 @@ import com.vaultionizer.vaultapp.data.model.rest.request.CreateSpaceRequest
 import com.vaultionizer.vaultapp.data.model.rest.result.ApiResult
 import com.vaultionizer.vaultapp.data.model.rest.result.ManagedResult
 import com.vaultionizer.vaultapp.data.model.rest.space.NetworkSpace
+import com.vaultionizer.vaultapp.repository.SpaceRepository
 import com.vaultionizer.vaultapp.service.SpaceService
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
-class SpaceRepository @Inject constructor(
+class SpaceRepositoryImpl @Inject constructor(
     val spaceService: SpaceService,
     val localSpaceDao: LocalSpaceDao,
     val localFileDao: LocalFileDao,
     val gson: Gson,
     val authCache: AuthCache
-) {
-    suspend fun getAllSpaces(): Flow<ManagedResult<List<VNSpace>>> {
+) : SpaceRepository {
+    override suspend fun getAllSpaces(): Flow<ManagedResult<List<VNSpace>>> {
         return flow {
             val response = spaceService.getAll()
 
@@ -43,13 +44,13 @@ class SpaceRepository @Inject constructor(
         }.flowOn(Dispatchers.IO)
     }
 
-    suspend fun getSpace(spaceId: Long): Flow<ManagedResult<VNSpace>> {
+    override suspend fun getSpace(spaceId: Long): Flow<ManagedResult<VNSpace>> {
         return flow {
             getAllSpaces().collect {
-                when(it) {
+                when (it) {
                     is ManagedResult.Success -> {
                         val space = localSpaceDao.getSpaceById(spaceId)
-                        if(space == null) {
+                        if (space == null) {
                             emit(ManagedResult.Error(404))
                         } else {
                             emit(ManagedResult.Success(it.data.first { it.id == spaceId }))
@@ -61,13 +62,16 @@ class SpaceRepository @Inject constructor(
         }.flowOn(Dispatchers.IO)
     }
 
-    suspend fun getSpaceRemoteId(spaceId: Long): Long? {
+    override suspend fun getSpaceRemoteId(spaceId: Long): Long? {
         return withContext(Dispatchers.IO) {
             return@withContext localSpaceDao.getSpaceById(spaceId)?.remoteSpaceId
         }
     }
 
-    suspend fun createSpace(name: String, isPrivate: Boolean): Flow<ManagedResult<VNSpace>> {
+    override suspend fun createSpace(
+        name: String,
+        isPrivate: Boolean
+    ): Flow<ManagedResult<VNSpace>> {
         return flow {
             // TODO(jatsqi) Replace LoremIpsum with real authKey
             val response = spaceService.createSpace(
@@ -94,7 +98,7 @@ class SpaceRepository @Inject constructor(
         }.flowOn(Dispatchers.IO)
     }
 
-    suspend fun deleteSpace(space: VNSpace): Flow<ManagedResult<VNSpace>> {
+    override suspend fun deleteSpace(space: VNSpace): Flow<ManagedResult<VNSpace>> {
         return flow {
 
             when (spaceService.deleteSpace(space.remoteId)) {
