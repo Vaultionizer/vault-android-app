@@ -20,6 +20,10 @@ abstract class RepositoryModule {
 
     @Binds
     @Singleton
+    abstract fun provideAuthRepository(authRepositoryImpl: AuthRepositoryImpl): AuthRepository
+
+    @Binds
+    @Singleton
     abstract fun provideSpaceRepository(spaceRepositoryImpl: SpaceRepositoryImpl): SpaceRepository
 
     @Binds
