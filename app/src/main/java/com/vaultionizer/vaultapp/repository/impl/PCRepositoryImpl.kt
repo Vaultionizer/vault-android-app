@@ -20,7 +20,7 @@ class PCRepositoryImpl @Inject constructor(
     private var pairs: ArrayList<PCPair> = ArrayList()
     private var categoryIdsUsed: HashSet<Int> = HashSet()
 
-    var changed: Boolean = false
+    override var changed: Boolean = false
         private set
 
     override fun createNewFile(name: String) {

@@ -6,7 +6,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vaultionizer.vaultapp.R
 import com.vaultionizer.vaultapp.data.model.domain.VNFile
-import com.vaultionizer.vaultapp.repository.impl.PCRepository
+import com.vaultionizer.vaultapp.repository.PCRepository
 import com.vaultionizer.vaultapp.ui.main.pc.InputPCNameFormState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch

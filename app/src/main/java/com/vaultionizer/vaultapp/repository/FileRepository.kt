@@ -7,6 +7,10 @@ import com.vaultionizer.vaultapp.data.model.rest.result.ManagedResult
 import kotlinx.coroutines.flow.Flow
 
 interface FileRepository {
+    companion object {
+        const val ROOT_FOLDER_ID = -1L
+    }
+
     suspend fun getFileTree(space: VNSpace): Flow<ManagedResult<VNFile>>
 
     suspend fun uploadFile(data: ByteArray, name: String, parent: VNFile)

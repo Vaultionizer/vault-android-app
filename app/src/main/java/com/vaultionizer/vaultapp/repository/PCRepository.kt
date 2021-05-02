@@ -4,6 +4,8 @@ import com.vaultionizer.vaultapp.data.model.domain.VNFile
 import com.vaultionizer.vaultapp.data.pc.PCFile
 
 interface PCRepository {
+    val changed: Boolean
+
     fun createNewFile(name: String)
 
     fun reset()

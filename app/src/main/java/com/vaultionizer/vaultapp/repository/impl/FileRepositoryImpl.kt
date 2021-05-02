@@ -43,10 +43,6 @@ class FileRepositoryImpl @Inject constructor(
     val syncRequestService: SyncRequestRepository,
 ) : FileRepository {
 
-    companion object {
-        const val ROOT_FOLDER_ID = -1L
-    }
-
     /**
      * Simple in memory cache for files.
      */
