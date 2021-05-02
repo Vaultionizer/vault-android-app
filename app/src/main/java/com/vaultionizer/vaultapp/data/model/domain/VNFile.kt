@@ -1,7 +1,6 @@
 package com.vaultionizer.vaultapp.data.model.domain
 
 import android.content.Context
-import android.util.Log
 import com.vaultionizer.vaultapp.data.db.entity.LocalFile
 import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkElement
 import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkFile
@@ -34,6 +33,8 @@ class VNFile(
     var createdAt: Long = System.currentTimeMillis()
     var lastSyncTimestamp: Long = System.currentTimeMillis()
     var state: State? = State.AVAILABLE_REMOTE
+    val isBusy: Boolean
+        get() = state == State.DOWNLOADING || state == State.UPLOADING
 
     // TODO(jatsqi) Refactor constructors
     constructor(
