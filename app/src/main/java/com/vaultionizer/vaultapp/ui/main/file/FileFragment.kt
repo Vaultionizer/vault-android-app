@@ -17,6 +17,7 @@ import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.afollestad.materialdialogs.MaterialDialog
 import com.arthurivanets.bottomsheets.BottomSheet
 import com.arthurivanets.bottomsheets.ktx.showActionPickerBottomSheet
 import com.arthurivanets.bottomsheets.sheets.listeners.OnItemSelectedListener
@@ -29,7 +30,6 @@ import com.vaultionizer.vaultapp.R
 import com.vaultionizer.vaultapp.data.model.domain.VNFile
 import com.vaultionizer.vaultapp.ui.viewmodel.MainActivityViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import dev.shreyaspatil.MaterialDialog.MaterialDialog
 
 private const val OPEN_FILE_INTENT_RC = 0
 
@@ -46,7 +46,7 @@ class FileFragment : Fragment(), View.OnClickListener {
     private lateinit var backPressedCallback: OnBackPressedCallback
 
     private var bottomSheet: BottomSheet? = null
-    private var backgroundProgressDialog: MaterialDialog? = null
+    private var fileStatusDialog: MaterialDialog? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -137,19 +137,6 @@ class FileFragment : Fragment(), View.OnClickListener {
         val efabLayout = view.findViewById<ExpandableFabLayout>(R.id.file_efab_layout)
         efabLayout.portraitConfiguration.fabOptions.forEach {
             it.setOnClickListener(this)
-        }
-
-        viewModel.fileDialogState.observe(viewLifecycleOwner) {
-            if (backgroundProgressDialog != null) {
-                if (it.isValid) {
-                    Log.e("Vault", "Hiding...")
-                    // backgroundProgressDialog?.hide()
-                } else {
-                    /* backgroundProgressDialog?.changeAlertType(SweetAlertDialog.ERROR_TYPE)
-                    backgroundProgressDialog?.setTitle(it.fileError!!)
-                    backgroundProgressDialog?.showContentText(false) */
-                }
-            }
         }
 
         viewModel.fileWorkerInfo.observe(viewLifecycleOwner) {

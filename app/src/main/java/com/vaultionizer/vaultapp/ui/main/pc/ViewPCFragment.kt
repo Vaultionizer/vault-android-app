@@ -17,6 +17,7 @@ import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.afollestad.materialdialogs.MaterialDialog
 import com.arthurivanets.bottomsheets.ktx.showActionPickerBottomSheet
 import com.arthurivanets.bottomsheets.sheets.ActionPickerBottomSheet
 import com.arthurivanets.bottomsheets.sheets.listeners.OnItemSelectedListener
@@ -30,7 +31,6 @@ import com.vaultionizer.vaultapp.ui.main.file.showDialog
 import com.vaultionizer.vaultapp.ui.viewmodel.MainActivityViewModel
 import com.vaultionizer.vaultapp.ui.viewmodel.PCViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import dev.shreyaspatil.MaterialDialog.MaterialDialog
 import kotlinx.android.synthetic.main.view_pc_category_list.view.*
 
 enum class PairOptions(val id: Long) {
@@ -130,14 +130,12 @@ class ViewPCFragment : Fragment(), ViewPCItemClickListener {
         if (viewModel.pcRepository.changed) {
             FileAlertDialogType.SAVE_FILE.createDialog(
                 requireActivity(),
-                { inf, _ ->
-                    inf.dismiss()
+                { _ ->
                     viewModel.saveFile(mainActivityViewModel.currentDirectory.value!!)
                     transitionBackToFileFragment()
                 },
-                { inf, _ ->
+                { _ ->
                     transitionBackToFileFragment()
-                    inf.dismiss()
                 }
             ).show()
         } else transitionBackToFileFragment()
@@ -157,7 +155,7 @@ class ViewPCFragment : Fragment(), ViewPCItemClickListener {
             onItemSelectedListener = OnItemSelectedListener {
                 when (it.id) {
                     PairOptions.DELETE.id -> {
-                        showDialog(FileAlertDialogType.DELETE_FILE) { _, _ ->
+                        showDialog(FileAlertDialogType.DELETE_FILE) { _ ->
                             viewModel.pcRepository.deletePair(pair.id)
                             refreshRecyclerView(pair.categoryId)
                         }
@@ -204,13 +202,13 @@ class ViewPCFragment : Fragment(), ViewPCItemClickListener {
                         )
                     }
                     CategoryOptions.DELETE_ONLY_CAT.id -> {
-                        showDialog(FileAlertDialogType.DELETE_ONLY_CATEGORY) { _, _ ->
+                        showDialog(FileAlertDialogType.DELETE_ONLY_CATEGORY) { _ ->
                             viewModel.pcRepository.deleteOnlyCategory(category.id)
                             refreshRecyclerView()
                         }
                     }
                     CategoryOptions.DELETE_CAT_AND_PAIRS.id -> {
-                        showDialog(FileAlertDialogType.DELETE_CATEGORY_AND_PAIRS) { _, _ ->
+                        showDialog(FileAlertDialogType.DELETE_CATEGORY_AND_PAIRS) { _ ->
                             viewModel.pcRepository.deleteCategoryAndPairs(category.id)
                             refreshRecyclerView()
                         }

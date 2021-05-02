@@ -1,18 +1,15 @@
 package com.vaultionizer.vaultapp.ui.main.file
 
-import android.app.Activity
+import android.content.Context
 import androidx.fragment.app.Fragment
+import com.afollestad.materialdialogs.MaterialDialog
 import com.vaultionizer.vaultapp.R
-import dev.shreyaspatil.MaterialDialog.MaterialDialog
-import dev.shreyaspatil.MaterialDialog.interfaces.DialogInterface
 
 enum class FileAlertDialogType(
     val titleTextId: Int,
     val messageTextId: Int?,
     val positiveButtonTextId: Int = R.string.all_confirm,
     val negativeButtonTextId: Int? = R.string.all_cancel,
-    val positiveIcon: Int = R.drawable.ic_baseline_check_white_24,
-    val negativeIcon: Int? = R.drawable.ic_baseline_clear_white_24
 ) {
 
     DELETE_FILE(
@@ -46,69 +43,52 @@ enum class FileAlertDialogType(
     );
 
     fun createDialog(
-        activity: Activity,
-        positiveClick: (DialogInterface, Int) -> Unit,
-        negativeClick: ((DialogInterface, Int) -> Unit)? = null
+        activity: Context,
+        positiveClick: (MaterialDialog) -> Unit,
+        negativeClick: ((MaterialDialog) -> Unit)? = null
     ): MaterialDialog {
-        val dialog = MaterialDialog.Builder(activity)
-            .setTitle(activity.getString(titleTextId))
-            .setPositiveButton(
-                activity.getString(positiveButtonTextId),
-                positiveIcon
-            ) { inf, which ->
-                positiveClick(inf, which)
-                inf.dismiss()
-            }
+        val dialog = MaterialDialog(activity)
+            .title(titleTextId)
+            .positiveButton(positiveButtonTextId, click = { dialog ->
+                positiveClick(dialog)
+                dialog.dismiss()
+            })
 
-        negativeButtonTextId?.let {
-            if (negativeIcon != null) {
-                dialog.setNegativeButton(
-                    activity.getString(negativeButtonTextId),
-                    negativeIcon
-                ) { inf, which ->
-                    negativeClick?.let {
-                        negativeClick(inf, which)
-                    }
-                    inf.dismiss()
+        if (negativeButtonTextId != null) {
+            dialog.negativeButton(negativeButtonTextId, click = { dialog ->
+                if (negativeClick != null) {
+                    negativeClick(dialog)
                 }
-            } else {
-                dialog.setNegativeButton(
-                    activity.getString(negativeButtonTextId),
-                ) { inf, which ->
-                    negativeClick?.let {
-                        negativeClick(inf, which)
-                    }
-                    inf.dismiss()
-                }
-            }
+                dialog.dismiss()
+            })
         }
 
         messageTextId?.let {
-            dialog.setMessage(activity.getString(messageTextId))
+            dialog.message(messageTextId)
         }
 
-        return dialog.build()
+        return dialog
     }
 }
 
 fun Fragment.createDialog(
-    type: FileAlertDialogType, positiveClick: (DialogInterface, Int) -> Unit
-): MaterialDialog = type.createDialog(requireActivity(), positiveClick)
+    type: FileAlertDialogType, positiveClick: (MaterialDialog) -> Unit
+): MaterialDialog = type.createDialog(requireContext(), positiveClick)
 
 fun Fragment.createDialog(
-    type: FileAlertDialogType, positiveClick: (DialogInterface, Int) -> Unit,
-    negativeClick: (DialogInterface, Int) -> Unit
-): MaterialDialog = type.createDialog(requireActivity(), positiveClick, negativeClick)
+    type: FileAlertDialogType, positiveClick: (MaterialDialog) -> Unit,
+    negativeClick: (MaterialDialog) -> Unit
+): MaterialDialog = type.createDialog(requireContext(), positiveClick, negativeClick)
 
 fun Fragment.showDialog(
-    type: FileAlertDialogType, positiveClick: (DialogInterface, Int) -> Unit
+    type: FileAlertDialogType, positiveClick: (MaterialDialog) -> Unit
 ) {
     createDialog(type, positiveClick).show()
 }
 
 fun Fragment.showDialog(
-    type: FileAlertDialogType, positiveClick: (DialogInterface, Int) -> Unit,
-    negativeClick: (DialogInterface, Int) -> Unit
+    type: FileAlertDialogType, positiveClick: (MaterialDialog) -> Unit,
+    negativeClick: (MaterialDialog) -> Unit
 ) {
     createDialog(type, positiveClick, negativeClick).show()
 }
