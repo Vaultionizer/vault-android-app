@@ -68,7 +68,7 @@ class FileExchangeServiceImpl @Inject constructor(
             val downloadSession = stompClient.connect(
                 String.format(
                     WEB_SOCKET_TEMPLATE,
-                    authCache.loggedInUser!!.localUser?.endpoint
+                    authCache.loggedInUser!!.localUser.endpoint
                 )
             )
 

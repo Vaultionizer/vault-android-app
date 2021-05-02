@@ -29,7 +29,7 @@ class MiscRepositoryImpl @Inject constructor(val retrofit: Retrofit) : MiscRepos
                 ApiResult.NetworkError::class -> emit(ManagedResult.NetworkError((response as ApiResult.NetworkError).exception))
                 ApiResult.Error::class -> emit(
                     ManagedResult.MiscError.HostServerError(
-                        statusCode = (response as ApiResult.Error).statusCode ?: -1
+                        statusCode = (response as ApiResult.Error).statusCode
                     )
                 )
                 else -> emit(ManagedResult.Success((response as ApiResult.Success).data))

@@ -24,7 +24,7 @@ abstract class RepositoryModule {
 
     @Binds
     @Singleton
-    abstract fun provideFileRepository(fileRepositoryImpl: ReferenceFileRepositoryImpl): FileRepository
+    abstract fun provideFileRepository(fileRepositoryImpl: FileRepositoryImpl): FileRepository
 
     @Binds
     @Singleton
