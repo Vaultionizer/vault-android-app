@@ -412,6 +412,9 @@ class FileRepositoryImpl @Inject constructor(
             }
 
             fileCaches[space.id]?.addFile(vnFile)
+            if (vnFile.isDownloaded(applicationContext)) {
+                vnFile.state = VNFile.State.AVAILABLE_OFFLINE
+            }
 
             if (children != null) {
                 flatChildrenTree[it.fileId] = children

@@ -85,7 +85,9 @@ class FileFragment : Fragment(), View.OnClickListener {
                         return@FileRecyclerAdapter
                     }
 
-                    viewModel.requestDownload(file)
+                    if (!file.isBusy && file.state != VNFile.State.AVAILABLE_OFFLINE) {
+                        viewModel.requestDownload(file)
+                    }
                 },
                 optionsClickListener = { file ->
                     showBottomSheetForFile(file)
