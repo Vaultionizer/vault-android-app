@@ -1,16 +1,14 @@
 package com.vaultionizer.vaultapp.ui.viewmodel
 
-import android.content.ContentResolver
 import android.content.Context
-import android.database.Cursor
 import android.net.Uri
-import android.provider.OpenableColumns
 import android.util.Log
-import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.work.WorkInfo
+import androidx.work.WorkManager
 import com.vaultionizer.vaultapp.R
 import com.vaultionizer.vaultapp.data.model.domain.VNFile
 import com.vaultionizer.vaultapp.data.model.domain.VNSpace
@@ -18,15 +16,20 @@ import com.vaultionizer.vaultapp.data.model.rest.result.ManagedResult
 import com.vaultionizer.vaultapp.repository.FileRepository
 import com.vaultionizer.vaultapp.repository.SpaceRepository
 import com.vaultionizer.vaultapp.ui.main.file.FileDialogState
+import com.vaultionizer.vaultapp.util.Constants
+import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import java.util.*
+import javax.inject.Inject
 
-
-class MainActivityViewModel @ViewModelInject constructor(
+@HiltViewModel
+class MainActivityViewModel @Inject constructor(
+    @ApplicationContext val context: Context,
     val spaceRepository: SpaceRepository,
     val fileRepository: FileRepository
-): ViewModel() {
+) : ViewModel() {
 
     private val _userSpaces = MutableLiveData<List<VNSpace>>()
     val userSpaces: LiveData<List<VNSpace>> = _userSpaces
@@ -43,12 +46,15 @@ class MainActivityViewModel @ViewModelInject constructor(
     private val _fileDialogState = MutableLiveData<FileDialogState>()
     val fileDialogState: LiveData<FileDialogState> = _fileDialogState
 
+    val fileWorkerInfo: LiveData<List<WorkInfo>> =
+        WorkManager.getInstance(context).getWorkInfosByTagLiveData(Constants.WORKER_TAG_FILE)
+
     fun updateUserSpaces() {
         viewModelScope.launch {
             val result = spaceRepository.getAllSpaces()
 
             result.collect {
-                if(it is ManagedResult.Success) {
+                if (it is ManagedResult.Success) {
                     _userSpaces.value = it.data
                 }
             }
@@ -57,17 +63,17 @@ class MainActivityViewModel @ViewModelInject constructor(
 
     private fun updateCurrentFiles() {
         viewModelScope.launch {
-            if(_selectedSpace.value == null) {
+            if (_selectedSpace.value == null) {
                 return@launch
             }
 
-            if(_currentDirectory.value != null) {
+            if (_currentDirectory.value != null) {
                 _shownElements.value = _currentDirectory.value!!.content
             } else {
                 val response = fileRepository.getFileTree(_selectedSpace.value!!)
 
                 response.collect {
-                    when(it) {
+                    when (it) {
                         is ManagedResult.Success -> {
                             _currentDirectory.value = it.data
                             updateCurrentFiles()
@@ -78,35 +84,27 @@ class MainActivityViewModel @ViewModelInject constructor(
         }
     }
 
-    fun requestUpload(uri: Uri, context: Context) {
+    fun requestUpload(uri: Uri) {
         viewModelScope.launch {
-            val resolver = context.contentResolver
-            resolver.openInputStream(uri)?.use {
-                val content = it.readBytes()
+            fileRepository.uploadFile(
+                _currentDirectory.value!!,
+                uri
+            )
+            _fileDialogState.value = FileDialogState(isValid = true)
+        }
+    }
 
-                fileRepository.uploadFile(selectedSpace.value!!, _currentDirectory.value!!, content, getFileName(uri, resolver) ?: "?? Unknown ??", context).collect {
-                    updateCurrentFiles()
-
-                    _fileDialogState.value = FileDialogState(isValid = true)
-                }
-            }
+    fun requestDownload(file: VNFile) {
+        viewModelScope.launch {
+            fileRepository.downloadFile(file)
         }
     }
 
     fun requestFolder(name: String) {
-        if(_selectedSpace.value != null && _currentDirectory.value != null) {
+        if (_selectedSpace.value != null && _currentDirectory.value != null) {
             viewModelScope.launch {
-                fileRepository.uploadFolder(_selectedSpace.value!!, name, _currentDirectory.value!!).collect {
-                    when(it) {
-                        is ManagedResult.Success -> {
-                            updateCurrentFiles()
-                            _fileDialogState.value = FileDialogState(isValid = true)
-                        }
-                        else -> {
-                            _fileDialogState.value = FileDialogState(fileError = R.string.host_error_network)
-                        }
-                    }
-                }
+                fileRepository.uploadFolder(_selectedSpace.value!!, name, _currentDirectory.value!!)
+                updateCurrentFiles()
             }
         }
     }
@@ -114,13 +112,14 @@ class MainActivityViewModel @ViewModelInject constructor(
     fun requestDeletion(file: VNFile) {
         viewModelScope.launch {
             fileRepository.deleteFile(file).collect {
-                when(it) {
+                when (it) {
                     is ManagedResult.Success -> {
                         _fileDialogState.value = FileDialogState(isValid = true)
                         updateCurrentFiles()
                     }
                     else -> { // TODO(jatsqi) Error handling
-                        _fileDialogState.value = FileDialogState(fileError = R.string.host_error_network)
+                        _fileDialogState.value =
+                            FileDialogState(fileError = R.string.host_error_network)
                     }
                 }
             }
@@ -128,15 +127,14 @@ class MainActivityViewModel @ViewModelInject constructor(
     }
 
     fun requestSpaceDeletion() {
-        if(_userSpaces.value?.size?.minus(1) == 0) return
+        if (_userSpaces.value?.size?.minus(1) == 0) return
         viewModelScope.launch {
             spaceRepository.deleteSpace(_selectedSpace.value!!).collect {
-                when(it) {
+                when (it) {
                     is ManagedResult.Success -> {
                         val spaces = _userSpaces.value!!.toMutableList()
                         spaces.remove(it)
 
-                        fileRepository.cacheEvict(it.data.id)
                         _selectedSpace.value = spaces[0]
                         _currentDirectory.value = null
                         updateUserSpaces()
@@ -158,17 +156,17 @@ class MainActivityViewModel @ViewModelInject constructor(
 
     fun onDirectoryChange(newFolder: VNFile?) {
         Log.d("Vault", "Change")
-        if(_selectedSpace.value == null) return
-        if(_currentDirectory.value == null && newFolder == null) return
+        if (_selectedSpace.value == null) return
+        if (_currentDirectory.value == null && newFolder == null) return
 
         val currentDir = _currentDirectory.value
-        if(currentDir != null) {
-            if(newFolder == null && currentDir.parent != null) {
+        if (currentDir != null) {
+            if (newFolder == null && currentDir.parent != null) {
                 _currentDirectory.value = currentDir.parent
             }
         }
 
-        if(newFolder != null) {
+        if (newFolder != null) {
             _currentDirectory.value = newFolder
         }
 
@@ -176,11 +174,11 @@ class MainActivityViewModel @ViewModelInject constructor(
     }
 
     fun onSearchQuery(query: String?) {
-        if(query == null || query.isEmpty()) {
+        if (query == null || query.isEmpty()) {
             updateCurrentFiles()
             return
         }
-        if(_currentDirectory.value != null) {
+        if (_currentDirectory.value != null) {
             val list = mutableListOf<VNFile>()
             buildSearchList(query.toLowerCase(), _currentDirectory.value!!, list)
 
@@ -189,40 +187,22 @@ class MainActivityViewModel @ViewModelInject constructor(
     }
 
     private fun buildSearchList(query: String, file: VNFile, list: MutableList<VNFile>) {
-        if(file.isFolder) {
+        if (file.isFolder) {
             file.content?.forEach {
                 Log.e("Vault", it.name)
 
-                if(it.name.toLowerCase().contains(query)) {
+                if (it.name.toLowerCase().contains(query)) {
                     list.add(it)
                 }
 
-                if(it.isFolder) buildSearchList(query, it, list)
+                if (it.isFolder) buildSearchList(query, it, list)
             }
         }
     }
 
-    // https://stackoverflow.com/questions/5568874/how-to-extract-the-file-name-from-uri-returned-from-intent-action-get-content
-    private fun getFileName(uri: Uri, contentResolver: ContentResolver): String? {
-        var result: String? = null
-        if (uri.scheme == "content") {
-            val cursor: Cursor? = contentResolver.query(uri, null, null, null, null)
-            try {
-                if (cursor != null && cursor.moveToFirst()) {
-                    result = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME))
-                }
-            } finally {
-                cursor?.close()
-            }
+    fun onWorkerInfoChange() {
+        viewModelScope.launch {
+            updateCurrentFiles()
         }
-        if (result == null) {
-            result = uri.path
-            val cut = result!!.lastIndexOf('/')
-            if (cut != -1) {
-                result = result.substring(cut + 1)
-            }
-        }
-        return result
     }
-
 }

@@ -2,11 +2,11 @@ package com.vaultionizer.vaultapp.ui.auth.register
 
 import android.graphics.Color
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
@@ -39,16 +39,17 @@ class RegisterStepHostFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        val hostInputFragment = childFragmentManager.findFragmentById(R.id.fragment_part_host) as HostInputFragment
+        val hostInputFragment =
+            childFragmentManager.findFragmentById(R.id.fragment_part_host) as HostInputFragment
         val continueButton = view.findViewById<Button>(R.id.button_continue)
 
         bindProgressButton(continueButton)
         continueButton.attachTextChangeAnimator()
 
-        authViewModel.hostValidationResult.observe(viewLifecycleOwner, Observer {
+        authViewModel.hostValidationResult.observe(viewLifecycleOwner, {
             continueButton.hideProgress(R.string.all_continue)
-            if(it == null) return@Observer
-            if(it.version != null) {
+            if (it == null) return@observe
+            if (it.version != null) {
                 val action =
                     RegisterStepHostFragmentDirections.actionRegisterStepHostFragmentToRegisterStepUserFragment3()
                 findNavController().navigate(action)
@@ -58,7 +59,7 @@ class RegisterStepHostFragment : Fragment() {
         })
 
         continueButton.isEnabled = false
-        authViewModel.hostFormState.observe(viewLifecycleOwner, Observer {
+        authViewModel.hostFormState.observe(viewLifecycleOwner, {
             continueButton.isEnabled = it.hostValid
         })
 

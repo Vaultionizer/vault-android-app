@@ -2,40 +2,47 @@ package com.vaultionizer.vaultapp.cryptography
 
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
+import android.security.keystore.KeyProtection
+import com.vaultionizer.vaultapp.cryptography.dataclasses.IvCipher
 import com.vaultionizer.vaultapp.util.Constants
+import java.security.KeyStore
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 import javax.crypto.spec.GCMParameterSpec
 
+class AesGcmNopadding : CryptoClass() {
 
-class AesGcmNopadding : CryptoClass(){
-
-    companion object{
+    companion object {
         const val TAG_LENGTH = 16
         const val TRANSFORMATION = "AES/GCM/NoPadding"
         const val BLOCK_MODE_IV_SIZE = 12
     }
 
-
-    override fun generateKey(keystoreAlias : String): SecretKey {
-        val keyGenerator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, Constants.VN_KEYSTORE_PROVIDER)
-        val kgps = KeyGenParameterSpec.Builder(keystoreAlias, KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT)
-                .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
-                .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
-                .setRandomizedEncryptionRequired(false)
-                .setKeySize(256)
-                .build()
+    override fun generateSingleUserKey(keystoreAlias: String) {
+        val keyGenerator = KeyGenerator.getInstance(
+            KeyProperties.KEY_ALGORITHM_AES,
+            Constants.VN_KEYSTORE_PROVIDER
+        )
+        val kgps = KeyGenParameterSpec.Builder(
+            keystoreAlias,
+            KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT
+        )
+            .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
+            .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
+            .setRandomizedEncryptionRequired(false)
+            .setKeySize(256)
+            .build()
         keyGenerator.init(kgps)
-        return keyGenerator.generateKey()
+        keyGenerator.generateKey()
     }
 
-    override fun encrypt(key: SecretKey, message: ByteArray): Pair<ByteArray, ByteArray> {
+    override fun encrypt(key: SecretKey, message: ByteArray): IvCipher {
         val cipher = Cipher.getInstance(TRANSFORMATION)
         cipher.init(Cipher.ENCRYPT_MODE, key)
         val iv = cipher.iv.copyOf()
         val cipherText = cipher.doFinal(message)
-        return Pair(iv, cipherText)
+        return IvCipher(iv, cipherText)
     }
 
     override fun decrypt(key: SecretKey, iv: ByteArray, message: ByteArray): ByteArray {
@@ -45,17 +52,23 @@ class AesGcmNopadding : CryptoClass(){
         return cipher.doFinal(message)
     }
 
-    override fun dewrapper(warp : ByteArray) : Pair<ByteArray,ByteArray>{
-        val iv : ByteArray = warp.sliceArray(0 until BLOCK_MODE_IV_SIZE)
-        val cipherText : ByteArray = warp.sliceArray(BLOCK_MODE_IV_SIZE until warp.size)
+    override fun dewrapper(warp: ByteArray): IvCipher {
+        val iv: ByteArray = warp.sliceArray(0 until BLOCK_MODE_IV_SIZE)
+        val cipherText: ByteArray = warp.sliceArray(BLOCK_MODE_IV_SIZE until warp.size)
 
-        return Pair(iv, cipherText)
+        return IvCipher(iv, cipherText)
     }
 
-    /*
-    vaultionizer_{VaultID}
-    TODO Multiple and TTL of Keys
-     */
+    override fun addKeyToKeyStore(secretKey: SecretKey, keystoreAlias: String) {
+        val keyStore: KeyStore = KeyStore.getInstance("AndroidKeyStore")
+        keyStore.load(null)
+        keyStore.setEntry(
+            keystoreAlias,
+            KeyStore.SecretKeyEntry(secretKey),
+            KeyProtection.Builder(KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT)
+                .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
+                .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
+                .build()
+        )
+    }
 }
-
-

@@ -9,7 +9,7 @@ sonarqube {
     properties {
         property "sonar.projectKey", "vault-android-app"
         property "sonar.projectName", "vault-android-app"
-        property "sonar.sources", "src/main/java"
+        property "sonar.sources", "src"
         property "sonar.binaries", ["build/intermediates/javac/debug/classes"]
         property "sonar.java.binaries", ["build/intermediates/javac/debug/classes"]
         property "sonar.tests", ["src/test/java", "src/androidTest/java"]
@@ -56,6 +56,17 @@ android {
     kotlinOptions {
         jvmTarget = '1.8'
     }
+    packagingOptions {
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/license.txt'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/NOTICE.txt'
+        exclude 'META-INF/notice.txt'
+        exclude 'META-INF/ASL2.0'
+        exclude("META-INF/*.kotlin_module")
+    }
 }
 
 dependencies {
@@ -66,67 +77,80 @@ dependencies {
     implementation "androidx.activity:activity-ktx:1.1.0"
     implementation 'com.google.android.material:material:1.2.1'
     implementation 'androidx.constraintlayout:constraintlayout:2.0.1'
-    implementation 'androidx.navigation:navigation-fragment-ktx:2.3.0'
+    implementation 'androidx.navigation:navigation-fragment-ktx:2.3.5'
     implementation 'androidx.navigation:navigation-ui-ktx:2.3.0'
     implementation 'androidx.annotation:annotation:1.1.0'
     implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.2.0'
     implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.2.0'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+
+    // Networking
     implementation 'com.squareup.retrofit2:retrofit:2.9.0'
     implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
     implementation "com.squareup.okhttp3:okhttp:4.9.0"
     implementation "com.squareup.okhttp3:logging-interceptor:4.9.0"
+
+    // ProgressButton
     implementation 'com.github.razir.progressbutton:progressbutton:2.1.0'
 
     // Material drawer
     implementation "com.mikepenz:materialdrawer:8.1.8"
 
-    //required support lib modules
+    // Required support lib modules
     implementation "androidx.recyclerview:recyclerview:1.2.0-alpha06"
 
     // Add for NavController support
-    implementation "com.mikepenz:materialdrawer-nav:8.1.8"
+    implementation "com.mikepenz:materialdrawer-nav:8.4.0"
 
     // Add for Android-Iconics support
     implementation "com.mikepenz:materialdrawer-iconics:8.1.8"
 
     // WebSocket
-    implementation 'com.github.NaikSoftware:StompProtocolAndroid:1.6.6'
+    implementation 'org.hildan.krossbow:krossbow-stomp-core:1.3.1'
+    implementation 'org.hildan.krossbow:krossbow-websocket-okhttp:1.3.1'
+
+    // Expandable FAB
     implementation 'com.nambimobile.widgets:expandable-fab:1.0.2'
 
-    implementation "com.mikepenz:iconics-core:5.0.3"
-    implementation 'com.mikepenz:google-material-typeface:3.0.1.4.original-kotlin@aar'
-    implementation 'com.mikepenz:fontawesome-typeface:5.9.0.0-kotlin@aar'
-    implementation "com.mikepenz:iconics-views:5.0.3"
-
+    // Material Search Bar
     implementation 'com.github.mancj:MaterialSearchBar:0.8.5'
 
+    // Iconics
+    implementation "com.mikepenz:iconics-core:5.2.8"
+    implementation "com.mikepenz:iconics-views:5.2.8"
+    implementation 'com.mikepenz:google-material-typeface-outlined:4.0.0.1-kotlin@aar'
+    implementation 'com.mikepenz:fontawesome-typeface:5.9.0.2-kotlin@aar'
+
     implementation 'androidx.hilt:hilt-lifecycle-viewmodel:1.0.0-alpha01'
-    implementation "com.google.dagger:hilt-android:2.28-alpha"
-    kapt "com.google.dagger:hilt-android-compiler:2.28-alpha"
-    kapt 'androidx.hilt:hilt-compiler:1.0.0-alpha01'
+    implementation "com.google.dagger:hilt-android:$hilt_version"
+    kapt "com.google.dagger:hilt-android-compiler:$hilt_version"
 
     // Lorem Ipsum
     implementation 'com.thedeanda:lorem:2.1'
-
-    // Rx Java
-    implementation 'io.reactivex.rxjava2:rxandroid:2.1.1'
-    implementation "io.reactivex.rxjava2:rxjava:2.2.20"
 
     // Bottom Sheet
     implementation "com.arthurivanets.bottomsheet:bottomsheets-core:1.2.0"
     implementation "com.arthurivanets.bottomsheet:bottomsheets-sheets:1.2.0"
     implementation "com.arthurivanets.bottomsheet:bottomsheets-ktx:1.2.0"
 
-    // ROOM
+    // Room data persistance
     def room_version = "2.2.5"
     implementation "androidx.room:room-runtime:$room_version"
     kapt "androidx.room:room-compiler:$room_version"
     implementation "androidx.room:room-ktx:$room_version"
 
-    // Sweet ALterts
-    implementation 'com.github.f0ris.sweetalert:library:1.6.2'
+    // Material Dialogs
+    implementation 'com.afollestad.material-dialogs:core:3.3.0'
+    implementation 'com.afollestad.material-dialogs:input:3.3.0'
+    implementation 'com.afollestad.material-dialogs:files:3.3.0'
 
+    // WorkManager
+    def work_version = "2.5.0"
+    implementation "androidx.work:work-runtime-ktx:$work_version"
+    kapt 'androidx.hilt:hilt-compiler:1.0.0-beta01'
+    implementation 'androidx.hilt:hilt-work:1.0.0-beta01'
+
+    // Testing
     testImplementation 'junit:junit:4.12'
     testImplementation "androidx.room:room-testing:$room_version"
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
@@ -134,6 +158,10 @@ dependencies {
     androidTestImplementation 'info.cukes:cucumber-android:1.2.5@jar'
     androidTestImplementation 'info.cukes:cucumber-picocontainer:1.2.5'
     androidTestImplementation 'com.android.support:support-annotations:26.1.0'
+    androidTestImplementation 'com.google.truth:truth:1.0.1'
+
+    // Startup
+    implementation "androidx.startup:startup-runtime:1.0.0"
 }
 
 def getInstrumentation() {

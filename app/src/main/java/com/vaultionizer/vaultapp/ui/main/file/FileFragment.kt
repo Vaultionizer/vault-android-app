@@ -1,14 +1,12 @@
 package com.vaultionizer.vaultapp.ui.main.file
 
 import android.app.Activity
-import android.app.AlertDialog
-import android.content.DialogInterface
 import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.view.*
 import android.view.animation.AnimationUtils
-import android.widget.EditText
 import android.widget.ProgressBar
 import android.widget.SearchView
 import android.widget.TextView
@@ -16,9 +14,12 @@ import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.Observer
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import cn.pedant.SweetAlert.SweetAlertDialog
+import com.afollestad.materialdialogs.MaterialDialog
+import com.afollestad.materialdialogs.input.getInputField
+import com.afollestad.materialdialogs.input.input
 import com.arthurivanets.bottomsheets.BottomSheet
 import com.arthurivanets.bottomsheets.ktx.showActionPickerBottomSheet
 import com.arthurivanets.bottomsheets.sheets.listeners.OnItemSelectedListener
@@ -31,7 +32,6 @@ import com.vaultionizer.vaultapp.R
 import com.vaultionizer.vaultapp.data.model.domain.VNFile
 import com.vaultionizer.vaultapp.ui.viewmodel.MainActivityViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.android.synthetic.main.fragment_file_list.*
 
 private const val OPEN_FILE_INTENT_RC = 0
 
@@ -48,7 +48,7 @@ class FileFragment : Fragment(), View.OnClickListener {
     private lateinit var backPressedCallback: OnBackPressedCallback
 
     private var bottomSheet: BottomSheet? = null
-    private var backgroundProgressDialog: SweetAlertDialog? = null
+    private var fileStatusDialog: MaterialDialog? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -78,11 +78,15 @@ class FileFragment : Fragment(), View.OnClickListener {
         requireActivity().onBackPressedDispatcher.addCallback(backPressedCallback)
 
         viewModel.shownElements.observe(viewLifecycleOwner, Observer {
-
             fileAdapter = FileRecyclerAdapter(
                 clickListener = { file ->
                     if (file.isFolder) {
                         viewModel.onDirectoryChange(file)
+                        return@FileRecyclerAdapter
+                    }
+
+                    if (!file.isBusy && file.state != VNFile.State.AVAILABLE_OFFLINE) {
+                        viewModel.requestDownload(file)
                     }
                 },
                 optionsClickListener = { file ->
@@ -106,7 +110,7 @@ class FileFragment : Fragment(), View.OnClickListener {
         })
 
         viewModel.currentDirectory.observe(viewLifecycleOwner) {
-            if(it != null) {
+            if (it != null) {
                 backPressedCallback.isEnabled = it.parent != null
                 pathRecyclerAdapter.changeHierarchy(it)
             }
@@ -139,17 +143,8 @@ class FileFragment : Fragment(), View.OnClickListener {
             it.setOnClickListener(this)
         }
 
-        viewModel.fileDialogState.observe(viewLifecycleOwner) {
-            if(backgroundProgressDialog != null) {
-                if(it.isValid) {
-                    Log.e("Vault", "Hiding...")
-                    backgroundProgressDialog?.hide()
-                } else {
-                    backgroundProgressDialog?.changeAlertType(SweetAlertDialog.ERROR_TYPE)
-                    backgroundProgressDialog?.setTitle(it.fileError!!)
-                    backgroundProgressDialog?.showContentText(false)
-                }
-            }
+        viewModel.fileWorkerInfo.observe(viewLifecycleOwner) {
+            viewModel.onWorkerInfoChange()
         }
     }
 
@@ -182,7 +177,7 @@ class FileFragment : Fragment(), View.OnClickListener {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean =
-        when(item.itemId) {
+        when (item.itemId) {
             R.id.action_space_delete -> {
                 viewModel.requestSpaceDeletion()
                 true
@@ -194,59 +189,43 @@ class FileFragment : Fragment(), View.OnClickListener {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         if (requestCode == OPEN_FILE_INTENT_RC
-            && resultCode == Activity.RESULT_OK) {
+            && resultCode == Activity.RESULT_OK
+        ) {
             data?.data?.also { uri ->
-                viewModel.requestUpload(uri, requireContext())
+                viewModel.requestUpload(uri)
             }
         }
     }
 
     override fun onClick(v: View?) {
-        when(v?.id) {
+        when (v?.id) {
             R.id.fab_option_upload_file -> onClickFileUpload(v)
             R.id.fab_option_upload_folder -> onClickFolderUpload(v)
+            R.id.fab_option_create_pc -> onClickCreatePC(v)
         }
     }
 
     private fun onClickFolderUpload(view: View) {
-        val tempView = EditText(requireContext())
-        SweetAlertDialog(requireContext(), SweetAlertDialog.NORMAL_TYPE)
-            .setTitleText("Create folder")
-            .setConfirmText("Create")
-            .setCustomView(tempView)
-            .setConfirmClickListener {
-                if(!tempView.text.trim().isEmpty()) {
-                    it.dismiss()
-                    showProgressDialog("Creating folder")
-                    viewModel.requestFolder(tempView.text.trim().toString())
-                }
+        val dialog = MaterialDialog(requireContext()).show {
+            input { dialog, text ->
+                viewModel.requestFolder(text.toString())
             }
-            .setCancelClickListener(null)
-            .show()
-    }
-
-    private fun showProgressDialog(text: String) {
-        backgroundProgressDialog = SweetAlertDialog(requireContext(), SweetAlertDialog.PROGRESS_TYPE).setTitleText(text)
-        backgroundProgressDialog?.show()
-    }
-
-    private fun showConfirmationDialog(type: FileAlertDialogType, onConfirmation: () -> Unit) {
-        backgroundProgressDialog = SweetAlertDialog(requireContext(), SweetAlertDialog.WARNING_TYPE)
-            .setTitleText(getString(type.titleTextId))
-            .setContentText(getString(type.contentText))
-            .setConfirmText(getString(type.confirmText))
-            .setConfirmClickListener { sDialog ->
-                sDialog.changeAlertType(SweetAlertDialog.PROGRESS_TYPE)
-                sDialog.hideConfirmButton()
-                onConfirmation()
-            }
-        backgroundProgressDialog?.show()
+            title(R.string.file_viewer_create_folder_title)
+            positiveButton(R.string.all_confirm)
+        }
+        dialog.getInputField().setBackgroundColor(Color.WHITE)
+        dialog.show()
     }
 
     private fun onClickFileUpload(view: View) {
         val intent = Intent(Intent.ACTION_GET_CONTENT)
         intent.type = "*/*"
         startActivityForResult(intent, OPEN_FILE_INTENT_RC)
+    }
+
+    private fun onClickCreatePC(view: View) {
+        val action = FileFragmentDirections.actionFileFragmentToCreatePersonalContainerFragment()
+        findNavController().navigate(action)
     }
 
     private fun getActionOptions(): List<Option> {
@@ -264,9 +243,9 @@ class FileFragment : Fragment(), View.OnClickListener {
             options = getActionOptions(),
             onItemSelectedListener = OnItemSelectedListener {
                 if (it.id == FileBottomSheetOption.DELETE.id) {
-                    showConfirmationDialog(FileAlertDialogType.DELETE_FILE) {
+                    showDialog(FileAlertDialogType.DELETE_FILE, positiveClick = { _ ->
                         viewModel.requestDeletion(file)
-                    }
+                    })
                 }
                 bottomSheet?.dismiss()
             }

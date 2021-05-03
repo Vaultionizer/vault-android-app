@@ -4,16 +4,17 @@ import android.content.Context
 import androidx.room.Room
 import com.vaultionizer.vaultapp.data.db.VaultionizerLocalDatabase
 import com.vaultionizer.vaultapp.data.db.dao.LocalFileDao
+import com.vaultionizer.vaultapp.data.db.dao.LocalFileSyncRequestDao
 import com.vaultionizer.vaultapp.data.db.dao.LocalSpaceDao
 import com.vaultionizer.vaultapp.data.db.dao.LocalUserDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.components.ApplicationComponent
 import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.components.SingletonComponent
 
 @Module
-@InstallIn(ApplicationComponent::class)
+@InstallIn(SingletonComponent::class)
 object DatabaseModule {
 
     @Provides
@@ -24,9 +25,13 @@ object DatabaseModule {
     fun provideUserDao(database: VaultionizerLocalDatabase): LocalUserDao = database.localUserDao()
 
     @Provides
-    fun provideSpaceDao(database: VaultionizerLocalDatabase): LocalSpaceDao = database.localSpaceDao()
+    fun provideSpaceDao(database: VaultionizerLocalDatabase): LocalSpaceDao =
+        database.localSpaceDao()
 
     @Provides
     fun provideFileDao(database: VaultionizerLocalDatabase): LocalFileDao = database.localFileDao()
+
+    @Provides
+    fun provideFileSyncRequestDao(database: VaultionizerLocalDatabase): LocalFileSyncRequestDao = database.localFileSyncRequestDao()
 
 }

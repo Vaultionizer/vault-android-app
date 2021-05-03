@@ -1,8 +1,7 @@
 package com.vaultionizer.vaultapp.ui.auth
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import androidx.navigation.findNavController
+import androidx.appcompat.app.AppCompatActivity
 import com.vaultionizer.vaultapp.R
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -13,6 +12,6 @@ class AuthenticationActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_authentication)
 
-        val controller = findNavController(R.id.nav_auth_host)
+        //supportActionBar!!.setBackgroundDrawable(ColorDrawable(Color.parseColor("#ffffff")))
     }
 }

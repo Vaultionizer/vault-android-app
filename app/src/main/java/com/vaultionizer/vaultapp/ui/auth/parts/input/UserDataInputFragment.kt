@@ -49,7 +49,7 @@ class UserDataInputFragment : Fragment() {
         }
 
         authViewModel.userDataFormState.observe(viewLifecycleOwner, Observer {
-            if(!it.isDataValid) {
+            if (!it.isDataValid) {
                 usernameLayout.error = getNullableResourceString(it.usernameError)
                 passwordLayout.error = getNullableResourceString(it.passwordError)
             } else {
@@ -60,7 +60,7 @@ class UserDataInputFragment : Fragment() {
     }
 
     private fun getNullableResourceString(id: Int?): String? {
-        if(id == null) return null
+        if (id == null) return null
 
         return getString(id)
     }

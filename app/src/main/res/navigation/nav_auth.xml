@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_auth"
-    app:startDestination="@id/loginFragment">
+    app:startDestination="@id/welcomeFragment">
 
     <fragment
         android:id="@+id/loginFragment"
@@ -12,8 +12,7 @@
         tools:layout="@layout/fragment_login" >
         <action
             android:id="@+id/action_loginFragment_to_registerStepHostFragment"
-            app:destination="@id/navigation"
-            app:enterAnim="@anim/fragment_fade_enter" />
+            app:destination="@id/navigation" />
         <action
             android:id="@+id/action_loginFragment_to_mainActivity2"
             app:destination="@id/mainActivity2" />
@@ -60,4 +59,12 @@
         android:name="com.vaultionizer.vaultapp.ui.main.MainActivity"
         android:label="app_bar_main"
         tools:layout="@layout/app_bar_main" />
+    <fragment
+        android:id="@+id/welcomeFragment"
+        android:name="com.vaultionizer.vaultapp.ui.auth.welcome.WelcomeFragment"
+        android:label="WelcomeFragment" >
+        <action
+            android:id="@+id/action_welcomeFragment_to_loginFragment"
+            app:destination="@id/loginFragment" />
+    </fragment>
 </navigation>
