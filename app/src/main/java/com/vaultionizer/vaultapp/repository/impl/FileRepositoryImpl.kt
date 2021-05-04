@@ -279,9 +279,6 @@ class FileRepositoryImpl @Inject constructor(
         }.flowOn(Dispatchers.IO)
     }
 
-    /**
-     * TODO(jatsqi): Create background worker for this.
-     */
     override suspend fun deleteFile(file: VNFile) {
         localFileDao.deleteFile(file.localId)
         fileCaches[file.space.id]?.deleteFile(file)
