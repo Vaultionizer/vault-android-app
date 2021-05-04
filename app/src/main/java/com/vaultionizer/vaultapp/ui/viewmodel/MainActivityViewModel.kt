@@ -9,7 +9,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
-import com.vaultionizer.vaultapp.R
 import com.vaultionizer.vaultapp.data.model.domain.VNFile
 import com.vaultionizer.vaultapp.data.model.domain.VNSpace
 import com.vaultionizer.vaultapp.data.model.rest.result.ManagedResult
@@ -111,18 +110,7 @@ class MainActivityViewModel @Inject constructor(
 
     fun requestDeletion(file: VNFile) {
         viewModelScope.launch {
-            fileRepository.deleteFile(file).collect {
-                when (it) {
-                    is ManagedResult.Success -> {
-                        _fileDialogState.value = FileDialogState(isValid = true)
-                        updateCurrentFiles()
-                    }
-                    else -> { // TODO(jatsqi) Error handling
-                        _fileDialogState.value =
-                            FileDialogState(fileError = R.string.host_error_network)
-                    }
-                }
-            }
+            fileRepository.deleteFile(file)
         }
     }
 
