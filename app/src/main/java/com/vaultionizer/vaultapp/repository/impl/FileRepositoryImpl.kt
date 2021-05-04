@@ -62,7 +62,7 @@ class FileRepositoryImpl @Inject constructor(
         return flow {
             val cache = fileCaches[space.id] ?: FileCache(FileCache.IdCachingStrategy.LOCAL_ID)
             fileCaches[space.id] = cache
-            cache.getRootFile()?.let {
+            cache.rootFile?.let {
                 emit(ManagedResult.Success(it))
                 return@flow
             }
