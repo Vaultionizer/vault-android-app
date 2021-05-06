@@ -70,6 +70,33 @@ class FileFragment : Fragment(), View.OnClickListener {
         val noContentImage = view.findViewById<IconicsImageView>(R.id.iconicsImageView2)
         val noContentText = view.findViewById<TextView>(R.id.text_no_content)
 
+        recyclerView = view.findViewById<RecyclerView>(R.id.file_list)
+        recyclerView.apply {
+            layoutManager = LinearLayoutManager(this@FileFragment.requireContext())
+            // addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
+            visibility = View.GONE
+            layoutAnimation = AnimationUtils.loadLayoutAnimation(
+                requireContext(),
+                R.anim.layout_animation_fall_down
+            )
+        }
+
+        pathRecyclerAdapter = PathRecyclerAdapter()
+        pathRecyclerView = view.findViewById<RecyclerView>(R.id.path_list)
+        pathRecyclerView.apply {
+            layoutManager = LinearLayoutManager(
+                requireContext(),
+                LinearLayoutManager.HORIZONTAL,
+                false
+            )
+            adapter = pathRecyclerAdapter
+        }
+
+        val efabLayout = view.findViewById<ExpandableFabLayout>(R.id.file_efab_layout)
+        efabLayout.portraitConfiguration.fabOptions.forEach {
+            it.setOnClickListener(this)
+        }
+
         backPressedCallback = object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 viewModel.onDirectoryChange(null)
@@ -114,33 +141,6 @@ class FileFragment : Fragment(), View.OnClickListener {
                 backPressedCallback.isEnabled = it.parent != null
                 pathRecyclerAdapter.changeHierarchy(it)
             }
-        }
-
-        recyclerView = view.findViewById<RecyclerView>(R.id.file_list)
-        recyclerView.apply {
-            layoutManager = LinearLayoutManager(this@FileFragment.requireContext())
-            // addItemDecoration(DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL))
-            visibility = View.GONE
-            layoutAnimation = AnimationUtils.loadLayoutAnimation(
-                requireContext(),
-                R.anim.layout_animation_fall_down
-            )
-        }
-
-        pathRecyclerAdapter = PathRecyclerAdapter()
-        pathRecyclerView = view.findViewById<RecyclerView>(R.id.path_list)
-        pathRecyclerView.apply {
-            layoutManager = LinearLayoutManager(
-                requireContext(),
-                LinearLayoutManager.HORIZONTAL,
-                false
-            )
-            adapter = pathRecyclerAdapter
-        }
-
-        val efabLayout = view.findViewById<ExpandableFabLayout>(R.id.file_efab_layout)
-        efabLayout.portraitConfiguration.fabOptions.forEach {
-            it.setOnClickListener(this)
         }
 
         viewModel.fileWorkerInfo.observe(viewLifecycleOwner) {
