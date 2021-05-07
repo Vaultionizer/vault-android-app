@@ -77,9 +77,7 @@ class FileFragment : Fragment(), View.OnClickListener {
                 if (file.isFolder) {
                     viewModel.onDirectoryChange(file)
                     return@FileRecyclerAdapter
-                }
-
-                if (!file.isBusy && file.state != VNFile.State.AVAILABLE_OFFLINE) {
+                } else if (!file.isBusy && file.state != VNFile.State.AVAILABLE_OFFLINE) {
                     viewModel.requestDownload(file)
                 }
             },
@@ -163,7 +161,7 @@ class FileFragment : Fragment(), View.OnClickListener {
             }
         }
 
-        viewModel.fileWorkerInfo.observe(viewLifecycleOwner) {
+        statusViewModel.fileStatus.observe(viewLifecycleOwner) {
             viewModel.onWorkerInfoChange()
         }
     }
