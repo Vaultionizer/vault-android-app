@@ -105,9 +105,16 @@ class FileFragment : Fragment(), View.OnClickListener {
             val action = FileFragmentDirections.actionFileFragmentToFileStatusFragment()
             findNavController().navigate(action)
         }
-        fileProcessingStatusButton.text = getString(R.string.file_status_text_template, 0)
         statusViewModel.fileStatus.observe(viewLifecycleOwner) {
-            fileProcessingStatusButton.text = getString(R.string.file_status_text_template, it.size)
+            fileProcessingStatusButton.text = if (it.isEmpty()) {
+                getString(R.string.file_status_no_task)
+            } else if (it.size == 1) {
+                getString(R.string.file_status_single_text_template)
+            } else {
+                getString(R.string.file_status_text_template, it.size)
+            }
+
+            fileProcessingStatusButton.isEnabled = it.isNotEmpty()
         }
 
         backPressedCallback = object : OnBackPressedCallback(true) {
