@@ -92,10 +92,27 @@ class VNFile(
             remoteId,
             parent?.localId ?: -1,
             name,
-            if(isFolder) LocalFile.Type.FOLDER else LocalFile.Type.FILE,
+            if (isFolder) LocalFile.Type.FOLDER else LocalFile.Type.FILE,
             lastUpdated,
             createdAt,
             lastSyncTimestamp
         )
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as VNFile
+
+        if (localId != other.localId) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return localId.hashCode()
+    }
+
+
 }
