@@ -83,6 +83,10 @@
     <string name="delete_category_and_pairs_content">You won\'t be able to recover the category and child pairs!</string>
     <string name="delete_category_and_pairs_confirm">Yes, delete category and pairs.</string>
 
+    <string name="file_status_text_template">%1$d file(s) are being processed.</string>
+    <string name="file_status_single_text_template">One file is being processed.</string>
+    <string name="file_status_no_task">No files are being processed.</string>
+
     <!-- PWD validator texts -->
     <string name="pwd_validator_too_short">Password is too short!</string>
     <string name="pwd_validator_too_few_uppercase">Password must contain at least 2 upper case letters!</string>

@@ -103,7 +103,6 @@ class FileRepositoryImpl @Inject constructor(
         parent: VNFile,
     ) {
         withContext(Dispatchers.IO) {
-            val workManager = WorkManager.getInstance(applicationContext)
             val name = resolveFileNameConflicts(parent, name)
 
             // Create file in DB
@@ -142,24 +141,23 @@ class FileRepositoryImpl @Inject constructor(
             )
 
             val encryptionWorker =
-                OneTimeWorkRequestBuilder<DataEncryptionWorker>()
-                    .setInputData(encryptionWorkData)
+                prepareFileWorkerBuilder<DataEncryptionWorker>(vnFile, encryptionWorkData)
                     .addTag(Constants.WORKER_TAG_FILE)
                     .build()
             val uploadWorker =
-                OneTimeWorkRequestBuilder<FileUploadWorker>()
-                    .setInputData(uploadWorkData)
-                    .setConstraints(buildDefaultNetworkConstraints())
-                    .addTag(Constants.WORKER_TAG_FILE).build()
+                prepareFileWorkerBuilder<FileUploadWorker>(vnFile, uploadWorkData)
+                    .addTag(Constants.WORKER_TAG_FILE)
+                    .build()
 
             fileCaches[parent.space.id]?.addFile(vnFile)
             parent.content?.add(vnFile)
 
-            workManager
-                .beginWith(encryptionWorker)
-                .then(uploadWorker)
-                .then(buildReferenceFileWorker(parent.space))
-                .enqueue()
+            enqueueUniqueFileWork(
+                vnFile,
+                encryptionWorker,
+                uploadWorker,
+                buildReferenceFileWorker(vnFile)
+            )
         }
     }
 
@@ -212,13 +210,12 @@ class FileRepositoryImpl @Inject constructor(
             fileCaches[space.id]?.addFile(folder)
             parent.content?.add(folder)
 
-            WorkManager.getInstance(applicationContext).enqueue(buildReferenceFileWorker(space))
+            enqueueUniqueFileWork(folder, buildReferenceFileWorker(folder))
         }
     }
 
     override suspend fun downloadFile(file: VNFile) {
         withContext(Dispatchers.IO) {
-            val workManager = WorkManager.getInstance(applicationContext)
             val request = syncRequestService.createDownloadRequest(file)
 
             val downloadWorkData = workDataOf(
@@ -228,14 +225,11 @@ class FileRepositoryImpl @Inject constructor(
             file.state = VNFile.State.DOWNLOADING
 
             val downloadWorker =
-                OneTimeWorkRequestBuilder<FileDownloadWorker>()
-                    .setInputData(downloadWorkData)
-                    .setConstraints(buildDefaultNetworkConstraints())
+                prepareFileWorkerBuilder<FileDownloadWorker>(file, downloadWorkData)
                     .addTag(Constants.WORKER_TAG_FILE)
                     .build()
 
-            workManager.beginWith(downloadWorker).then(buildReferenceFileWorker(file.space))
-                .enqueue()
+            enqueueUniqueFileWork(file, downloadWorker, buildReferenceFileWorker(file))
         }
     }
 
@@ -287,12 +281,13 @@ class FileRepositoryImpl @Inject constructor(
             file.parent.content?.remove(file)
         }
 
-        WorkManager.getInstance(applicationContext).enqueue(buildReferenceFileWorker(file.space))
+        enqueueUniqueFileWork(file, buildReferenceFileWorker(file))
     }
 
     override suspend fun updateFileRemoteId(fileId: Long, remoteId: Long) {
         withContext(Dispatchers.IO) {
             localFileDao.updateFileRemoteId(fileId, remoteId)
+            getFile(fileId)?.remoteId = remoteId
         }
     }
 
@@ -403,17 +398,6 @@ class FileRepositoryImpl @Inject constructor(
         return files[-1]!!
     }
 
-    private fun buildReferenceFileWorker(space: VNSpace) =
-        OneTimeWorkRequestBuilder<ReferenceFileSyncWorker>().addTag(Constants.WORKER_TAG_REFERENCE_FILE)
-            .setInputData(
-                workDataOf(
-                    Constants.WORKER_SPACE_ID to space.id
-                )
-            ).setConstraints(buildDefaultNetworkConstraints()).build()
-
-    private fun buildDefaultNetworkConstraints() =
-        Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()
-
     private fun resolveFileNameConflicts(parent: VNFile, name: String): String {
         val nameSet = parent.content?.map { it.name }?.toSet() ?: return name
 
@@ -431,4 +415,37 @@ class FileRepositoryImpl @Inject constructor(
     }
 
     private fun buildDuplicateFileName(name: String, index: Int) = "($index) $name"
+
+    private fun buildReferenceFileWorker(file: VNFile) =
+        prepareFileWorkerBuilder<ReferenceFileSyncWorker>(
+            file,
+            workDataOf(
+                Constants.WORKER_SPACE_ID to file.space.id
+            )
+        ).addTag(Constants.WORKER_TAG_REFERENCE_FILE).build()
+
+    private fun buildDefaultNetworkConstraints() =
+        Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()
+
+    private fun enqueueUniqueFileWork(file: VNFile, vararg workers: OneTimeWorkRequest) {
+        var chain = WorkManager.getInstance(applicationContext).beginUniqueWork(
+            String.format(Constants.WORKER_FILE_UNIQUE_NAME_TEMPLATE, file.localId),
+            ExistingWorkPolicy.KEEP,
+            workers[0]
+        )
+
+        for (i in 1 until workers.size) {
+            chain = chain.then(workers[i])
+        }
+
+        chain.enqueue()
+    }
+
+    private inline fun <reified W : ListenableWorker> prepareFileWorkerBuilder(
+        file: VNFile,
+        inputData: Data
+    ): OneTimeWorkRequest.Builder = OneTimeWorkRequestBuilder<W>()
+        .setInputData(inputData)
+        .setConstraints(buildDefaultNetworkConstraints())
+        .addTag(String.format(Constants.WORKER_TAG_FILE_ID_TEMPLATE, file.localId))
 }
