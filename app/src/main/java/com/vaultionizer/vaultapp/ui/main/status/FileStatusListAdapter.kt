@@ -1,5 +1,6 @@
 package com.vaultionizer.vaultapp.ui.main.status
 
+import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
@@ -12,7 +13,10 @@ class FileStatusListAdapter : RecyclerView.Adapter<FileStatusListAdapter.FileSta
     private var status = emptyList<FileWorkerStatusPair>()
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FileStatusViewHolder {
-        TODO("Not yet implemented")
+        val view =
+            LayoutInflater.from(parent.context)
+                .inflate(R.layout.fragment_file_status_item, parent, false)
+        return FileStatusViewHolder(view)
     }
 
     @ExperimentalStdlibApi
