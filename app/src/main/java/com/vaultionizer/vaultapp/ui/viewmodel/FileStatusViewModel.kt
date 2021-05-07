@@ -40,9 +40,10 @@ class FileStatusViewModel @Inject constructor(
             .build()
     }
 
-    private val fileStatus_ = MutableLiveData<List<FileWorkerStatusPair>>()
+    private val workInfo =
+        WorkManager.getInstance(applicationContext).getWorkInfosLiveData(WORKER_QUERY)
+    private val fileStatus_ = MutableLiveData<List<FileWorkerStatusPair>>(emptyList())
     val fileStatus: LiveData<List<FileWorkerStatusPair>> = fileStatus_
-    val workInfo = WorkManager.getInstance(applicationContext).getWorkInfosLiveData(WORKER_QUERY)
 
     init {
         workInfo.observeForever {
