@@ -84,7 +84,7 @@
     <string name="delete_category_and_pairs_confirm">Yes, delete category and pairs.</string>
 
     <string name="file_status_text_template">%1$d file(s) are being processed.</string>
-    <string name="file_status_single_text_template">%1 file is being processed.</string>
+    <string name="file_status_single_text_template">One file is being processed.</string>
     <string name="file_status_no_task">No files are being processed.</string>
 
     <!-- PWD validator texts -->
