@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.*
 import android.view.animation.AnimationUtils
+import android.widget.Button
 import android.widget.ProgressBar
 import android.widget.SearchView
 import android.widget.TextView
@@ -30,6 +31,7 @@ import com.mikepenz.iconics.view.IconicsImageView
 import com.nambimobile.widgets.efab.ExpandableFabLayout
 import com.vaultionizer.vaultapp.R
 import com.vaultionizer.vaultapp.data.model.domain.VNFile
+import com.vaultionizer.vaultapp.ui.viewmodel.FileStatusViewModel
 import com.vaultionizer.vaultapp.ui.viewmodel.MainActivityViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -39,6 +41,7 @@ private const val OPEN_FILE_INTENT_RC = 0
 class FileFragment : Fragment(), View.OnClickListener {
 
     val viewModel: MainActivityViewModel by activityViewModels()
+    val statusViewModel: FileStatusViewModel by activityViewModels()
 
     lateinit var recyclerView: RecyclerView
     lateinit var fileAdapter: FileRecyclerAdapter
@@ -95,6 +98,16 @@ class FileFragment : Fragment(), View.OnClickListener {
         val efabLayout = view.findViewById<ExpandableFabLayout>(R.id.file_efab_layout)
         efabLayout.portraitConfiguration.fabOptions.forEach {
             it.setOnClickListener(this)
+        }
+
+        val fileProcessingStatusButton = view.findViewById<Button>(R.id.file_processing_button)
+        fileProcessingStatusButton.setOnClickListener {
+            val action = FileFragmentDirections.actionFileFragmentToFileStatusFragment()
+            findNavController().navigate(action)
+        }
+        fileProcessingStatusButton.text = getString(R.string.file_status_text_template, 0)
+        statusViewModel.fileStatus.observe(viewLifecycleOwner) {
+            fileProcessingStatusButton.text = getString(R.string.file_status_text_template, it.size)
         }
 
         backPressedCallback = object : OnBackPressedCallback(true) {
