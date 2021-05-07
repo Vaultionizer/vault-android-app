@@ -1,6 +1,7 @@
 package com.vaultionizer.vaultapp.ui.viewmodel
 
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -26,8 +27,14 @@ class FileStatusViewModel @Inject constructor(
         val WORKER_QUERY = WorkQuery.Builder
             .fromTags(
                 listOf(
-                    Constants.WORKER_TAG_FILE,
-                    Constants.WORKER_TAG_REFERENCE_FILE
+                    Constants.WORKER_TAG_FILE
+                )
+            )
+            .addStates(
+                listOf(
+                    WorkInfo.State.ENQUEUED,
+                    WorkInfo.State.RUNNING,
+                    WorkInfo.State.FAILED
                 )
             )
             .build()
@@ -35,8 +42,14 @@ class FileStatusViewModel @Inject constructor(
 
     private val fileStatus_ = MutableLiveData<List<FileWorkerStatusPair>>()
     val fileStatus: LiveData<List<FileWorkerStatusPair>> = fileStatus_
-
     val workInfo = WorkManager.getInstance(applicationContext).getWorkInfosLiveData(WORKER_QUERY)
+
+    init {
+        workInfo.observeForever {
+            onWorkerStatusChange(it)
+            WorkManager.getInstance(applicationContext).pruneWork()
+        }
+    }
 
     fun onWorkerStatusChange(workInfoList: List<WorkInfo>) {
         viewModelScope.launch {
@@ -45,6 +58,7 @@ class FileStatusViewModel @Inject constructor(
             for (info in workInfoList) {
                 for (tag in info.tags) {
                     if (!tag.startsWith(Constants.WORKER_TAG_FILE_ID_TEMPLATE_BEGIN)) {
+                        Log.e("Vault", "TAG $tag")
                         continue
                     }
 
@@ -62,6 +76,11 @@ class FileStatusViewModel @Inject constructor(
                 }
             }
 
+            Log.d("Vault", "------ Status begin ------")
+            newStatus.forEach {
+                Log.d("Vault", "${it.file.name} ${it.status.toString()}")
+            }
+            Log.d("Vault", "------ Status end ------")
             fileStatus_.value = newStatus
         }
     }
