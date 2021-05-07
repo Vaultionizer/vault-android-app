@@ -97,10 +97,9 @@
 
     <com.mikepenz.iconics.view.IconicsImageView
         android:id="@+id/iconicsImageView2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
         android:visibility="invisible"
-        app:iiv_color="@android:color/holo_red_dark"
         app:iiv_icon="faw-frown"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
