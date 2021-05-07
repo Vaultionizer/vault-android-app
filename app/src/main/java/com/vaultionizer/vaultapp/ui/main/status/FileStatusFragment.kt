@@ -34,10 +34,6 @@ class FileStatusFragment : Fragment() {
         fileStatusRecyclerView.layoutManager = LinearLayoutManager(context)
         fileStatusRecyclerView.adapter = statusAdapter
 
-        statusViewModel.workInfo.observe(viewLifecycleOwner) {
-            statusViewModel.onWorkerStatusChange(it)
-        }
-
         statusViewModel.fileStatus.observe(viewLifecycleOwner) {
             statusAdapter.fileStatusChange(it)
         }
