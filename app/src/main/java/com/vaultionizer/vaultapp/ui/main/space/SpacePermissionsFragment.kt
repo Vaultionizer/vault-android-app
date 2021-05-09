@@ -1,8 +1,6 @@
 package com.vaultionizer.vaultapp.ui.main.space
 
-import android.content.SharedPreferences
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import androidx.fragment.app.viewModels
 import androidx.preference.Preference
@@ -12,19 +10,26 @@ import com.vaultionizer.vaultapp.R
 import com.vaultionizer.vaultapp.ui.main.file.FileAlertDialogType
 import com.vaultionizer.vaultapp.ui.main.file.showDialog
 import com.vaultionizer.vaultapp.ui.viewmodel.MainActivityViewModel
+import com.vaultionizer.vaultapp.ui.viewmodel.ManageSpaceViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import java.util.*
 
 @AndroidEntryPoint
 class SpacePermissionsFragment : PreferenceFragmentCompat(){
     private val mainActivityViewModel: MainActivityViewModel by viewModels()
+    private val viewModel: ManageSpaceViewModel by viewModels()
 
     private var owner = false
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         owner = true // mainActivityViewModel.currentDirectory.value!!.space.owner
+        setupViewModel()
         if (owner) setPreferencesFromResource(R.xml.space_management_creator, rootKey)
         else setPreferencesFromResource(R.xml.space_management_user, rootKey)
+    }
+
+    fun setupViewModel(){
+        viewModel.spaceID = mainActivityViewModel.selectedSpace.value?.id ?: 0
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -37,27 +42,34 @@ class SpacePermissionsFragment : PreferenceFragmentCompat(){
 
         if (!owner){
             val quitSpaceBtn : Preference? = findPreference("quitSpaceBtn")
-            setupBtn(quitSpaceBtn, FileAlertDialogType.QUIT_SPACE) { quitSpace() }
+            setupBtn(quitSpaceBtn, FileAlertDialogType.QUIT_SPACE) { viewModel.quitSpace() }
         }
         else {
-            val sharedSpaceSwitch : SwitchPreference? = findPreference("sharedSpaceSwitch")
-            val usersInviteAuthSwitch : SwitchPreference? = findPreference("authKeySwitch")
-            val deleteSpaceBtn : Preference? = findPreference("deleteSpaceBtn")
-            val genAuthKeyBtn : Preference? = findPreference("generateAuthKeyBtn")
-            val kickUsersBtn : Preference? = findPreference("kickUsersBtn")
+            val sharedSpaceSwitch: SwitchPreference? = findPreference("sharedSpaceSwitch")
+            val usersInviteAuthSwitch: SwitchPreference? = findPreference("authKeySwitch")
+            val deleteSpaceBtn: Preference? = findPreference("deleteSpaceBtn")
+            val genAuthKeyBtn: Preference? = findPreference("generateAuthKeyBtn")
+            val kickUsersBtn: Preference? = findPreference("kickUsersBtn")
 
             // setup button listeners
-            setupBtn(kickUsersBtn, FileAlertDialogType.KICK_ALL_USERS) { kickAllUsers() }
-            setupBtn(deleteSpaceBtn, FileAlertDialogType.DELETE_SPACE) { deleteSpace() }
-            setupBtn(genAuthKeyBtn, FileAlertDialogType.REGENERATE_AUTH_KEY) { generateAuthKey() }
+            setupBtn(kickUsersBtn, FileAlertDialogType.KICK_ALL_USERS) { viewModel.kickAllUsers() }
+            setupBtn(deleteSpaceBtn, FileAlertDialogType.DELETE_SPACE) { viewModel.deleteSpace() }
+            setupBtn(
+                genAuthKeyBtn,
+                FileAlertDialogType.REGENERATE_AUTH_KEY
+            ) { viewModel.generateAuthKey() }
 
             // setup switch listeners
             setupSwitch(writeAccessSwitch, null,
-                { changeWriteAccess(writeAccessSwitch?.isChecked) })
-            setupSwitch(sharedSpaceSwitch, FileAlertDialogType.MAKE_SPACE_PRIVATE,
-                {toggleSharedSpace(sharedSpaceSwitch?.isChecked)}, sharedSpaceSwitch?.isChecked)
+                { viewModel.changeWriteAccess(writeAccessSwitch?.isChecked) })
+            setupSwitch(
+                sharedSpaceSwitch,
+                FileAlertDialogType.MAKE_SPACE_PRIVATE,
+                { viewModel.toggleSharedSpace(sharedSpaceSwitch?.isChecked) },
+                sharedSpaceSwitch?.isChecked
+            )
             setupSwitch(usersInviteAuthSwitch, null,
-                { toggleUsersInvite(usersInviteAuthSwitch?.isChecked) })
+                { viewModel.toggleUsersInvite(usersInviteAuthSwitch?.isChecked) })
         }
         super.onViewCreated(view, savedInstanceState)
     }
@@ -84,36 +96,10 @@ class SpacePermissionsFragment : PreferenceFragmentCompat(){
         }
     }
 
-    private fun toggleSharedSpace(shared: Boolean?){
-
-    }
 
     private fun showAuthKey(){
 
     }
 
-    private fun generateAuthKey(){
-
-    }
-
-    private fun toggleUsersInvite(allowed: Boolean?){
-
-    }
-
-    private fun quitSpace(){
-
-    }
-
-    private fun deleteSpace(){
-
-    }
-
-    private fun kickAllUsers(){
-
-    }
-
-    private fun changeWriteAccess(state: Boolean?) {
-
-    }
 
 }
