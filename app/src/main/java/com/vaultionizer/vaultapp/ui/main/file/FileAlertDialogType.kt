@@ -40,6 +40,36 @@ enum class FileAlertDialogType(
         R.string.save_pc_file_title,
         R.string.save_pc_file_content,
         R.string.save_pc_file_confirmation
+    ),
+
+    DELETE_SPACE(
+        R.string.delete_space_title,
+        R.string.delete_space_body,
+        R.string.delete_space_button_text,
+    ),
+
+    KICK_ALL_USERS(
+        R.string.kick_users_title,
+        R.string.kick_users_body,
+        R.string.kick_users_button_text,
+    ),
+
+    QUIT_SPACE(
+        R.string.quit_space_title,
+        R.string.quit_space_body,
+        R.string.quit_space_button_text,
+    ),
+
+    MAKE_SPACE_PRIVATE(
+        R.string.space_private_title,
+        R.string.space_private_body,
+        R.string.space_private_button_text,
+    ),
+
+    REGENERATE_AUTH_KEY(
+        R.string.regen_auth_key_title,
+        R.string.regen_auth_key_body,
+        R.string.regen_auth_key_button_text,
     );
 
     fun createDialog(

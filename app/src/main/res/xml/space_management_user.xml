@@ -1,0 +1,22 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <PreferenceCategory android:title="Vault: ">
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="writeAccessSwitch"
+            android:summaryOff="You do not have write access."
+            android:summaryOn="You have write access."
+            android:title="Write access"
+            android:enabled="false"/>
+        <Preference
+            android:title="Show auth key"
+            android:key="showAuthKeyBtn"
+            android:summary="Show the authentication key for inviting other users."
+            />
+        <Preference
+            android:title="Quit space"
+            android:key="quitSpaceBtn"
+            android:summary="Quit the space, delete all local copies and associated keys."
+            />
+    </PreferenceCategory>
+</PreferenceScreen>

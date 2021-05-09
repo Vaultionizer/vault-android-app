@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory android:title="Preference category">
+
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="sharedSpaceSwitch"
+            android:title="Shared space" />
+
+        <Preference
+            android:title="Show auth key"
+            android:key="showAuthKeyBtn"
+            android:summary="Invalidate old auth key and generate a new one."
+            />
+
+        <Preference
+            android:title="Delete space"
+            android:key="deleteSpaceBtn"
+            android:summary="Kick all users, delete space and files/keys associated to it."
+            />
+
+    </PreferenceCategory>
+    <PreferenceCategory android:title="Manage space" android:dependency="sharedSpaceSwitch">
+
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="writeAccessSwitch"
+            android:title="Write access"
+            android:summaryOn="Users have write access."
+            android:summaryOff="Users do not have write access."/>
+
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="authKeySwitch"
+            android:title="Allow users to invite"
+            android:summaryOn="Users can invite new users."
+            android:summaryOff="Users cannot invite new users."/>
+
+        <Preference
+            android:title="Generate auth key"
+            android:key="generateAuthKeyBtn"
+            android:summary="Invalidate old auth key and generate a new one."
+            />
+
+        <Preference
+            android:title="Kick all users"
+            android:key="kickUsersBtn"
+            android:summary="Remove all users except yourself from the space."
+            />
+    </PreferenceCategory>
+</PreferenceScreen>

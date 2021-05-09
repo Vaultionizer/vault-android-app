@@ -135,4 +135,37 @@
     <string name="save_pc_file_confirmation">Yes, save file!</string>
     <string name="save_pc_file_content">Do you want to save your changes?</string>
     <string name="just_no">No.</string>
+
+    <!-- Space permission strings-->
+    <string name="delete_space_title">Delete space?</string>
+    <string name="delete_space_body">Do you really want to delete the space and all associated files/keys?</string>
+    <string name="delete_space_button_text">Delete space!</string>
+    <string name="quit_space_title">Quit space?</string>
+    <string name="quit_space_body">Do you really want to quit the space and delete all associated files/keys?</string>
+    <string name="quit_space_button_text">Quit space!</string>
+    <string name="kick_users_title">Kick all users?</string>
+    <string name="kick_users_body">Do you really want to remove all users?</string>
+    <string name="kick_users_button_text">Kick users!</string>
+    <string name="space_private_title">Make space private?</string>
+    <string name="space_private_body">Do you really want to remove all users and make the space private?</string>
+    <string name="space_private_button_text">Yes, make private!</string>
+    <string name="regen_auth_key_title">Regenerate Auth key?</string>
+    <string name="regen_auth_key_body">Do you really want to remove all users and make the space private?</string>
+    <string name="regen_auth_key_button_text">Yes, make private!</string>
+
+
+    <!-- Preference Titles -->
+    <string name="messages_header">Messages</string>
+    <string name="sync_header">Sync</string>
+
+    <!-- Messages Preferences -->
+    <string name="signature_title">Your signature</string>
+    <string name="reply_title">Default reply action</string>
+
+    <!-- Sync Preferences -->
+    <string name="sync_title">Sync email periodically</string>
+    <string name="attachment_title">Download incoming attachments</string>
+    <string name="attachment_summary_on">Automatically download attachments for incoming emails
+    </string>
+    <string name="attachment_summary_off">Only download attachments when manually requested</string>
 </resources>
