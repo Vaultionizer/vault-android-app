@@ -5,9 +5,7 @@ import android.util.Log
 import com.vaultionizer.vaultapp.cryptography.crypto.CryptoMode
 import com.vaultionizer.vaultapp.cryptography.crypto.CryptoPadding
 import com.vaultionizer.vaultapp.cryptography.crypto.CryptoType
-import com.vaultionizer.vaultapp.cryptography.dataclasses.IvCipher
-import com.vaultionizer.vaultapp.cryptography.dataclasses.KeySalt
-import com.vaultionizer.vaultapp.cryptography.dataclasses.SaltIvcipher
+import com.vaultionizer.vaultapp.cryptography.model.*
 import com.vaultionizer.vaultapp.util.Constants
 import java.security.KeyStore
 import java.security.KeyStoreException
@@ -113,8 +111,10 @@ class Cryptography {
 
     fun importKey(spaceID: Long, bytes: ByteArray, password: String): Boolean {
         val saltIvcipher = desalter(bytes)
+        val pwd = Password(password.toByteArray())
+        val salt = Salt(saltIvcipher.salt)
         val importKey =
-            SecretKeySpec(Hashing().sha256(password.toByteArray() + saltIvcipher.salt), "AES")
+            SecretKeySpec(Hashing().bCryptHash(pwd, salt).toByteArray(), "AES")
         val keyPlainUnchecked = AesGcmNopadding().decrypt(
             importKey,
             saltIvcipher.ivcipher.iv,

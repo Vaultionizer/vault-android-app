@@ -1,6 +1,6 @@
 package com.vaultionizer.vaultapp.cryptography
 
-import com.vaultionizer.vaultapp.cryptography.dataclasses.*
+import com.vaultionizer.vaultapp.cryptography.model.*
 import java.security.MessageDigest
 import org.mindrot.jbcrypt.BCrypt
 

@@ -1,8 +1,8 @@
 package com.vaultionizer.vaultapp.cryptography
 
 import android.security.keystore.KeyProperties
-import com.vaultionizer.vaultapp.cryptography.dataclasses.IvCipher
-import com.vaultionizer.vaultapp.cryptography.dataclasses.SharedKeyOutput
+import com.vaultionizer.vaultapp.cryptography.model.IvCipher
+import com.vaultionizer.vaultapp.cryptography.model.SharedKeyOutput
 import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 
