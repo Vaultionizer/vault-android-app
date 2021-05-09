@@ -44,6 +44,20 @@ class Hashing {
         return HashSalt(hash, salt)
     }
 
+    /** Method to hash a password with a random generated salt
+     * @param pwd : Password provided by the user
+     * @return hashSalt : Hash of the password together with the used salt
+     */
+    fun bCryptHash(pwd: Password, salt: Salt) : HashSalt {
+        val saltString = salt.toString()
+        val hashString = BCrypt.hashpw(pwd.toString(), saltString)
+
+        val salt = Salt(saltString.toByteArray(Charsets.UTF_8))
+        val hash = Hash(hashString.toByteArray(Charsets.UTF_8))
+
+        return HashSalt(hash, salt)
+    }
+
     /** Method to validate the password provided by the user against the data from the transfer
      * @param pwd : Password provided by the user
      * @param hashSalt : Object containing the hash and salt provided by transfer
