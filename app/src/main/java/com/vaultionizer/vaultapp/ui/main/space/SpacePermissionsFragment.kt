@@ -3,6 +3,7 @@ package com.vaultionizer.vaultapp.ui.main.space
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreference
@@ -53,7 +54,7 @@ class SpacePermissionsFragment : PreferenceFragmentCompat(){
 
             // setup button listeners
             setupBtn(kickUsersBtn, FileAlertDialogType.KICK_ALL_USERS) { viewModel.kickAllUsers() }
-            setupBtn(deleteSpaceBtn, FileAlertDialogType.DELETE_SPACE) { viewModel.deleteSpace() }
+            setupBtn(deleteSpaceBtn, FileAlertDialogType.DELETE_SPACE) { mainActivityViewModel.requestSpaceDeletion() }
             setupBtn(
                 genAuthKeyBtn,
                 FileAlertDialogType.REGENERATE_AUTH_KEY
@@ -70,6 +71,8 @@ class SpacePermissionsFragment : PreferenceFragmentCompat(){
             )
             setupSwitch(usersInviteAuthSwitch, null,
                 { viewModel.toggleUsersInvite(usersInviteAuthSwitch?.isChecked) })
+
+            viewModel.spaceConfig.observe(viewLifecycleOwner){ viewModel.configureSpace() }
         }
         super.onViewCreated(view, savedInstanceState)
     }
@@ -98,7 +101,7 @@ class SpacePermissionsFragment : PreferenceFragmentCompat(){
 
 
     private fun showAuthKey(){
-
+        findNavController().navigate(SpacePermissionsFragmentDirections.actionSpacePermissionsFragmentToAuthKeyFragment())
     }
 
 
