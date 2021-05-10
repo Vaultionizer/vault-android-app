@@ -1,4 +1,4 @@
-package com.vaultionizer.vaultapp.cryptography.dataclasses
+package com.vaultionizer.vaultapp.cryptography.model
 
 import javax.crypto.SecretKey
 
