@@ -2,6 +2,7 @@ package com.vaultionizer.vaultapp.ui.main.space
 
 import android.os.Bundle
 import android.view.View
+import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.preference.Preference
@@ -17,13 +18,13 @@ import java.util.*
 
 @AndroidEntryPoint
 class SpacePermissionsFragment : PreferenceFragmentCompat(){
-    private val mainActivityViewModel: MainActivityViewModel by viewModels()
+    private val mainActivityViewModel: MainActivityViewModel by activityViewModels()
     private val viewModel: ManageSpaceViewModel by viewModels()
 
     private var owner = false
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
-        owner = true // mainActivityViewModel.currentDirectory.value!!.space.owner
+        owner = mainActivityViewModel.currentDirectory.value!!.space.owner
         setupViewModel()
         if (owner) setPreferencesFromResource(R.xml.space_management_creator, rootKey)
         else setPreferencesFromResource(R.xml.space_management_user, rootKey)
@@ -41,9 +42,12 @@ class SpacePermissionsFragment : PreferenceFragmentCompat(){
         val writeAccessSwitch : SwitchPreference? = findPreference("writeAccessSwitch")
         if (writeAccessSwitch != null) writeAccessSwitch.isChecked = true // TODO
 
-        if (!owner){
-            val quitSpaceBtn : Preference? = findPreference("quitSpaceBtn")
-            setupBtn(quitSpaceBtn, FileAlertDialogType.QUIT_SPACE) { viewModel.quitSpace() }
+        if (!owner) {
+            val quitSpaceBtn: Preference? = findPreference("quitSpaceBtn")
+            setupBtn(
+                quitSpaceBtn,
+                FileAlertDialogType.QUIT_SPACE
+            ) { mainActivityViewModel.requestQuitSpace() }
         }
         else {
             val sharedSpaceSwitch: SwitchPreference? = findPreference("sharedSpaceSwitch")
@@ -62,22 +66,27 @@ class SpacePermissionsFragment : PreferenceFragmentCompat(){
 
             // setup switch listeners
             setupSwitch(writeAccessSwitch, null,
-                { viewModel.changeWriteAccess(writeAccessSwitch?.isChecked) })
+                { viewModel.changeWriteAccess(writeAccessSwitch?.isChecked) },
+                { switch -> return@setupSwitch false })
             setupSwitch(
                 sharedSpaceSwitch,
                 FileAlertDialogType.MAKE_SPACE_PRIVATE,
                 { viewModel.toggleSharedSpace(sharedSpaceSwitch?.isChecked) },
-                sharedSpaceSwitch?.isChecked
-            )
+                { switch -> return@setupSwitch switch.isChecked() })
             setupSwitch(usersInviteAuthSwitch, null,
-                { viewModel.toggleUsersInvite(usersInviteAuthSwitch?.isChecked) })
+                { viewModel.toggleUsersInvite(usersInviteAuthSwitch?.isChecked) },
+                { _ -> return@setupSwitch false })
 
             viewModel.spaceConfig.observe(viewLifecycleOwner){ viewModel.configureSpace() }
         }
         super.onViewCreated(view, savedInstanceState)
     }
 
-    private fun setupBtn(preference: Preference?, dialogType: FileAlertDialogType?, posCallback: () -> Unit){
+    private fun setupBtn(
+        preference: Preference?,
+        dialogType: FileAlertDialogType?,
+        posCallback: () -> Unit
+    ) {
         preference?.setOnPreferenceClickListener { _ ->
             if (dialogType != null) showDialog(dialogType, positiveClick = { posCallback() })
             else posCallback()
@@ -85,14 +94,18 @@ class SpacePermissionsFragment : PreferenceFragmentCompat(){
         }
     }
 
-    private fun setupSwitch(switchPref: SwitchPreference?, dialogType: FileAlertDialogType?, posCallback: () -> Unit, extraCond: Boolean? = true){
+    private fun setupSwitch(
+        switchPref: SwitchPreference?,
+        dialogType: FileAlertDialogType?,
+        posCallback: () -> Unit,
+        extraCond: (SwitchPreference) -> Boolean
+    ) {
         switchPref?.setOnPreferenceChangeListener { _, _ ->
-            if (dialogType != null && extraCond == true){
+            if (dialogType != null && extraCond(switchPref)) {
                 showDialog(dialogType, positiveClick = { posCallback() }, {
                     switchPref.isChecked = !switchPref.isChecked
                 })
-            }
-            else posCallback()
+            } else posCallback()
 
             switchPref.isChecked = true
             return@setOnPreferenceChangeListener true

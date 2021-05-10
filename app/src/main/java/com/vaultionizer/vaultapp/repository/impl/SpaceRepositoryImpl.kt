@@ -14,6 +14,7 @@ import com.vaultionizer.vaultapp.data.model.rest.result.ManagedResult
 import com.vaultionizer.vaultapp.data.model.rest.space.NetworkSpace
 import com.vaultionizer.vaultapp.repository.SpaceRepository
 import com.vaultionizer.vaultapp.service.SpaceService
+import com.vaultionizer.vaultapp.util.AuthKeyGen
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.withContext
@@ -76,7 +77,7 @@ class SpaceRepositoryImpl @Inject constructor(
             // TODO(jatsqi) Replace LoremIpsum with real authKey
             val response = spaceService.createSpace(
                 CreateSpaceRequest(
-                    LoremIpsum.getInstance().getWords(20),
+                    AuthKeyGen().generateAuthKey(),
                     isPrivate,
                     gson.toJson(NetworkReferenceFile.EMPTY_FILE)
                 )

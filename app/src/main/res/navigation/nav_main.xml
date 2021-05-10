@@ -97,7 +97,7 @@
     <fragment
         android:id="@+id/spacePermissionsFragment"
         android:name="com.vaultionizer.vaultapp.ui.main.space.SpacePermissionsFragment"
-        android:label="SpacePermissionsFragment" >
+        android:label="Space settings" >
         <action
             android:id="@+id/action_spacePermissionsFragment_to_fileFragment2"
             app:destination="@id/fileFragment" />
@@ -108,7 +108,7 @@
     <fragment
         android:id="@+id/authKeyFragment"
         android:name="com.vaultionizer.vaultapp.ui.main.space.AuthKeyFragment"
-        android:label="fragment_auth_key"
+        android:label="View auth key"
         tools:layout="@layout/fragment_auth_key">
         <action
             android:id="@+id/action_authKeyFragment_to_spacePermissionsFragment"

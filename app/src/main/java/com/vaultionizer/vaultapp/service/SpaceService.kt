@@ -1,9 +1,6 @@
 package com.vaultionizer.vaultapp.service
 
-import com.vaultionizer.vaultapp.data.model.rest.request.ConfigureSpaceRequest
-import com.vaultionizer.vaultapp.data.model.rest.request.CreateSpaceRequest
-import com.vaultionizer.vaultapp.data.model.rest.request.GetAuthKeyRequest
-import com.vaultionizer.vaultapp.data.model.rest.request.JoinSpaceRequest
+import com.vaultionizer.vaultapp.data.model.rest.request.*
 import com.vaultionizer.vaultapp.data.model.rest.result.ApiResult
 import com.vaultionizer.vaultapp.data.model.rest.space.NetworkSpace
 import com.vaultionizer.vaultapp.data.model.rest.space.NetworkSpaceAuthPair
@@ -28,9 +25,18 @@ interface SpaceService {
     @Headers("Accept: application/json", "Content-Type: application/json")
     suspend fun deleteSpace(@Path("spaceID") spaceID: Long): ApiResult<String>
 
-    @POST("api/spaces/config/{spaceID}")
+    @POST("api/spaces/{spaceID}/config")
     suspend fun configureSpace(@Body config: ConfigureSpaceRequest, @Path("spaceID") spaceID: Long): ApiResult<NetworkSpaceAuthPair>
 
     @POST("api/spaces/{spaceID}/kickall")
     suspend fun kickAllUsers(@Path("spaceID") spaceID: Long): ApiResult<NetworkSpaceAuthPair>
+
+    @POST("api/spaces/{spaceID}/config/get")
+    suspend fun getSpaceConfig(@Path("spaceID") spaceID: Long): ApiResult<NetworkSpaceAuthPair>
+
+    @POST("api/spaces/{spaceID}/authkey")
+    suspend fun changeAuthKey(@Body authKey: ChangeAuthKeyRequest, @Path("spaceID") spaceID: Long): ApiResult<NetworkSpaceAuthPair>
+
+    @POST("api/spaces/quit/{spaceID}")
+    suspend fun quitSpace(@Path("spaceID") spaceID: Long): ApiResult<NetworkSpaceAuthPair>
 }

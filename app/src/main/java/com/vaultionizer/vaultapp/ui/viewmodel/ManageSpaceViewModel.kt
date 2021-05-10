@@ -5,8 +5,10 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vaultionizer.vaultapp.data.model.domain.VNFile
+import com.vaultionizer.vaultapp.data.model.rest.request.ChangeAuthKeyRequest
 import com.vaultionizer.vaultapp.data.model.rest.request.ConfigureSpaceRequest
 import com.vaultionizer.vaultapp.service.SpaceService
+import com.vaultionizer.vaultapp.util.AuthKeyGen
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -22,19 +24,14 @@ class ManageSpaceViewModel @Inject constructor(
     var spaceID: Long = -1
 
     fun generateAuthKey() {
-
+        val newAuthKey: String = AuthKeyGen().generateAuthKey()
+        viewModelScope.launch { spaceService.changeAuthKey(ChangeAuthKeyRequest(newAuthKey), spaceID) }
     }
 
     fun toggleUsersInvite(allowed: Boolean?) {
         if (allowed == null || spaceConfig.value == null) return
         __spaceConfig.value = ConfigureSpaceRequest(spaceConfig.value!!.usersWriteAccess, allowed, spaceConfig.value!!.sharedSpace)
     }
-
-    fun quitSpace() {
-
-    }
-
-
 
     fun kickAllUsers() {
         viewModelScope.launch { spaceService.kickAllUsers(spaceID) }
