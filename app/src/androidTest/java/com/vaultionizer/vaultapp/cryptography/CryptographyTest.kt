@@ -4,6 +4,7 @@ import com.google.common.truth.Truth.assertThat
 import com.vaultionizer.vaultapp.cryptography.crypto.CryptoMode
 import com.vaultionizer.vaultapp.cryptography.crypto.CryptoPadding
 import com.vaultionizer.vaultapp.cryptography.crypto.CryptoType
+import com.vaultionizer.vaultapp.cryptography.model.Password
 import org.junit.Before
 import org.junit.Test
 import javax.crypto.AEADBadTagException
@@ -12,7 +13,7 @@ class CryptographyTest {
 
     private val testingSpaceID = 1337133713371337
     private val message = "This is a secret!."
-    private val password = "00000"
+    private val password = Password("00000".toByteArray(Charsets.UTF_8))
 
     @Before
     fun cleanup() {
@@ -58,7 +59,7 @@ class CryptographyTest {
             CryptoType.AES,
             CryptoMode.GCM,
             CryptoPadding.NoPadding,
-            "0"
+            password
         )
         val saltIvcipher = Cryptography().desalter(transferBytes)
 
@@ -98,7 +99,7 @@ class CryptographyTest {
             CryptoPadding.NoPadding,
             password
         )
-        Cryptography().importKey(testingSpaceID, transferBytes, password + 0)
+        Cryptography().importKey(testingSpaceID, transferBytes, Password(password.pwd+0))
     }
 
 

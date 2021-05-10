@@ -165,6 +165,8 @@ dependencies {
 
     // Startup
     implementation "androidx.startup:startup-runtime:1.0.0"
+
+    implementation "org.mindrot:jbcrypt:0.4"
 }
 
 def getInstrumentation() {

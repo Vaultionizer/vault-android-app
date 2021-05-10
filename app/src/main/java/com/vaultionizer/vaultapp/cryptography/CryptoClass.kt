@@ -1,22 +1,23 @@
 package com.vaultionizer.vaultapp.cryptography
 
 import android.security.keystore.KeyProperties
-import com.vaultionizer.vaultapp.cryptography.dataclasses.IvCipher
-import com.vaultionizer.vaultapp.cryptography.dataclasses.SharedKeyOutput
+import com.vaultionizer.vaultapp.cryptography.model.IvCipher
+import com.vaultionizer.vaultapp.cryptography.model.Password
+import com.vaultionizer.vaultapp.cryptography.model.SharedKeyOutput
 import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 
 abstract class CryptoClass {
     abstract fun generateSingleUserKey(keystoreAlias: String)
 
-    fun generateSharedKey(keystoreAlias: String, password: String): SharedKeyOutput {
+    fun generateSharedKey(keystoreAlias: String, pwd: Password): SharedKeyOutput {
         val keyGenerator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES)
         keyGenerator.init(256)
         val secretKey = keyGenerator.generateKey()
 
         addKeyToKeyStore(secretKey, keystoreAlias)
 
-        val importExportKeyAndSalt = Cryptography().generateImportExportKeyAndSalt(password)
+        val importExportKeyAndSalt = Cryptography().generateImportExportKeyAndSalt(pwd)
         val importExportKey = importExportKeyAndSalt.key
         val importExportSalt = importExportKeyAndSalt.salt
 

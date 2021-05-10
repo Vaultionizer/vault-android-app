@@ -3,7 +3,7 @@ package com.vaultionizer.vaultapp.cryptography
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import android.security.keystore.KeyProtection
-import com.vaultionizer.vaultapp.cryptography.dataclasses.IvCipher
+import com.vaultionizer.vaultapp.cryptography.model.IvCipher
 import com.vaultionizer.vaultapp.util.Constants
 import java.security.KeyStore
 import javax.crypto.Cipher

@@ -1,4 +1,4 @@
-package com.vaultionizer.vaultapp.cryptography.dataclasses
+package com.vaultionizer.vaultapp.cryptography.model
 
 data class SaltIvcipher(
     val salt: ByteArray,
