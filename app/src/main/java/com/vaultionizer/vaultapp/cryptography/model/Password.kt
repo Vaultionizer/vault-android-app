@@ -4,4 +4,5 @@ data class Password(
     val pwd : ByteArray
 ) {
     override fun toString(): String = pwd.toString(Charsets.UTF_8)
+    fun toByteArray(): ByteArray = pwd
 }

@@ -52,7 +52,7 @@ class Cryptography {
         cryptoType: CryptoType,
         cryptoMode: CryptoMode,
         cryptoPadding: CryptoPadding,
-        password: String
+        password: Password
     ): ByteArray {
         if (cryptoType == CryptoType.AES) {
             if (cryptoMode == CryptoMode.GCM) {
@@ -109,12 +109,11 @@ class Cryptography {
         }
     }
 
-    fun importKey(spaceID: Long, bytes: ByteArray, password: String): Boolean {
+    fun importKey(spaceID: Long, bytes: ByteArray, pwd: Password): Boolean {
         val saltIvcipher = desalter(bytes)
-        val pwd = Password(password.toByteArray())
         val salt = Salt(saltIvcipher.salt)
         val importKey =
-            SecretKeySpec(Hashing().bCryptHash(pwd, salt).toByteArray(), "AES")
+            SecretKeySpec(Hashing().bCryptHash(pwd, salt).hash.toByteArray(), "AES")
         val keyPlainUnchecked = AesGcmNopadding().decrypt(
             importKey,
             saltIvcipher.ivcipher.iv,
@@ -169,11 +168,9 @@ class Cryptography {
     }
 
 
-    fun generateImportExportKeyAndSalt(password: String): KeySalt {
-        val random = SecureRandom()
-        val salt = ByteArray(16)
-        random.nextBytes(salt)
-        return KeySalt(SecretKeySpec(Hashing().sha256(password.toByteArray() + salt), "AES"), salt)
+    fun generateImportExportKeyAndSalt(pwd: Password): KeySalt {
+        val hashSalt = Hashing().bCryptHash(pwd)
+        return KeySalt(SecretKeySpec(hashSalt.hash.hash, "AES"), hashSalt.salt.salt)
     }
 
     fun validate(keyPlainUnchecked: ByteArray): Boolean {
@@ -207,8 +204,8 @@ class Cryptography {
     }
 
     fun desalter(bytes: ByteArray): SaltIvcipher {
-        val salt = bytes.sliceArray(0 until 16)
-        val bytesivCipher = bytes.sliceArray(16 until bytes.size)
+        val salt = bytes.sliceArray(0 until 29)
+        val bytesivCipher = bytes.sliceArray(29 until bytes.size)
         val ivCipher = AesGcmNopadding().dewrapper(bytesivCipher)
 
         return SaltIvcipher(salt, ivCipher)

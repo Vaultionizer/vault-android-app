@@ -39,9 +39,11 @@ class Hashing {
         val hashString = BCrypt.hashpw(pwd.toString(), saltString)
 
         val salt = Salt(saltString.toByteArray(Charsets.UTF_8))
-        val hash = Hash(hashString.toByteArray(Charsets.UTF_8))
+        val hash = hashString.toByteArray(Charsets.UTF_8)
 
-        return HashSalt(hash, salt)
+        val trueHash = Hash(hash.sliceArray(29 until hash.size)+"V".toByteArray(Charsets.UTF_8))
+
+        return HashSalt(trueHash, salt)
     }
 
     /** Method to hash a password with a random generated salt
@@ -53,9 +55,11 @@ class Hashing {
         val hashString = BCrypt.hashpw(pwd.toString(), saltString)
 
         val salt = Salt(saltString.toByteArray(Charsets.UTF_8))
-        val hash = Hash(hashString.toByteArray(Charsets.UTF_8))
+        val hash = hashString.toByteArray(Charsets.UTF_8)
 
-        return HashSalt(hash, salt)
+        val trueHash = Hash(hash.sliceArray(29 until hash.size)+"V".toByteArray(Charsets.UTF_8))
+
+        return HashSalt(trueHash, salt)
     }
 
     /** Method to validate the password provided by the user against the data from the transfer
@@ -65,9 +69,11 @@ class Hashing {
      */
     fun bCryptValidate(pwd : Password, hashSalt: HashSalt) : Boolean {
         val hashString = BCrypt.hashpw(pwd.toString(), hashSalt.salt.toString())
-        val hash = Hash(hashString.toByteArray(Charsets.UTF_8))
+        val hash = hashString.toByteArray(Charsets.UTF_8)
 
-        if (hash.hash.contentEquals(hashSalt.hash.hash)){
+        val trueHash = Hash(hash.sliceArray(29 until hash.size)+ByteArray(1))
+
+        if (trueHash.hash.contentEquals(hashSalt.hash.hash)){
             return true
         }
         return false
