@@ -126,6 +126,7 @@ dependencies {
 
     implementation 'androidx.hilt:hilt-lifecycle-viewmodel:1.0.0-alpha01'
     implementation "com.google.dagger:hilt-android:$hilt_version"
+    implementation 'androidx.preference:preference:1.1.1'
     kapt "com.google.dagger:hilt-android-compiler:$hilt_version"
 
     // Lorem Ipsum
@@ -166,7 +167,15 @@ dependencies {
     // Startup
     implementation "androidx.startup:startup-runtime:1.0.0"
 
+    // zxing for QR codes
+    implementation 'com.google.zxing:core:3.4.1'
+
+    // for QR scanning
+    implementation 'com.budiyev.android:code-scanner:2.1.0'
+
+    // for BCrypt hashing
     implementation "org.mindrot:jbcrypt:0.4"
+
 }
 
 def getInstrumentation() {

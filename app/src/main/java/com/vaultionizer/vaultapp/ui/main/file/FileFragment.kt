@@ -200,7 +200,8 @@ class FileFragment : Fragment(), View.OnClickListener {
     override fun onOptionsItemSelected(item: MenuItem): Boolean =
         when (item.itemId) {
             R.id.action_space_delete -> {
-                viewModel.requestSpaceDeletion()
+                findNavController().navigate(FileFragmentDirections.actionFileFragmentToSpacePermissionsFragment())
+                //viewModel.requestSpaceDeletion()
                 true
             }
             else -> {

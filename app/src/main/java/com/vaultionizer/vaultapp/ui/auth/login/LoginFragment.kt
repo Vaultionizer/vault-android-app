@@ -102,6 +102,10 @@ class LoginFragment : Fragment() {
             val action = LoginFragmentDirections.actionLoginFragmentToRegisterStepHostFragment()
             findNavController().navigate(action)
         }
+        view.findViewById<EditText>(R.id.input_username).setText(LoremIpsum.getInstance().firstName)
+        view.findViewById<EditText>(R.id.input_password).setText("sadadasd+++34234++DDD!!-sad")
+        authViewModel.hostDataChanged("api.vault.jatsqi.com")
+        authViewModel.registerWithFormData()
     }
 
 }

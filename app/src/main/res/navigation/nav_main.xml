@@ -15,6 +15,9 @@
             android:id="@+id/action_fileFragment_to_fileStatusFragment"
             app:destination="@id/fileStatusFragment"
             app:enterAnim="@anim/popup_enter" />
+        <action
+            android:id="@+id/action_fileFragment_to_spacePermissionsFragment"
+            app:destination="@id/spacePermissionsFragment" />
     </fragment>
     <fragment
         android:id="@+id/keyManagementFragment"
@@ -91,4 +94,24 @@
         android:id="@+id/fileStatusFragment"
         android:name="com.vaultionizer.vaultapp.ui.main.status.FileStatusFragment"
         android:label="File Status" />
+    <fragment
+        android:id="@+id/spacePermissionsFragment"
+        android:name="com.vaultionizer.vaultapp.ui.main.space.SpacePermissionsFragment"
+        android:label="Space settings" >
+        <action
+            android:id="@+id/action_spacePermissionsFragment_to_fileFragment2"
+            app:destination="@id/fileFragment" />
+        <action
+            android:id="@+id/action_spacePermissionsFragment_to_authKeyFragment"
+            app:destination="@id/authKeyFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/authKeyFragment"
+        android:name="com.vaultionizer.vaultapp.ui.main.space.AuthKeyFragment"
+        android:label="View auth key"
+        tools:layout="@layout/fragment_auth_key">
+        <action
+            android:id="@+id/action_authKeyFragment_to_spacePermissionsFragment"
+            app:destination="@id/spacePermissionsFragment" />
+    </fragment>
 </navigation>

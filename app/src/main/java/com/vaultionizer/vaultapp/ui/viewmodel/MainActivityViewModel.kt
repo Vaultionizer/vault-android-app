@@ -135,6 +135,10 @@ class MainActivityViewModel @Inject constructor(
         }
     }
 
+    fun requestQuitSpace(){
+        // TODO
+    }
+
     fun selectedSpaceChanged(space: VNSpace) {
         Log.e("Vault", "Change space...")
         _currentDirectory.value = null
