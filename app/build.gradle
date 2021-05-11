@@ -7,8 +7,9 @@ apply plugin: 'dagger.hilt.android.plugin'
 
 sonarqube {
     properties {
-        property "sonar.projectKey", "vault-android-app"
-        property "sonar.projectName", "vault-android-app"
+        property "sonar.projectKey", "Vaultionizer_vault-android-app"
+        property "sonar.organization", "vaultionizer"
+        property "sonar.host.url", "https://sonarcloud.io"
         property "sonar.sources", "src"
         property "sonar.binaries", ["build/intermediates/javac/debug/classes"]
         property "sonar.java.binaries", ["build/intermediates/javac/debug/classes"]
@@ -181,11 +182,4 @@ dependencies {
 
 def getInstrumentation() {
     project.hasProperty("cucumber") ? "com.vaultionizer.vaultapp.cucumber.runner.CucumberTestRunner" : "androidx.test.runner.AndroidJUnitRunner"
-}
-
-test {
-    finalizedBy jacocoTestReport // report is always generated after tests run
-}
-jacocoTestReport {
-    dependsOn test // tests are required to run before generating the report
 }
