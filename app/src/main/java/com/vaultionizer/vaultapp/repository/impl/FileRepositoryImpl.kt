@@ -61,6 +61,11 @@ class FileRepositoryImpl @Inject constructor(
 
     override suspend fun getFileTree(space: VNSpace): Flow<Resource<VNFile>> {
         return flow {
+            if (!space.isKeyAvailable) {
+                emit(ManagedResult.CryptographicalError)
+                return@flow
+            }
+
             val cache = fileCaches[space.id] ?: FileCache(FileCache.IdCachingStrategy.LOCAL_ID)
             fileCaches[space.id] = cache
             cache.rootFile?.let {

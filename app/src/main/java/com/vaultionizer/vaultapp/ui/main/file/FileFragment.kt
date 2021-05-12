@@ -105,6 +105,7 @@ class FileFragment : Fragment(), View.OnClickListener {
             val action = FileFragmentDirections.actionFileFragmentToFileStatusFragment()
             findNavController().navigate(action)
         }
+
         statusViewModel.fileStatus.observe(viewLifecycleOwner) {
             val size: Int = it.size // Necessary because the gradle linter has a bug atm.
             fileProcessingStatusButton.text = if (it.isEmpty()) {
