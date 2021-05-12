@@ -5,7 +5,7 @@ import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.vaultionizer.vaultapp.data.model.domain.VNFile
-import com.vaultionizer.vaultapp.data.model.rest.result.ManagedResult
+import com.vaultionizer.vaultapp.data.model.rest.result.Resource
 import com.vaultionizer.vaultapp.repository.FileRepository
 import com.vaultionizer.vaultapp.repository.SpaceRepository
 import com.vaultionizer.vaultapp.repository.SyncRequestRepository
@@ -45,7 +45,7 @@ class FileUploadWorker @AssistedInject constructor(
                 val announceResponse =
                     fileRepository.announceUpload(file.space.id).first()
 
-                if (announceResponse !is ManagedResult.Success) {
+                if (announceResponse !is Resource.Success) {
                     return@withContext Result.failure()
                 }
 

@@ -9,7 +9,7 @@ import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkReferenceFile
 import com.vaultionizer.vaultapp.data.model.rest.request.CreateUserRequest
 import com.vaultionizer.vaultapp.data.model.rest.request.LoginUserRequest
 import com.vaultionizer.vaultapp.data.model.rest.result.ApiResult
-import com.vaultionizer.vaultapp.data.model.rest.result.ManagedResult
+import com.vaultionizer.vaultapp.data.model.rest.result.Resource
 import com.vaultionizer.vaultapp.data.model.rest.user.LoggedInUser
 import com.vaultionizer.vaultapp.data.model.rest.user.NetworkUserAuthPair
 import com.vaultionizer.vaultapp.hilt.RestModule
@@ -34,7 +34,7 @@ class AuthRepositoryImpl @Inject constructor(
         host: String,
         username: String,
         password: String
-    ): Flow<ManagedResult<LoggedInUser>> {
+    ): Flow<Resource<LoggedInUser>> {
         RestModule.host = "${Constants.DEFAULT_PROTOCOL}://$host"
 
         return flow {
@@ -44,13 +44,13 @@ class AuthRepositoryImpl @Inject constructor(
                 is ApiResult.Success -> {
                     updateLocalUser(username, host, response.data)
 
-                    emit(ManagedResult.Success(authCache.loggedInUser!!))
+                    emit(Resource.Success(authCache.loggedInUser!!))
                 }
                 is ApiResult.NetworkError -> {
-                    emit(ManagedResult.NetworkError(response.exception))
+                    emit(Resource.NetworkError(response.exception))
                 }
                 is ApiResult.Error -> {
-                    emit(ManagedResult.Error(statusCode = response.statusCode))
+                    emit(Resource.Error(statusCode = response.statusCode))
                 }
             }
         }.flowOn(Dispatchers.IO)
@@ -61,7 +61,7 @@ class AuthRepositoryImpl @Inject constructor(
         username: String,
         password: String,
         authKey: String
-    ): Flow<ManagedResult<LoggedInUser>> {
+    ): Flow<Resource<LoggedInUser>> {
         RestModule.host = "${Constants.DEFAULT_PROTOCOL}://$host"
 
         return flow {
@@ -77,18 +77,18 @@ class AuthRepositoryImpl @Inject constructor(
                 is ApiResult.Success -> {
                     updateLocalUser(username, host, response.data)
 
-                    emit(ManagedResult.Success(authCache.loggedInUser!!))
+                    emit(Resource.Success(authCache.loggedInUser!!))
                 }
                 is ApiResult.NetworkError -> {
-                    emit(ManagedResult.NetworkError(response.exception))
+                    emit(Resource.NetworkError(response.exception))
                 }
                 is ApiResult.Error -> {
                     if (response.statusCode == 409) {
-                        emit(ManagedResult.UserError.UsernameAlreadyInUseError)
+                        emit(Resource.UserError.UsernameAlreadyInUseError)
                     } else if (response.statusCode == 400) {
-                        emit(ManagedResult.UserError.ValueConstraintsError)
+                        emit(Resource.UserError.ValueConstraintsError)
                     } else {
-                        emit(ManagedResult.Error(statusCode = response.statusCode))
+                        emit(Resource.Error(statusCode = response.statusCode))
                     }
                 }
             }

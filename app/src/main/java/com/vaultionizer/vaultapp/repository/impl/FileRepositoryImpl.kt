@@ -14,7 +14,7 @@ import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkElement
 import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkFolder
 import com.vaultionizer.vaultapp.data.model.rest.request.UploadFileRequest
 import com.vaultionizer.vaultapp.data.model.rest.result.ApiResult
-import com.vaultionizer.vaultapp.data.model.rest.result.ManagedResult
+import com.vaultionizer.vaultapp.data.model.rest.result.Resource
 import com.vaultionizer.vaultapp.repository.FileRepository
 import com.vaultionizer.vaultapp.repository.ReferenceFileRepository
 import com.vaultionizer.vaultapp.repository.SpaceRepository
@@ -58,19 +58,19 @@ class FileRepositoryImpl @Inject constructor(
      */
     private val minimumIdCache = mutableMapOf<Long, Long>()
 
-    override suspend fun getFileTree(space: VNSpace): Flow<ManagedResult<VNFile>> {
+    override suspend fun getFileTree(space: VNSpace): Flow<Resource<VNFile>> {
         return flow {
             val cache = fileCaches[space.id] ?: FileCache(FileCache.IdCachingStrategy.LOCAL_ID)
             fileCaches[space.id] = cache
             cache.rootFile?.let {
-                emit(ManagedResult.Success(it))
+                emit(Resource.Success(it))
                 return@flow
             }
 
             val referenceFile = referenceFileRepository.downloadReferenceFile(space)
             referenceFile.collect {
                 when (it) {
-                    is ManagedResult.Success -> {
+                    is Resource.Success -> {
                         minimumIdCache[space.id] = -1
                         val affectedIds = mutableSetOf<Long>()
                         persistNetworkTree(it.data.elements, space, -1, affectedIds)
@@ -85,10 +85,10 @@ class FileRepositoryImpl @Inject constructor(
                         //                      1) Query sync requests
                         //                      2) Add new VNFile to parent folder
                         cache.addFile(root)
-                        emit(ManagedResult.Success(root))
+                        emit(Resource.Success(root))
                     }
                     else -> {
-                        emit(ManagedResult.Error((it as ManagedResult.Error).statusCode))
+                        emit(Resource.Error((it as Resource.Error).statusCode))
                     }
                 }
             }
@@ -251,23 +251,23 @@ class FileRepositoryImpl @Inject constructor(
     override fun getFileByRemote(spaceId: Long, fileRemoteId: Long): VNFile? =
         fileCaches[spaceId]?.getFile(fileRemoteId)
 
-    override suspend fun announceUpload(spaceId: Long): Flow<ManagedResult<Long>> {
+    override suspend fun announceUpload(spaceId: Long): Flow<Resource<Long>> {
         return flow {
             when (val response = fileService.uploadFile(
                 UploadFileRequest(
                     1,
                     (spaceRepository.getSpace(spaceId)
-                        .first() as ManagedResult.Success<VNSpace>).data.remoteId
+                        .first() as Resource.Success<VNSpace>).data.remoteId
                 )
             )) {
                 is ApiResult.Success -> {
-                    emit(ManagedResult.Success(response.data))
+                    emit(Resource.Success(response.data))
                 }
                 is ApiResult.NetworkError -> {
-                    emit(ManagedResult.NetworkError(response.exception))
+                    emit(Resource.NetworkError(response.exception))
                 }
                 is ApiResult.Error -> {
-                    emit(ManagedResult.Error(response.statusCode))
+                    emit(Resource.Error(response.statusCode))
                 }
             }
         }.flowOn(Dispatchers.IO)

@@ -10,7 +10,7 @@ import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkReferenceFile
 import com.vaultionizer.vaultapp.data.model.rest.request.DownloadReferenceFileRequest
 import com.vaultionizer.vaultapp.data.model.rest.request.UploadReferenceFileRequest
 import com.vaultionizer.vaultapp.data.model.rest.result.ApiResult
-import com.vaultionizer.vaultapp.data.model.rest.result.ManagedResult
+import com.vaultionizer.vaultapp.data.model.rest.result.Resource
 import com.vaultionizer.vaultapp.repository.ReferenceFileRepository
 import com.vaultionizer.vaultapp.repository.SpaceRepository
 import com.vaultionizer.vaultapp.service.ReferenceFileService
@@ -28,7 +28,7 @@ class ReferenceFileRepositoryImpl @Inject constructor(
     val spaceRepository: SpaceRepository
 ) : ReferenceFileRepository {
 
-    override suspend fun downloadReferenceFile(space: VNSpace): Flow<ManagedResult<NetworkReferenceFile>> {
+    override suspend fun downloadReferenceFile(space: VNSpace): Flow<Resource<NetworkReferenceFile>> {
         return flow {
             val response =
                 referenceFileService.downloadReferenceFile(DownloadReferenceFileRequest(space.remoteId))
@@ -41,13 +41,13 @@ class ReferenceFileRepositoryImpl @Inject constructor(
                         localSpaceDao.updateSpaces(localSpace)
                     }
 
-                    emit(ManagedResult.Success(response.data))
+                    emit(Resource.Success(response.data))
                 }
                 is ApiResult.Error -> {
-                    emit(ManagedResult.Error(response.statusCode))
+                    emit(Resource.Error(response.statusCode))
                 }
                 is ApiResult.NetworkError -> {
-                    emit(ManagedResult.NetworkError(response.exception))
+                    emit(Resource.NetworkError(response.exception))
                 }
             }
         }.flowOn(Dispatchers.IO)
@@ -56,7 +56,7 @@ class ReferenceFileRepositoryImpl @Inject constructor(
     override suspend fun uploadReferenceFile(
         referenceFile: NetworkReferenceFile,
         space: VNSpace
-    ): Flow<ManagedResult<NetworkReferenceFile>> {
+    ): Flow<Resource<NetworkReferenceFile>> {
         return flow {
             val response = referenceFileService.uploadReferenceFile(
                 UploadReferenceFileRequest(
@@ -65,17 +65,17 @@ class ReferenceFileRepositoryImpl @Inject constructor(
             )
             when (response) {
                 is ApiResult.Success -> {
-                    emit(ManagedResult.Success(referenceFile))
+                    emit(Resource.Success(referenceFile))
                 }
                 is ApiResult.Error -> {
-                    emit(ManagedResult.RefFileError.RefFileUploadError)
+                    emit(Resource.RefFileError.RefFileUploadError)
                 }
                 is ApiResult.NetworkError -> {
                     Log.e(
                         "Vault",
                         "Network error from upload ${response.exception.localizedMessage}"
                     )
-                    emit(ManagedResult.NetworkError(response.exception))
+                    emit(Resource.NetworkError(response.exception))
                 }
             }
         }.flowOn(Dispatchers.IO)
@@ -84,12 +84,12 @@ class ReferenceFileRepositoryImpl @Inject constructor(
     override suspend fun syncReferenceFile(
         spaceId: Long,
         root: VNFile
-    ): Flow<ManagedResult<NetworkReferenceFile>> {
+    ): Flow<Resource<NetworkReferenceFile>> {
         return flow {
             val spaceResult = spaceRepository.getSpace(spaceId)
             spaceResult.collect {
                 when (it) {
-                    is ManagedResult.Success -> {
+                    is Resource.Success -> {
                         val networkRoot = root.mapToNetwork() as NetworkFolder
                         val result = uploadReferenceFile(
                             NetworkReferenceFile(
@@ -105,7 +105,7 @@ class ReferenceFileRepositoryImpl @Inject constructor(
                     }
                     else -> {
                         // TODO(jatsqi): Better error handling.
-                        emit(ManagedResult.Error(9))
+                        emit(Resource.Error(9))
                     }
                 }
             }

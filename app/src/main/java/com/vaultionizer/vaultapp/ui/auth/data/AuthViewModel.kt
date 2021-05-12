@@ -9,7 +9,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vaultionizer.vaultapp.R
 import com.vaultionizer.vaultapp.cryptography.PasswordValidator
-import com.vaultionizer.vaultapp.data.model.rest.result.ManagedResult
+import com.vaultionizer.vaultapp.data.model.rest.result.Resource
 import com.vaultionizer.vaultapp.repository.AuthRepository
 import com.vaultionizer.vaultapp.repository.MiscRepository
 import com.vaultionizer.vaultapp.ui.auth.login.LoginResult
@@ -57,7 +57,7 @@ class AuthViewModel @Inject constructor(
         viewModelScope.launch {
             val ping = miscRepository.pingHost(formatHost(host)).first()
 
-            if (ping is ManagedResult.MiscError.HostServerError) {
+            if (ping is Resource.MiscError.HostServerError) {
                 _hostFormState.value = HostFormState(
                     hostError = applicationContext.resources.getString(
                         R.string.host_error_code,
@@ -67,12 +67,12 @@ class AuthViewModel @Inject constructor(
                 _hostValidationResult.value = HostValidationResult(null)
             }
 
-            if (ping is ManagedResult.Success) {
+            if (ping is Resource.Success) {
                 _hostFormState.value = HostFormState(hostValid = true)
                 _hostValidationResult.value = HostValidationResult(ping.data)
             }
 
-            if (ping is ManagedResult.NetworkError) {
+            if (ping is Resource.NetworkError) {
                 _hostFormState.value =
                     HostFormState(hostError = applicationContext.resources.getString(R.string.host_error_network))
                 _hostValidationResult.value = HostValidationResult(null)
@@ -103,14 +103,14 @@ class AuthViewModel @Inject constructor(
 
             result.collect {
                 when (it) {
-                    is ManagedResult.Success -> {
+                    is Resource.Success -> {
                         Log.e(
                             "Vault",
                             "HELLO ${it.data.localUser.userId} with ${it.data.sessionToken}"
                         )
                         _loginResult.value = LoginResult(null)
                     }
-                    is ManagedResult.UserError.UsernameAlreadyInUseError -> {
+                    is Resource.UserError.UsernameAlreadyInUseError -> {
                         _loginResult.value = LoginResult("Username is already in use!")
                     }
                     else -> {
@@ -133,13 +133,13 @@ class AuthViewModel @Inject constructor(
             result.collect {
                 Log.d("Vault", it.javaClass.toString())
                 when (it) {
-                    is ManagedResult.Success -> {
+                    is Resource.Success -> {
                         _loginResult.value = LoginResult(null)
                     }
-                    is ManagedResult.Error -> {
+                    is Resource.Error -> {
                         _loginResult.value = LoginResult("Invalid credentials!")
                     }
-                    is ManagedResult.NetworkError -> {
+                    is Resource.NetworkError -> {
                         Log.d("Vault", it.exception.localizedMessage)
                     }
                 }

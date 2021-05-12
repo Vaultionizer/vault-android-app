@@ -1,6 +1,6 @@
 package com.vaultionizer.vaultapp.repository
 
-import com.vaultionizer.vaultapp.data.model.rest.result.ManagedResult
+import com.vaultionizer.vaultapp.data.model.rest.result.Resource
 import com.vaultionizer.vaultapp.data.model.rest.user.LoggedInUser
 import kotlinx.coroutines.flow.Flow
 
@@ -10,13 +10,13 @@ interface AuthRepository {
         host: String,
         username: String,
         password: String
-    ): Flow<ManagedResult<LoggedInUser>>
+    ): Flow<Resource<LoggedInUser>>
 
     suspend fun register(
         host: String,
         username: String,
         password: String,
         authKey: String
-    ): Flow<ManagedResult<LoggedInUser>>
+    ): Flow<Resource<LoggedInUser>>
 
 }

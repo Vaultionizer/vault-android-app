@@ -3,7 +3,7 @@ package com.vaultionizer.vaultapp.repository.impl
 import android.util.Log
 import com.vaultionizer.vaultapp.data.model.rest.misc.NetworkVersion
 import com.vaultionizer.vaultapp.data.model.rest.result.ApiResult
-import com.vaultionizer.vaultapp.data.model.rest.result.ManagedResult
+import com.vaultionizer.vaultapp.data.model.rest.result.Resource
 import com.vaultionizer.vaultapp.repository.MiscRepository
 import com.vaultionizer.vaultapp.service.MiscService
 import kotlinx.coroutines.Dispatchers
@@ -16,7 +16,7 @@ import javax.inject.Inject
 
 class MiscRepositoryImpl @Inject constructor(val retrofit: Retrofit) : MiscRepository {
 
-    override suspend fun pingHost(host: String): Flow<ManagedResult<NetworkVersion>> {
+    override suspend fun pingHost(host: String): Flow<Resource<NetworkVersion>> {
 
         return flow {
             val temp =
@@ -26,13 +26,13 @@ class MiscRepositoryImpl @Inject constructor(val retrofit: Retrofit) : MiscRepos
             val response = temp.create(MiscService::class.java).getVersionInfo()
 
             when (response::class) {
-                ApiResult.NetworkError::class -> emit(ManagedResult.NetworkError((response as ApiResult.NetworkError).exception))
+                ApiResult.NetworkError::class -> emit(Resource.NetworkError((response as ApiResult.NetworkError).exception))
                 ApiResult.Error::class -> emit(
-                    ManagedResult.MiscError.HostServerError(
+                    Resource.MiscError.HostServerError(
                         statusCode = (response as ApiResult.Error).statusCode
                     )
                 )
-                else -> emit(ManagedResult.Success((response as ApiResult.Success).data))
+                else -> emit(Resource.Success((response as ApiResult.Success).data))
             }
         }.flowOn(Dispatchers.IO)
     }

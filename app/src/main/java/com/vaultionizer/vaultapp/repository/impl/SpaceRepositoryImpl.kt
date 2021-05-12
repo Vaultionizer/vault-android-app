@@ -1,7 +1,6 @@
 package com.vaultionizer.vaultapp.repository.impl
 
 import com.google.gson.Gson
-import com.thedeanda.lorem.LoremIpsum
 import com.vaultionizer.vaultapp.data.cache.AuthCache
 import com.vaultionizer.vaultapp.data.db.dao.LocalFileDao
 import com.vaultionizer.vaultapp.data.db.dao.LocalSpaceDao
@@ -10,7 +9,7 @@ import com.vaultionizer.vaultapp.data.model.domain.VNSpace
 import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkReferenceFile
 import com.vaultionizer.vaultapp.data.model.rest.request.CreateSpaceRequest
 import com.vaultionizer.vaultapp.data.model.rest.result.ApiResult
-import com.vaultionizer.vaultapp.data.model.rest.result.ManagedResult
+import com.vaultionizer.vaultapp.data.model.rest.result.Resource
 import com.vaultionizer.vaultapp.data.model.rest.space.NetworkSpace
 import com.vaultionizer.vaultapp.repository.SpaceRepository
 import com.vaultionizer.vaultapp.service.SpaceService
@@ -27,7 +26,7 @@ class SpaceRepositoryImpl @Inject constructor(
     val gson: Gson,
     val authCache: AuthCache
 ) : SpaceRepository {
-    override suspend fun getAllSpaces(): Flow<ManagedResult<List<VNSpace>>> {
+    override suspend fun getAllSpaces(): Flow<Resource<List<VNSpace>>> {
         return flow {
             val response = spaceService.getAll()
 
@@ -38,23 +37,23 @@ class SpaceRepositoryImpl @Inject constructor(
                         list.add(persistNetworkSpace(space))
                     }
 
-                    emit(ManagedResult.Success(list))
+                    emit(Resource.Success(list))
                 }
                 // TODO(jatsqi): Error handling
             }
         }.flowOn(Dispatchers.IO)
     }
 
-    override suspend fun getSpace(spaceId: Long): Flow<ManagedResult<VNSpace>> {
+    override suspend fun getSpace(spaceId: Long): Flow<Resource<VNSpace>> {
         return flow {
             getAllSpaces().collect {
                 when (it) {
-                    is ManagedResult.Success -> {
+                    is Resource.Success -> {
                         val space = localSpaceDao.getSpaceById(spaceId)
                         if (space == null) {
-                            emit(ManagedResult.Error(404))
+                            emit(Resource.Error(404))
                         } else {
-                            emit(ManagedResult.Success(it.data.first { it.id == spaceId }))
+                            emit(Resource.Success(it.data.first { it.id == spaceId }))
                         }
                     }
                     // TODO(jatsqi): Error handling
@@ -72,7 +71,7 @@ class SpaceRepositoryImpl @Inject constructor(
     override suspend fun createSpace(
         name: String,
         isPrivate: Boolean
-    ): Flow<ManagedResult<VNSpace>> {
+    ): Flow<Resource<VNSpace>> {
         return flow {
             // TODO(jatsqi) Replace LoremIpsum with real authKey
             val response = spaceService.createSpace(
@@ -92,14 +91,14 @@ class SpaceRepositoryImpl @Inject constructor(
                         null
                     ) // TODO(jatsqi) Replace null with actual reference file
 
-                    emit(ManagedResult.Success(persisted))
+                    emit(Resource.Success(persisted))
                 }
                 // TODO(jatsqi): Error handling
             }
         }.flowOn(Dispatchers.IO)
     }
 
-    override suspend fun deleteSpace(space: VNSpace): Flow<ManagedResult<VNSpace>> {
+    override suspend fun deleteSpace(space: VNSpace): Flow<Resource<VNSpace>> {
         return flow {
 
             when (spaceService.deleteSpace(space.remoteId)) {
@@ -107,7 +106,7 @@ class SpaceRepositoryImpl @Inject constructor(
                     localFileDao.deleteFilesBySpace(space.id)
                     localSpaceDao.deleteSpaces(localSpaceDao.getSpaceById(space.id)!!)
 
-                    emit(ManagedResult.Success(space))
+                    emit(Resource.Success(space))
                 }
                 // TODO(jatsqi): Error handling
             }
