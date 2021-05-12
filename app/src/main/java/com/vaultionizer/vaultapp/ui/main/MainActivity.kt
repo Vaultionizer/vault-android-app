@@ -32,6 +32,7 @@ import com.mikepenz.materialdrawer.widget.MaterialDrawerSliderView
 import com.vaultionizer.vaultapp.R
 import com.vaultionizer.vaultapp.data.cache.AuthCache
 import com.vaultionizer.vaultapp.data.model.domain.VNSpace
+import com.vaultionizer.vaultapp.ui.main.file.FileAlertDialogType
 import com.vaultionizer.vaultapp.ui.viewmodel.MainActivityViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -101,6 +102,16 @@ class MainActivity : AppCompatActivity() {
 
         rebuildGeneralUi(navView)
 
+        viewModel.fileDialogState.observe(this) {
+            if (it.isValid) {
+                return@observe
+            }
+
+            if (it.fileAlertType == FileAlertDialogType.REQUEST_KEY_GENERATION) {
+                onSpaceKeyRequest()
+            }
+        }
+
         viewModel.userSpaces.observe(this, androidx.lifecycle.Observer {
             navView.removeAllItems()
             rebuildGeneralUi(navView)
@@ -136,10 +147,6 @@ class MainActivity : AppCompatActivity() {
                     )
                 }
             }
-
-            if (viewModel.selectedSpace.value == null && it.size > 0) {
-                viewModel.selectedSpaceChanged(it[0])
-            }
         })
 
         viewModel.updateUserSpaces()
@@ -154,6 +161,19 @@ class MainActivity : AppCompatActivity() {
     override fun onSupportNavigateUp(): Boolean {
         val navController = findNavController(R.id.nav_host_fragment)
         return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
+    }
+
+    private fun onSpaceKeyRequest() {
+        val dialog =
+            FileAlertDialogType.REQUEST_KEY_GENERATION.createDialog(this,
+                { it ->
+
+                },
+                { it ->
+
+                })
+        dialog.setCancelable(false)
+        dialog.show()
     }
 
     private fun nextIdentifier(): Long {

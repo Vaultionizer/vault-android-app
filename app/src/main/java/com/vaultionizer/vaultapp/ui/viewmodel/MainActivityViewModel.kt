@@ -14,6 +14,7 @@ import com.vaultionizer.vaultapp.data.model.domain.VNSpace
 import com.vaultionizer.vaultapp.data.model.rest.result.Resource
 import com.vaultionizer.vaultapp.repository.FileRepository
 import com.vaultionizer.vaultapp.repository.SpaceRepository
+import com.vaultionizer.vaultapp.ui.main.file.FileAlertDialogType
 import com.vaultionizer.vaultapp.ui.main.file.FileDialogState
 import com.vaultionizer.vaultapp.util.Constants
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -55,6 +56,10 @@ class MainActivityViewModel @Inject constructor(
             result.collect {
                 if (it is Resource.Success) {
                     _userSpaces.value = it.data
+
+                    if (_selectedSpace.value == null) {
+                        _selectedSpace.value = it.data[0]
+                    }
                 }
             }
         }
@@ -76,6 +81,9 @@ class MainActivityViewModel @Inject constructor(
                         is Resource.Success -> {
                             _currentDirectory.value = it.data
                             updateCurrentFiles()
+                        }
+                        is ManagedResult.CryptographicalError -> {
+
                         }
                     }
                 }
@@ -141,6 +149,19 @@ class MainActivityViewModel @Inject constructor(
 
     fun selectedSpaceChanged(space: VNSpace) {
         Log.e("Vault", "Change space...")
+        if (!space.isKeyAvailable) {
+            _fileDialogState.postValue(
+                FileDialogState(
+                    null,
+                    FileAlertDialogType.REQUEST_KEY_GENERATION,
+                    false
+                )
+            )
+            return
+        } else {
+            _fileDialogState.postValue(FileDialogState(null, null, true))
+        }
+
         _currentDirectory.value = null
         _selectedSpace.value = space
         updateCurrentFiles()
