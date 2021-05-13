@@ -9,12 +9,14 @@ import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkReferenceFile
 import com.vaultionizer.vaultapp.data.model.rest.request.DownloadReferenceFileRequest
 import com.vaultionizer.vaultapp.data.model.rest.request.UploadReferenceFileRequest
 import com.vaultionizer.vaultapp.data.model.rest.result.ApiResult
-import com.vaultionizer.vaultapp.data.model.rest.result.NetworkBoundResource
 import com.vaultionizer.vaultapp.data.model.rest.result.Resource
 import com.vaultionizer.vaultapp.repository.ReferenceFileRepository
 import com.vaultionizer.vaultapp.repository.SpaceRepository
 import com.vaultionizer.vaultapp.service.ReferenceFileService
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 import javax.inject.Inject
 
 class ReferenceFileRepositoryImpl @Inject constructor(
@@ -27,53 +29,39 @@ class ReferenceFileRepositoryImpl @Inject constructor(
     private val cachedReferenceFiles = mutableMapOf<Long, Pair<NetworkReferenceFile, Long>>()
 
     override suspend fun downloadReferenceFile(space: VNSpace): Flow<Resource<NetworkReferenceFile>> {
-        return object : NetworkBoundResource<NetworkReferenceFile, NetworkReferenceFile>() {
-            override fun shouldFetch(): Boolean {
-                val cachedRefFile = cachedReferenceFiles[space.id] ?: return true
-                return (System.currentTimeMillis() - cachedRefFile.second) > 1000 * 60 * 5
+        return flow {
+            if (cachedReferenceFiles[space.id] != null) {
+                if (System.currentTimeMillis() - cachedReferenceFiles[space.id]!!.second < 1000 * 60 * 5) {
+                    emit(Resource.Success(cachedReferenceFiles[space.id]!!.first))
+                    return@flow
+                }
             }
 
-            override suspend fun fromDb(): Resource<NetworkReferenceFile> {
-                val cachedRefFile =
-                    cachedReferenceFiles[space.id]?.first ?: return Resource.ConsistencyError
-                return Resource.Success(cachedRefFile)
+            val downloadResponse =
+                referenceFileService.downloadReferenceFile(DownloadReferenceFileRequest(space.remoteId))
+
+            if (downloadResponse is ApiResult.Success) {
+                cachedReferenceFiles[space.id] =
+                    Pair(downloadResponse.data, System.currentTimeMillis())
             }
 
-            override suspend fun saveToDb(networkResult: NetworkReferenceFile) {
-                cachedReferenceFiles[space.id] = Pair(networkResult, System.currentTimeMillis())
-            }
-
-            override suspend fun fromNetwork(): ApiResult<NetworkReferenceFile> {
-                return referenceFileService.downloadReferenceFile(DownloadReferenceFileRequest(space.remoteId))
-            }
-        }.asFlow()
+            emit(downloadResponse.mapToResource())
+        }.flowOn(Dispatchers.IO)
     }
 
     override suspend fun uploadReferenceFile(
         referenceFile: NetworkReferenceFile,
         space: VNSpace
     ): Flow<Resource<NetworkReferenceFile>> {
-        return object : NetworkBoundResource<NetworkReferenceFile, Unit>() {
-            override fun shouldFetch(): Boolean = true
-
-            override suspend fun fromDb(): Resource<NetworkReferenceFile> {
-                throw RuntimeException("Not reachable.")
-            }
-
-            override suspend fun saveToDb(networkResult: Unit) {}
-
-            override suspend fun fromNetwork(): ApiResult<Unit> {
-                return referenceFileService.uploadReferenceFile(
-                    UploadReferenceFileRequest(
-                        gson.toJson(referenceFile), space.remoteId
-                    )
+        return flow {
+            val uploadResponse = referenceFileService.uploadReferenceFile(
+                UploadReferenceFileRequest(
+                    gson.toJson(referenceFile), space.remoteId
                 )
-            }
+            )
 
-            override fun dispatchError(result: ApiResult.Error): Resource<NetworkReferenceFile> {
-                return Resource.RefFileError.RefFileUploadError
-            }
-        }.asFlow()
+            emit(uploadResponse.mapToResource(referenceFile))
+        }
     }
 
     override suspend fun syncReferenceFile(
