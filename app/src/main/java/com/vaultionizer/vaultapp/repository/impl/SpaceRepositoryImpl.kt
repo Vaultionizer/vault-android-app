@@ -47,6 +47,7 @@ class SpaceRepositoryImpl @Inject constructor(
             }
 
             override fun transformOnSuccess(apiResult: List<NetworkSpace>): List<VNSpace> {
+                // TODO(jatsqi): Return cached list
                 val list = mutableListOf<VNSpace>()
                 for (space in apiResult) {
                     list.add(persistNetworkSpace(space))

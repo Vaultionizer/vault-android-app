@@ -15,9 +15,6 @@ interface ReferenceFileRepository {
         space: VNSpace
     ): Flow<Resource<NetworkReferenceFile>>
 
-    suspend fun syncReferenceFile(
-        spaceId: Long,
-        root: VNFile
-    ): Flow<Resource<NetworkReferenceFile>>
+    suspend fun syncReferenceFile(root: VNFile): Flow<Resource<NetworkReferenceFile>>
 
 }

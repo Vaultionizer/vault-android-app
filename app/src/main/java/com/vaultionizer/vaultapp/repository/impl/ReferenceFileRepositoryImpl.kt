@@ -14,11 +14,7 @@ import com.vaultionizer.vaultapp.data.model.rest.result.Resource
 import com.vaultionizer.vaultapp.repository.ReferenceFileRepository
 import com.vaultionizer.vaultapp.repository.SpaceRepository
 import com.vaultionizer.vaultapp.service.ReferenceFileService
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOn
 import javax.inject.Inject
 
 class ReferenceFileRepositoryImpl @Inject constructor(
@@ -81,33 +77,14 @@ class ReferenceFileRepositoryImpl @Inject constructor(
     }
 
     override suspend fun syncReferenceFile(
-        spaceId: Long,
         root: VNFile
     ): Flow<Resource<NetworkReferenceFile>> {
-        return flow {
-            val spaceResult = spaceRepository.getSpace(spaceId)
-            spaceResult.collect {
-                when (it) {
-                    is Resource.Success -> {
-                        val networkRoot = root.mapToNetwork() as NetworkFolder
-                        val result = uploadReferenceFile(
-                            NetworkReferenceFile(
-                                0,
-                                networkRoot.content ?: mutableListOf()
-                            ),
-                            it.data
-                        )
-
-                        result.collect {
-                            emit(it)
-                        }
-                    }
-                    else -> {
-                        // TODO(jatsqi): Better error handling.
-                        emit(Resource.Error(9))
-                    }
-                }
-            }
-        }.flowOn(Dispatchers.IO)
+        val networkRoot = root.mapToNetwork() as NetworkFolder
+        return uploadReferenceFile(
+            NetworkReferenceFile(
+                0,
+                networkRoot.content ?: mutableListOf()
+            ), root.space
+        )
     }
 }
