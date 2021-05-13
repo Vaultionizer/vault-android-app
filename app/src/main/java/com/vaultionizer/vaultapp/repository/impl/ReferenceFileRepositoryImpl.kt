@@ -1,6 +1,5 @@
 package com.vaultionizer.vaultapp.repository.impl
 
-import android.util.Log
 import com.google.gson.Gson
 import com.vaultionizer.vaultapp.data.db.dao.LocalSpaceDao
 import com.vaultionizer.vaultapp.data.model.domain.VNFile
@@ -51,11 +50,6 @@ class ReferenceFileRepositoryImpl @Inject constructor(
             override suspend fun fromNetwork(): ApiResult<NetworkReferenceFile> {
                 return referenceFileService.downloadReferenceFile(DownloadReferenceFileRequest(space.remoteId))
             }
-
-            override fun dispatchError(result: ApiResult<NetworkReferenceFile>): Resource<NetworkReferenceFile> {
-                return Resource.Error(0)
-            }
-
         }.asFlow()
     }
 
@@ -63,28 +57,27 @@ class ReferenceFileRepositoryImpl @Inject constructor(
         referenceFile: NetworkReferenceFile,
         space: VNSpace
     ): Flow<Resource<NetworkReferenceFile>> {
-        return flow {
-            val response = referenceFileService.uploadReferenceFile(
-                UploadReferenceFileRequest(
-                    gson.toJson(referenceFile), space.remoteId
-                )
-            )
-            when (response) {
-                is ApiResult.Success -> {
-                    emit(Resource.Success(referenceFile))
-                }
-                is ApiResult.Error -> {
-                    emit(Resource.RefFileError.RefFileUploadError)
-                }
-                is ApiResult.NetworkError -> {
-                    Log.e(
-                        "Vault",
-                        "Network error from upload ${response.exception.localizedMessage}"
-                    )
-                    emit(Resource.NetworkError(response.exception))
-                }
+        return object : NetworkBoundResource<NetworkReferenceFile, Unit>() {
+            override fun shouldFetch(): Boolean = true
+
+            override suspend fun fromDb(): Resource<NetworkReferenceFile> {
+                throw RuntimeException("Not reachable.")
             }
-        }.flowOn(Dispatchers.IO)
+
+            override suspend fun saveToDb(networkResult: Unit) {}
+
+            override suspend fun fromNetwork(): ApiResult<Unit> {
+                return referenceFileService.uploadReferenceFile(
+                    UploadReferenceFileRequest(
+                        gson.toJson(referenceFile), space.remoteId
+                    )
+                )
+            }
+
+            override fun dispatchError(result: ApiResult.Error): Resource<NetworkReferenceFile> {
+                return Resource.RefFileError.RefFileUploadError
+            }
+        }.asFlow()
     }
 
     override suspend fun syncReferenceFile(
