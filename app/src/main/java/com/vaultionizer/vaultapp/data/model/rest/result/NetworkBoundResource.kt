@@ -10,7 +10,9 @@ abstract class NetworkBoundResource<ResultType : Any, RequestType : Any> {
     abstract suspend fun fromDb(): Resource<ResultType>
     abstract suspend fun saveToDb(networkResult: RequestType)
     abstract suspend fun fromNetwork(): ApiResult<RequestType>
-    abstract fun dispatchError(result: ApiResult<RequestType>): Resource<ResultType>
+
+    open fun dispatchError(result: ApiResult.Error): Resource<ResultType> =
+        Resource.Error(result.statusCode)
 
     open fun initialLoadingValue(): ResultType? = null
     open fun transformOnSuccess(apiResult: RequestType): ResultType = apiResult as ResultType
@@ -20,13 +22,19 @@ abstract class NetworkBoundResource<ResultType : Any, RequestType : Any> {
             emit(Resource.Loading(initialLoadingValue()))
 
             if (!shouldFetch()) {
+                emit(fromDb())
                 return@flow
             }
 
             try {
                 val apiResult = fromNetwork()
                 if (apiResult !is ApiResult.Success) {
-                    emit(dispatchError(apiResult))
+                    if (apiResult is ApiResult.NetworkError) {
+                        emit(Resource.NetworkError(apiResult.exception))
+                        return@flow
+                    }
+
+                    emit(dispatchError(apiResult as ApiResult.Error))
                     return@flow
                 }
 
