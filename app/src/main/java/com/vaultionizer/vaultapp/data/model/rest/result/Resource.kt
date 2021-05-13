@@ -12,6 +12,7 @@ sealed class Resource<out T : Any> {
     data class Error(val statusCode: Int) : Resource<Nothing>()
     data class NetworkError(val exception: Throwable) : Resource<Nothing>()
     data class Loading<out T : Any>(val data: T?) : Resource<T>()
+    object UnknownError : Resource<Nothing>()
     object ConsistencyError : Resource<Nothing>()
 
     /**
