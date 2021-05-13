@@ -10,6 +10,7 @@ import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkReferenceFile
 import com.vaultionizer.vaultapp.data.model.rest.request.DownloadReferenceFileRequest
 import com.vaultionizer.vaultapp.data.model.rest.request.UploadReferenceFileRequest
 import com.vaultionizer.vaultapp.data.model.rest.result.ApiResult
+import com.vaultionizer.vaultapp.data.model.rest.result.NetworkBoundResource
 import com.vaultionizer.vaultapp.data.model.rest.result.Resource
 import com.vaultionizer.vaultapp.repository.ReferenceFileRepository
 import com.vaultionizer.vaultapp.repository.SpaceRepository
@@ -28,29 +29,34 @@ class ReferenceFileRepositoryImpl @Inject constructor(
     val spaceRepository: SpaceRepository
 ) : ReferenceFileRepository {
 
+    private val cachedReferenceFiles = mutableMapOf<Long, Pair<NetworkReferenceFile, Long>>()
+
     override suspend fun downloadReferenceFile(space: VNSpace): Flow<Resource<NetworkReferenceFile>> {
-        return flow {
-            val response =
-                referenceFileService.downloadReferenceFile(DownloadReferenceFileRequest(space.remoteId))
-
-            when (response) {
-                is ApiResult.Success -> {
-                    val localSpace = localSpaceDao.getSpaceById(space.id)
-                    localSpace?.let {
-                        it.referenceFile = gson.toJson(response.data)
-                        localSpaceDao.updateSpaces(localSpace)
-                    }
-
-                    emit(Resource.Success(response.data))
-                }
-                is ApiResult.Error -> {
-                    emit(Resource.Error(response.statusCode))
-                }
-                is ApiResult.NetworkError -> {
-                    emit(Resource.NetworkError(response.exception))
-                }
+        return object : NetworkBoundResource<NetworkReferenceFile, NetworkReferenceFile>() {
+            override fun shouldFetch(): Boolean {
+                val cachedRefFile = cachedReferenceFiles[space.id] ?: return true
+                return (System.currentTimeMillis() - cachedRefFile.second) > 1000 * 60 * 5
             }
-        }.flowOn(Dispatchers.IO)
+
+            override suspend fun fromDb(): Resource<NetworkReferenceFile> {
+                val cachedRefFile =
+                    cachedReferenceFiles[space.id]?.first ?: return Resource.ConsistencyError
+                return Resource.Success(cachedRefFile)
+            }
+
+            override suspend fun saveToDb(networkResult: NetworkReferenceFile) {
+                cachedReferenceFiles[space.id] = Pair(networkResult, System.currentTimeMillis())
+            }
+
+            override suspend fun fromNetwork(): ApiResult<NetworkReferenceFile> {
+                return referenceFileService.downloadReferenceFile(DownloadReferenceFileRequest(space.remoteId))
+            }
+
+            override fun dispatchError(result: ApiResult<NetworkReferenceFile>): Resource<NetworkReferenceFile> {
+                return Resource.Error(0)
+            }
+
+        }.asFlow()
     }
 
     override suspend fun uploadReferenceFile(
