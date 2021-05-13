@@ -25,7 +25,7 @@ interface FileRepository {
 
     fun getFileByRemote(spaceId: Long, fileRemoteId: Long): VNFile?
 
-    suspend fun announceUpload(spaceId: Long): Flow<Resource<Long>>
+    suspend fun announceUpload(spaceId: Long): Long?
 
     suspend fun deleteFile(file: VNFile)
 
