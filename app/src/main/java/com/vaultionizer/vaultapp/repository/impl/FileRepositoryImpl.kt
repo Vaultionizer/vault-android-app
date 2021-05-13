@@ -14,6 +14,7 @@ import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkElement
 import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkFolder
 import com.vaultionizer.vaultapp.data.model.rest.request.UploadFileRequest
 import com.vaultionizer.vaultapp.data.model.rest.result.ApiResult
+import com.vaultionizer.vaultapp.data.model.rest.result.NetworkBoundResource
 import com.vaultionizer.vaultapp.data.model.rest.result.Resource
 import com.vaultionizer.vaultapp.repository.FileRepository
 import com.vaultionizer.vaultapp.repository.ReferenceFileRepository
@@ -67,13 +68,17 @@ class FileRepositoryImpl @Inject constructor(
                 return@flow
             }
 
-            val referenceFile = referenceFileRepository.downloadReferenceFile(space)
-            referenceFile.collect {
+            referenceFileRepository.downloadReferenceFile(space).collect {
+                if (it is Resource.Loading) {
+                    return@collect
+                }
+
                 when (it) {
                     is Resource.Success -> {
+                        val referenceFile = it.data
                         minimumIdCache[space.id] = -1
                         val affectedIds = mutableSetOf<Long>()
-                        persistNetworkTree(it.data.elements, space, -1, affectedIds)
+                        persistNetworkTree(referenceFile.elements, space, -1, affectedIds)
 
                         localFileDao.deleteAllFilesOfSpaceExceptWithIds(affectedIds, space.id)
                         val localFiles =
@@ -86,14 +91,20 @@ class FileRepositoryImpl @Inject constructor(
                         //                      2) Add new VNFile to parent folder
                         cache.addFile(root)
                         emit(Resource.Success(root))
+
+                        fileCaches[space.id] = cache
+                        return@collect
                     }
                     else -> {
-                        emit(Resource.Error((it as Resource.Error).statusCode))
+                        @Suppress("UNCHECKED_CAST")
+                        val convertedError = it as? Resource<VNFile>
+
+                        if (convertedError == null) {
+                            emit(Resource.UnknownError)
+                        } else emit(convertedError)
                     }
                 }
             }
-
-            fileCaches.put(space.id, cache)
         }.flowOn(Dispatchers.IO)
     }
 
@@ -252,25 +263,26 @@ class FileRepositoryImpl @Inject constructor(
         fileCaches[spaceId]?.getFile(fileRemoteId)
 
     override suspend fun announceUpload(spaceId: Long): Flow<Resource<Long>> {
-        return flow {
-            when (val response = fileService.uploadFile(
-                UploadFileRequest(
-                    1,
-                    (spaceRepository.getSpace(spaceId)
-                        .first() as Resource.Success<VNSpace>).data.remoteId
-                )
-            )) {
-                is ApiResult.Success -> {
-                    emit(Resource.Success(response.data))
-                }
-                is ApiResult.NetworkError -> {
-                    emit(Resource.NetworkError(response.exception))
-                }
-                is ApiResult.Error -> {
-                    emit(Resource.Error(response.statusCode))
-                }
+        return object : NetworkBoundResource<Long, Long>() {
+            override fun shouldFetch(): Boolean = true
+
+            override suspend fun fromDb(): Resource<Long> {
+                throw RuntimeException("Not reachable.")
             }
-        }.flowOn(Dispatchers.IO)
+
+            override suspend fun saveToDb(networkResult: Long) {}
+
+            override suspend fun fromNetwork(): ApiResult<Long> {
+                return fileService.uploadFile(
+                    UploadFileRequest(
+                        1,
+                        (spaceRepository.getSpace(spaceId)
+                            .first() as Resource.Success<VNSpace>).data.remoteId
+                    )
+                )
+            }
+
+        }.asFlow()
     }
 
     override suspend fun deleteFile(file: VNFile) {
