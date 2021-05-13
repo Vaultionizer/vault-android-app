@@ -6,5 +6,6 @@ data class VNSpace(
     val userId: Long,
     val name: String?,
     val lastAccess: Long,
-    val owner: Boolean
+    val owner: Boolean,
+    val lastSuccessfulFetch: Long
 )
