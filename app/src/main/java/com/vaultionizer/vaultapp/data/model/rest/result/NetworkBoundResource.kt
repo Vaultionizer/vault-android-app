@@ -15,12 +15,11 @@ abstract class NetworkBoundResource<ResultType : Any, RequestType : Any> {
     open fun dispatchError(result: ApiResult.Error): Resource<ResultType> =
         Resource.Error(result.statusCode)
 
-    open fun initialLoadingValue(): ResultType? = null
     open fun transformOnSuccess(apiResult: RequestType): ResultType = apiResult as ResultType
 
     fun asFlow(): Flow<Resource<ResultType>> {
         return flow {
-            emit(Resource.Loading(initialLoadingValue()))
+            emit(Resource.Loading(null))
 
             if (!shouldFetch()) {
                 emit(fromDb())
