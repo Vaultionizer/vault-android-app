@@ -14,7 +14,6 @@ import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkElement
 import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkFolder
 import com.vaultionizer.vaultapp.data.model.rest.request.UploadFileRequest
 import com.vaultionizer.vaultapp.data.model.rest.result.ApiResult
-import com.vaultionizer.vaultapp.data.model.rest.result.NetworkBoundResource
 import com.vaultionizer.vaultapp.data.model.rest.result.Resource
 import com.vaultionizer.vaultapp.repository.FileRepository
 import com.vaultionizer.vaultapp.repository.ReferenceFileRepository
@@ -22,6 +21,7 @@ import com.vaultionizer.vaultapp.repository.SpaceRepository
 import com.vaultionizer.vaultapp.repository.SyncRequestRepository
 import com.vaultionizer.vaultapp.service.FileService
 import com.vaultionizer.vaultapp.util.Constants
+import com.vaultionizer.vaultapp.util.extension.collectSuccess
 import com.vaultionizer.vaultapp.util.getFileName
 import com.vaultionizer.vaultapp.worker.DataEncryptionWorker
 import com.vaultionizer.vaultapp.worker.FileDownloadWorker
@@ -262,27 +262,21 @@ class FileRepositoryImpl @Inject constructor(
     override fun getFileByRemote(spaceId: Long, fileRemoteId: Long): VNFile? =
         fileCaches[spaceId]?.getFile(fileRemoteId)
 
-    override suspend fun announceUpload(spaceId: Long): Flow<Resource<Long>> {
-        return object : NetworkBoundResource<Long, Long>() {
-            override fun shouldFetch(): Boolean = true
+    override suspend fun announceUpload(spaceId: Long): Long? {
+        val space = spaceRepository.getSpace(spaceId).collectSuccess() ?: return null
 
-            override suspend fun fromDb(): Resource<Long> {
-                throw RuntimeException("Not reachable.")
-            }
+        val saveIndex = fileService.uploadFile(
+            UploadFileRequest(
+                1,
+                space.remoteId
+            )
+        )
 
-            override suspend fun saveToDb(networkResult: Long) {}
+        if (saveIndex !is ApiResult.Success) {
+            return null
+        }
 
-            override suspend fun fromNetwork(): ApiResult<Long> {
-                return fileService.uploadFile(
-                    UploadFileRequest(
-                        1,
-                        (spaceRepository.getSpace(spaceId)
-                            .first() as Resource.Success<VNSpace>).data.remoteId
-                    )
-                )
-            }
-
-        }.asFlow()
+        return saveIndex.data
     }
 
     override suspend fun deleteFile(file: VNFile) {
