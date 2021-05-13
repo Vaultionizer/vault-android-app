@@ -9,6 +9,7 @@ import com.vaultionizer.vaultapp.data.model.domain.VNSpace
 import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkReferenceFile
 import com.vaultionizer.vaultapp.data.model.rest.request.CreateSpaceRequest
 import com.vaultionizer.vaultapp.data.model.rest.result.ApiResult
+import com.vaultionizer.vaultapp.data.model.rest.result.NetworkBoundResource
 import com.vaultionizer.vaultapp.data.model.rest.result.Resource
 import com.vaultionizer.vaultapp.data.model.rest.space.NetworkSpace
 import com.vaultionizer.vaultapp.repository.SpaceRepository
@@ -26,22 +27,34 @@ class SpaceRepositoryImpl @Inject constructor(
     val gson: Gson,
     val authCache: AuthCache
 ) : SpaceRepository {
+
     override suspend fun getAllSpaces(): Flow<Resource<List<VNSpace>>> {
-        return flow {
-            val response = spaceService.getAll()
+        return object : NetworkBoundResource<List<VNSpace>, List<NetworkSpace>>() {
+            override fun shouldFetch(): Boolean = true
 
-            when (response) {
-                is ApiResult.Success -> {
-                    val list = mutableListOf<VNSpace>()
-                    for (space in response.data) {
-                        list.add(persistNetworkSpace(space))
-                    }
-
-                    emit(Resource.Success(list))
-                }
-                // TODO(jatsqi): Error handling
+            override suspend fun fromDb(): Resource<List<VNSpace>> {
+                TODO()
             }
-        }.flowOn(Dispatchers.IO)
+
+            override suspend fun saveToDb(networkResult: List<NetworkSpace>) {
+                for (space in networkResult) {
+                    persistNetworkSpace(space)
+                }
+            }
+
+            override suspend fun fromNetwork(): ApiResult<List<NetworkSpace>> {
+                return spaceService.getAll()
+            }
+
+            override fun transformOnSuccess(apiResult: List<NetworkSpace>): List<VNSpace> {
+                val list = mutableListOf<VNSpace>()
+                for (space in apiResult) {
+                    list.add(persistNetworkSpace(space))
+                }
+                return list
+            }
+
+        }.asFlow()
     }
 
     override suspend fun getSpace(spaceId: Long): Flow<Resource<VNSpace>> {
@@ -143,7 +156,8 @@ class SpaceRepositoryImpl @Inject constructor(
             space.userId,
             space.name,
             space.lastAccess,
-            isPrivate
+            isPrivate,
+            System.currentTimeMillis()
         )
     }
 
