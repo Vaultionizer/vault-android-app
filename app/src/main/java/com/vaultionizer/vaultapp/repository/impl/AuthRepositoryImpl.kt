@@ -9,6 +9,7 @@ import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkReferenceFile
 import com.vaultionizer.vaultapp.data.model.rest.request.CreateUserRequest
 import com.vaultionizer.vaultapp.data.model.rest.request.LoginUserRequest
 import com.vaultionizer.vaultapp.data.model.rest.result.ApiResult
+import com.vaultionizer.vaultapp.data.model.rest.result.NetworkBoundResource
 import com.vaultionizer.vaultapp.data.model.rest.result.Resource
 import com.vaultionizer.vaultapp.data.model.rest.user.LoggedInUser
 import com.vaultionizer.vaultapp.data.model.rest.user.NetworkUserAuthPair
@@ -17,10 +18,7 @@ import com.vaultionizer.vaultapp.repository.AuthRepository
 import com.vaultionizer.vaultapp.service.UserService
 import com.vaultionizer.vaultapp.util.Constants
 import com.vaultionizer.vaultapp.util.extension.hashSha512
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.flowOn
 import javax.inject.Inject
 
 class AuthRepositoryImpl @Inject constructor(
@@ -37,23 +35,22 @@ class AuthRepositoryImpl @Inject constructor(
     ): Flow<Resource<LoggedInUser>> {
         RestModule.host = "${Constants.DEFAULT_PROTOCOL}://$host"
 
-        return flow {
-            val response = userService.loginUser(LoginUserRequest(username, password.hashSha512()))
+        return object : NetworkBoundResource<LoggedInUser, NetworkUserAuthPair>() {
+            override fun shouldFetch(): Boolean = true
 
-            when (response) {
-                is ApiResult.Success -> {
-                    updateLocalUser(username, host, response.data)
-
-                    emit(Resource.Success(authCache.loggedInUser!!))
-                }
-                is ApiResult.NetworkError -> {
-                    emit(Resource.NetworkError(response.exception))
-                }
-                is ApiResult.Error -> {
-                    emit(Resource.Error(statusCode = response.statusCode))
-                }
+            override suspend fun fromDb(): Resource<LoggedInUser> {
+                throw RuntimeException("Not reachable!")
             }
-        }.flowOn(Dispatchers.IO)
+
+            override suspend fun saveToDb(networkResult: NetworkUserAuthPair) {
+                updateLocalUser(username, host, networkResult)
+            }
+
+            override suspend fun fromNetwork(): ApiResult<NetworkUserAuthPair> {
+                return userService.loginUser(LoginUserRequest(username, password.hashSha512()))
+            }
+
+        }.asFlow()
     }
 
     override suspend fun register(
@@ -64,35 +61,41 @@ class AuthRepositoryImpl @Inject constructor(
     ): Flow<Resource<LoggedInUser>> {
         RestModule.host = "${Constants.DEFAULT_PROTOCOL}://$host"
 
-        return flow {
-            val response = userService.createUser(
-                CreateUserRequest(
-                    password.hashSha512(), gson.toJson(
-                        NetworkReferenceFile.EMPTY_FILE
-                    ), username
-                )
-            )
+        return object : NetworkBoundResource<LoggedInUser, NetworkUserAuthPair>() {
+            override fun shouldFetch(): Boolean = true
 
-            when (response) {
-                is ApiResult.Success -> {
-                    updateLocalUser(username, host, response.data)
-
-                    emit(Resource.Success(authCache.loggedInUser!!))
-                }
-                is ApiResult.NetworkError -> {
-                    emit(Resource.NetworkError(response.exception))
-                }
-                is ApiResult.Error -> {
-                    if (response.statusCode == 409) {
-                        emit(Resource.UserError.UsernameAlreadyInUseError)
-                    } else if (response.statusCode == 400) {
-                        emit(Resource.UserError.ValueConstraintsError)
-                    } else {
-                        emit(Resource.Error(statusCode = response.statusCode))
-                    }
-                }
+            override suspend fun fromDb(): Resource<LoggedInUser> {
+                throw RuntimeException("Not reachable.")
             }
-        }.flowOn(Dispatchers.IO)
+
+            override suspend fun saveToDb(networkResult: NetworkUserAuthPair) {
+                updateLocalUser(username, host, networkResult)
+            }
+
+            override suspend fun fromNetwork(): ApiResult<NetworkUserAuthPair> {
+                return userService.createUser(
+                    CreateUserRequest(
+                        password.hashSha512(), gson.toJson(
+                            NetworkReferenceFile.EMPTY_FILE
+                        ), username
+                    )
+                )
+            }
+
+            override fun transformOnSuccess(apiResult: NetworkUserAuthPair): LoggedInUser {
+                return authCache.loggedInUser!!
+            }
+
+            override fun dispatchError(result: ApiResult.Error): Resource<LoggedInUser> {
+                when (result.statusCode) {
+                    409 -> return Resource.UserError.UsernameAlreadyInUseError
+                    408 -> return Resource.UserError.ValueConstraintsError
+                }
+
+                return super.dispatchError(result)
+            }
+
+        }.asFlow()
     }
 
     private fun updateLocalUser(username: String, host: String, authPair: NetworkUserAuthPair) {
