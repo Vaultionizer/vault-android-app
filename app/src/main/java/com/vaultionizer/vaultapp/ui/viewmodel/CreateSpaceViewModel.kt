@@ -9,7 +9,7 @@ import com.vaultionizer.vaultapp.cryptography.Cryptography
 import com.vaultionizer.vaultapp.cryptography.crypto.CryptoMode
 import com.vaultionizer.vaultapp.cryptography.crypto.CryptoPadding
 import com.vaultionizer.vaultapp.cryptography.crypto.CryptoType
-import com.vaultionizer.vaultapp.data.model.rest.result.ManagedResult
+import com.vaultionizer.vaultapp.data.model.rest.result.Resource
 import com.vaultionizer.vaultapp.repository.SpaceRepository
 import com.vaultionizer.vaultapp.ui.main.space.SpaceCreationResult
 import com.vaultionizer.vaultapp.ui.main.space.SpaceFormState
@@ -34,7 +34,7 @@ class CreateSpaceViewModel @Inject constructor(val spaceRepository: SpaceReposit
         viewModelScope.launch {
             spaceRepository.createSpace(name, isPrivate).collect {
                 when (it) {
-                    is ManagedResult.Success -> {
+                    is Resource.Success -> {
                         _spaceCreationResult.value = SpaceCreationResult(it.data, true)
 
                         Cryptography().createSingleUserKey(

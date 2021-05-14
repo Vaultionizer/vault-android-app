@@ -14,13 +14,14 @@ import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkElement
 import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkFolder
 import com.vaultionizer.vaultapp.data.model.rest.request.UploadFileRequest
 import com.vaultionizer.vaultapp.data.model.rest.result.ApiResult
-import com.vaultionizer.vaultapp.data.model.rest.result.ManagedResult
+import com.vaultionizer.vaultapp.data.model.rest.result.Resource
 import com.vaultionizer.vaultapp.repository.FileRepository
 import com.vaultionizer.vaultapp.repository.ReferenceFileRepository
 import com.vaultionizer.vaultapp.repository.SpaceRepository
 import com.vaultionizer.vaultapp.repository.SyncRequestRepository
 import com.vaultionizer.vaultapp.service.FileService
 import com.vaultionizer.vaultapp.util.Constants
+import com.vaultionizer.vaultapp.util.extension.collectSuccess
 import com.vaultionizer.vaultapp.util.getFileName
 import com.vaultionizer.vaultapp.worker.DataEncryptionWorker
 import com.vaultionizer.vaultapp.worker.FileDownloadWorker
@@ -58,22 +59,26 @@ class FileRepositoryImpl @Inject constructor(
      */
     private val minimumIdCache = mutableMapOf<Long, Long>()
 
-    override suspend fun getFileTree(space: VNSpace): Flow<ManagedResult<VNFile>> {
+    override suspend fun getFileTree(space: VNSpace): Flow<Resource<VNFile>> {
         return flow {
             val cache = fileCaches[space.id] ?: FileCache(FileCache.IdCachingStrategy.LOCAL_ID)
             fileCaches[space.id] = cache
             cache.rootFile?.let {
-                emit(ManagedResult.Success(it))
+                emit(Resource.Success(it))
                 return@flow
             }
 
-            val referenceFile = referenceFileRepository.downloadReferenceFile(space)
-            referenceFile.collect {
+            referenceFileRepository.downloadReferenceFile(space).collect {
+                if (it is Resource.Loading) {
+                    return@collect
+                }
+
                 when (it) {
-                    is ManagedResult.Success -> {
+                    is Resource.Success -> {
+                        val referenceFile = it.data
                         minimumIdCache[space.id] = -1
                         val affectedIds = mutableSetOf<Long>()
-                        persistNetworkTree(it.data.elements, space, -1, affectedIds)
+                        persistNetworkTree(referenceFile.elements, space, -1, affectedIds)
 
                         localFileDao.deleteAllFilesOfSpaceExceptWithIds(affectedIds, space.id)
                         val localFiles =
@@ -85,15 +90,21 @@ class FileRepositoryImpl @Inject constructor(
                         //                      1) Query sync requests
                         //                      2) Add new VNFile to parent folder
                         cache.addFile(root)
-                        emit(ManagedResult.Success(root))
+                        emit(Resource.Success(root))
+
+                        fileCaches[space.id] = cache
+                        return@collect
                     }
                     else -> {
-                        emit(ManagedResult.Error((it as ManagedResult.Error).statusCode))
+                        @Suppress("UNCHECKED_CAST")
+                        val convertedError = it as? Resource<VNFile>
+
+                        if (convertedError == null) {
+                            emit(Resource.UnknownError)
+                        } else emit(convertedError)
                     }
                 }
             }
-
-            fileCaches.put(space.id, cache)
         }.flowOn(Dispatchers.IO)
     }
 
@@ -251,26 +262,21 @@ class FileRepositoryImpl @Inject constructor(
     override fun getFileByRemote(spaceId: Long, fileRemoteId: Long): VNFile? =
         fileCaches[spaceId]?.getFile(fileRemoteId)
 
-    override suspend fun announceUpload(spaceId: Long): Flow<ManagedResult<Long>> {
-        return flow {
-            when (val response = fileService.uploadFile(
-                UploadFileRequest(
-                    1,
-                    (spaceRepository.getSpace(spaceId)
-                        .first() as ManagedResult.Success<VNSpace>).data.remoteId
-                )
-            )) {
-                is ApiResult.Success -> {
-                    emit(ManagedResult.Success(response.data))
-                }
-                is ApiResult.NetworkError -> {
-                    emit(ManagedResult.NetworkError(response.exception))
-                }
-                is ApiResult.Error -> {
-                    emit(ManagedResult.Error(response.statusCode))
-                }
-            }
-        }.flowOn(Dispatchers.IO)
+    override suspend fun announceUpload(spaceId: Long): Long? {
+        val space = spaceRepository.getSpace(spaceId).collectSuccess() ?: return null
+
+        val saveIndex = fileService.uploadFile(
+            UploadFileRequest(
+                1,
+                space.remoteId
+            )
+        )
+
+        if (saveIndex !is ApiResult.Success) {
+            return null
+        }
+
+        return saveIndex.data
     }
 
     override suspend fun deleteFile(file: VNFile) {
