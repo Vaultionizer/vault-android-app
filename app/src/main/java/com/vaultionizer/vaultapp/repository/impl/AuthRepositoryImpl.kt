@@ -14,6 +14,7 @@ import com.vaultionizer.vaultapp.data.model.rest.user.LoggedInUser
 import com.vaultionizer.vaultapp.data.model.rest.user.NetworkUserAuthPair
 import com.vaultionizer.vaultapp.hilt.RestModule
 import com.vaultionizer.vaultapp.repository.AuthRepository
+import com.vaultionizer.vaultapp.repository.SpaceRepository
 import com.vaultionizer.vaultapp.service.UserService
 import com.vaultionizer.vaultapp.util.Constants
 import com.vaultionizer.vaultapp.util.extension.hashSha512
@@ -21,13 +22,16 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.withContext
+import java.util.*
 import javax.inject.Inject
 
 class AuthRepositoryImpl @Inject constructor(
     val userService: UserService,
     val gson: Gson,
     val localUserDao: LocalUserDao,
-    val authCache: AuthCache
+    val authCache: AuthCache,
+    val spaceRepository: SpaceRepository
 ) : AuthRepository {
 
     override suspend fun login(
@@ -118,4 +122,25 @@ class AuthRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun logout(): Boolean {
+        if (authCache.loggedInUser != null){
+            userService.logoutUser()
+            authCache.loggedInUser = null
+            //if(response is ApiResult.Success ) {
+            return true
+            // }
+        }
+        return false
+    }
+
+    override suspend fun deleteUser(): Boolean {
+        if (authCache.loggedInUser?.localUser?.remoteUserId != null){
+            spaceRepository.deleteAllSpaces()
+            userService.deleteUser()
+            //if (response is ApiResult.Success){
+            return true
+            //}
+        }
+        return false
+    }
 }

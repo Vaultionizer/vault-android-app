@@ -448,4 +448,8 @@ class FileRepositoryImpl @Inject constructor(
         .setInputData(inputData)
         .setConstraints(buildDefaultNetworkConstraints())
         .addTag(String.format(Constants.WORKER_TAG_FILE_ID_TEMPLATE, file.localId))
+
+    override suspend fun clearLocalFiles(userId: Long) {
+        localFileDao.deleteAllFilesOfUser(userId)
+    }
 }

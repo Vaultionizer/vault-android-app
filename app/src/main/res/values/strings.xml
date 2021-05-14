@@ -204,4 +204,13 @@
     <string name="quit_all_spaces_body">Do you really want to quit all spaces? Those spaces you created will be deleted as well. This cannot be undone!</string>
     <string name="quit_all_spaces_button_text">Yes, quit all spaces!</string>
 
+    <string name="toast_success_logout">Successfully logged out.</string>
+    <string name="toast_success_quit_spaces">Successfully quit all spaces.</string>
+    <string name="toast_success_delete_user">Successfully deleted user.</string>
+    <string name="toast_success_delete_local_files">Successfully delete all local files.</string>
+
+    <string name="toast_failed_logout">Failed logging out.</string>
+    <string name="toast_failed_quit_spaces">Failed quitting all spaces.</string>
+    <string name="toast_failed_delete_user">Failed deleting user.</string>
+    <string name="toast_failed_delete_local_files">Failed deleting local files.</string>
 </resources>

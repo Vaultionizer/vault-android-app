@@ -150,4 +150,27 @@ class SpaceRepositoryImpl @Inject constructor(
 
     private fun persistNetworkSpace(networkSpace: NetworkSpace): VNSpace =
         persistNetworkSpace(networkSpace.spaceID, networkSpace.private, null, null)
+
+    override suspend fun quitAllSpaces(): Boolean {
+        val userId = authCache.loggedInUser?.localUser?.userId
+        val remoteUserId = authCache.loggedInUser?.localUser?.userId
+        if (userId == null || remoteUserId == null) return false
+
+        val spaces = localSpaceDao.getAllSpacesWithUser(userId)
+        for (spaceId in spaces){
+            spaceService.quitSpace(remoteUserId)
+        }
+        deleteAllSpaces()
+        return true
+    }
+
+    // needed for delete user as explicit quitting is not necessary for delete user
+    override suspend fun deleteAllSpaces(): Boolean {
+        val userId = authCache.loggedInUser?.localUser?.userId ?: return false
+        withContext(Dispatchers.IO) {
+            localFileDao.deleteAllFilesOfUser(userId)
+            localSpaceDao.quitAllSpaces(userId)
+        }
+        return true
+    }
 }
