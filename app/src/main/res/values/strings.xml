@@ -3,6 +3,7 @@
     <string name="invalid_username">Invalid username</string>
     <string name="invalid_password">Invalid password</string>
 
+    <!-- Common strings -->
     <string name="app_name">Vaultionizer</string>
     <string name="all_host">Host</string>
     <string name="all_password">Password</string>
@@ -15,30 +16,34 @@
     <string name="all_finish">Finish</string>
     <string name="all_cancel">Cancel</string>
     <string name="all_confirm">Confirm</string>
+    <string name="all_unexpected_error">An unexpected error occurred!</string>
 
+    <!-- Login -->
     <string name="login_header">Login</string>
     <string name="login_login">Login</string>
     <string name="login_login_progress">logging in</string>
+    <string name="login_error_invalid_credentials"></string>
 
-    <string name="signup_divider">Or</string>
-    <string name="signup_create_account">Create account</string>
-
+    <!-- Register -->
     <string name="register_step_user_header">How shall we remember you?</string>
-
     <string name="register_step_host_header">On which host do you want to store your data securly? </string>
     <string name="register_step_host_loading">Checking host</string>
-
     <string name="register_step_auth_key_header">Almost done! Please give us a proof that you are allowed to register on the specified host.</string>
     <string name="register_step_auth_key_auth_key">Auth key</string>
     <string name="register_step_auth_key_auth_key_hint">You can obtain this key from the server owner.</string>
     <string name="register_step_auth_key_finish">Finish registration</string>
     <string name="register_step_auth_key_finish_progress">Creating account</string>
+    <string name="register_error_username_taken">Username is already in use!</string>
+
+    <!-- Host -->
+    <string name="host_error_syntax">Please specify host with format &lt;host&gt;:&lt;port&gt;</string>
+    <string name="host_error_code">Host responded with error code %1$d</string>
+
+    <string name="signup_divider">Or</string>
+    <string name="signup_create_account">Create account</string>
 
     <string name="username_error_length">The username is too short!</string>
 
-    <string name="host_error_syntax">Please specify host with format &lt;host&gt;:&lt;port&gt;</string>
-    <string name="host_error_network">An unexpected error occurred</string>
-    <string name="host_error_code">Host responded with error code %1$d</string>
     <string name="title_activity_main">MainActivity</string>
     <string name="navigation_drawer_open">Open navigation drawer</string>
     <string name="navigation_drawer_close">Close navigation drawer</string>

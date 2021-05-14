@@ -11,7 +11,7 @@ import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import com.vaultionizer.vaultapp.data.model.domain.VNFile
 import com.vaultionizer.vaultapp.data.model.domain.VNSpace
-import com.vaultionizer.vaultapp.data.model.rest.result.ManagedResult
+import com.vaultionizer.vaultapp.data.model.rest.result.Resource
 import com.vaultionizer.vaultapp.repository.FileRepository
 import com.vaultionizer.vaultapp.repository.SpaceRepository
 import com.vaultionizer.vaultapp.ui.main.file.FileDialogState
@@ -53,7 +53,7 @@ class MainActivityViewModel @Inject constructor(
             val result = spaceRepository.getAllSpaces()
 
             result.collect {
-                if (it is ManagedResult.Success) {
+                if (it is Resource.Success) {
                     _userSpaces.value = it.data
                 }
             }
@@ -73,7 +73,7 @@ class MainActivityViewModel @Inject constructor(
 
                 response.collect {
                     when (it) {
-                        is ManagedResult.Success -> {
+                        is Resource.Success -> {
                             _currentDirectory.value = it.data
                             updateCurrentFiles()
                         }
@@ -119,7 +119,7 @@ class MainActivityViewModel @Inject constructor(
         viewModelScope.launch {
             spaceRepository.deleteSpace(_selectedSpace.value!!).collect {
                 when (it) {
-                    is ManagedResult.Success -> {
+                    is Resource.Success -> {
                         val spaces = _userSpaces.value!!.toMutableList()
                         spaces.remove(it)
 
