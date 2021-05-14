@@ -4,20 +4,20 @@ import com.vaultionizer.vaultapp.data.model.rest.misc.NetworkVersion
 
 sealed class AuthEvent {
     data class HostValidation(
-        val isLoading: Boolean?,
-        val error: Int?,
-        val version: NetworkVersion?
+        val isLoading: Boolean = false,
+        val error: String? = null,
+        val version: NetworkVersion? = null
     ) : AuthEvent()
 
     data class UserDataValidation(
-        val usernameError: Int? = null,
-        val passwordError: Int? = null,
+        val usernameError: String? = null,
+        val passwordError: String? = null,
         val isDataValid: Boolean = false
     ) : AuthEvent()
 
     data class LoginValidation(
-        val isLoading: Boolean?,
-        val error: Int?
+        val isLoading: Boolean? = false,
+        val error: String? = null
     ) : AuthEvent()
 
 }
