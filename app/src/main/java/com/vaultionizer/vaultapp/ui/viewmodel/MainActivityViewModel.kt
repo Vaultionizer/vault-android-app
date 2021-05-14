@@ -82,7 +82,7 @@ class MainActivityViewModel @Inject constructor(
                             _currentDirectory.value = it.data
                             updateCurrentFiles()
                         }
-                        is ManagedResult.CryptographicalError -> {
+                        is Resource.CryptographicalError -> {
 
                         }
                     }
