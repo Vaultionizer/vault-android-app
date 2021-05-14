@@ -125,7 +125,7 @@ class AuthRepositoryImpl @Inject constructor(
 
     override suspend fun logout(): Boolean {
         if (authCache.loggedInUser != null){
-            userService.logoutUser()
+            userService.logoutUser(LoginUserRequest("", ""))
             authCache.loggedInUser = null
             //if(response is ApiResult.Success ) {
             return true
@@ -137,7 +137,7 @@ class AuthRepositoryImpl @Inject constructor(
     override suspend fun deleteUser(): Boolean {
         if (authCache.loggedInUser?.localUser?.remoteUserId != null){
             spaceRepository.deleteAllSpaces()
-            userService.deleteUser()
+            userService.deleteUser(LoginUserRequest("", ""))
             //if (response is ApiResult.Success){
             return true
             //}

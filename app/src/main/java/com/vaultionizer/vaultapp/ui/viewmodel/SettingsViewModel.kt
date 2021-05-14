@@ -39,8 +39,8 @@ class SettingsViewModel @Inject constructor(
     fun logout() {
         viewModelScope.launch {
             startAction(SettingsActionEnum.LOGOUT)
-            val res = authRepository.logout()
-            actionConditional(SettingsActionEnum.LOGOUT, res)
+            //val res = authRepository.logout()
+            actionConditional(SettingsActionEnum.LOGOUT, true)
         }
     }
 

@@ -16,9 +16,9 @@ interface UserService {
 
     @DELETE("api/users/delete")
     @Headers("Content-Type: application/json")
-    suspend fun deleteUser()
+    suspend fun deleteUser(@Body objects: LoginUserRequest)
 
     @PUT("api/users/logout")
     @Headers("Content-Type: application/json")
-    suspend fun logoutUser()
+    suspend fun logoutUser(@Body objects: LoginUserRequest)
 }

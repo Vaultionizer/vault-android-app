@@ -1,9 +1,12 @@
 package com.vaultionizer.vaultapp.ui.main.settings
 
+import android.app.ProgressDialog
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import androidx.preference.ListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
@@ -15,9 +18,11 @@ import com.vaultionizer.vaultapp.ui.viewmodel.SettingsActionEnum
 import com.vaultionizer.vaultapp.ui.viewmodel.SettingsViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
+
 @AndroidEntryPoint
 class SettingsFragment : PreferenceFragmentCompat() {
     private val viewModel: SettingsViewModel by viewModels()
+    private var progressDialog: ProgressDialog? = null
 
     override fun onCreatePreferences(savedInstanceState: Bundle?, rootKey: String?) {
         setPreferencesFromResource(R.xml.fragment_settings, rootKey)
@@ -61,45 +66,62 @@ class SettingsFragment : PreferenceFragmentCompat() {
     }
 
     private fun actionStatusChanged(status: SettingsAction) {
-        var toastId: Int?
+        if (!status.done){
+            progressDialog = ProgressDialog.show(
+                context, "",
+                "Loading. Please wait...", true
+            )
+            return
+        }
+        var goToLogin = false
+        progressDialog?.dismiss()
+        var toastTextId: Int?
+        toastTextId = R.string.toast_success_quit_spaces
         if (status.success) {
             when (status.action) {
                 SettingsActionEnum.LOGOUT -> {
-                    toastId = R.string.toast_success_logout
-
+                    toastTextId = R.string.toast_success_logout
+                    goToLogin = true
                 }
                 SettingsActionEnum.DELETE_LOCAL_FILES -> {
-                    toastId = R.string.toast_success_quit_spaces
+                    toastTextId = R.string.toast_success_quit_spaces
 
                 }
                 SettingsActionEnum.DELETE_USER -> {
-                    toastId = R.string.toast_success_delete_user
-
+                    toastTextId = R.string.toast_success_delete_user
+                    goToLogin = true
                 }
                 SettingsActionEnum.QUIT_ALL_SPACES -> {
-                    toastId = R.string.toast_success_delete_local_files
+                    toastTextId = R.string.toast_success_delete_local_files
                 }
             }
         } else {
             when (status.action) {
                 SettingsActionEnum.LOGOUT -> {
-                    toastId = R.string.toast_failed_logout
+                    toastTextId = R.string.toast_failed_logout
                 }
                 SettingsActionEnum.DELETE_LOCAL_FILES -> {
-                    toastId = R.string.toast_failed_quit_spaces
+                    toastTextId = R.string.toast_failed_quit_spaces
 
                 }
                 SettingsActionEnum.DELETE_USER -> {
-                    toastId = R.string.toast_failed_delete_user
+                    toastTextId = R.string.toast_failed_delete_user
 
                 }
                 SettingsActionEnum.QUIT_ALL_SPACES -> {
-                    toastId = R.string.toast_failed_delete_local_files
+                    toastTextId = R.string.toast_failed_delete_local_files
 
                 }
             }
         }
-        Toast.makeText(context, toastId, Toast.LENGTH_SHORT).show()
+        //if (goToLogin) navigateLogin()
+        Toast.makeText(context, toastTextId, Toast.LENGTH_LONG).show()
+        // TODO: show toast (does not work yet)
+    }
+
+    private fun navigateLogin(){
+        // TODO(keksklauer4): Navigate to LoginFragment
+        findNavController().navigate(SettingsFragmentDirections.actionSettingsFragmentToAuthenticationActivity())
     }
 
 }
