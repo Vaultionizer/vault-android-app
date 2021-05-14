@@ -72,32 +72,34 @@ class LoginFragment : Fragment() {
         }
 
         authViewModel.authenticationEvent.observe(viewLifecycleOwner, {
-
-            if (it is AuthEvent.LoginValidation) {
-                if (it.isLoading == true) {
-                    loginButton.showProgress {
-                        buttonTextRes = R.string.login_login_progress
-                        progressColor = Color.WHITE
+            when (it) {
+                is AuthEvent.LoginValidation -> {
+                    when {
+                        it.isLoading == true -> {
+                            loginButton.showProgress {
+                                buttonTextRes = R.string.login_login_progress
+                                progressColor = Color.WHITE
+                            }
+                        }
+                        it.error == null -> {
+                            val action =
+                                LoginFragmentDirections.actionLoginFragmentToMainActivity2()
+                            findNavController().navigate(action)
+                            activity?.finish()
+                        }
+                        else -> {
+                            if (requireContext() != null) {
+                                Toast.makeText(requireContext(), it.error!!, Toast.LENGTH_LONG)
+                                    .show()
+                            }
+                            loginButton.isClickable = true
+                            loginButton.hideProgress(R.string.login_login)
+                        }
                     }
-                } else if (it.error == null) {
-                    val action = LoginFragmentDirections.actionLoginFragmentToMainActivity2()
-                    findNavController().navigate(action)
-                    activity?.finish()
-                } else {
-                    if (requireContext() != null) {
-                        Toast.makeText(requireContext(), it.error!!, Toast.LENGTH_LONG).show()
-                    }
-                    loginButton.isClickable = true
-                    loginButton.hideProgress(R.string.login_login)
                 }
-            }
 
-            if (it is AuthEvent.UserDataValidation) {
-                userDataValid = it.isDataValid
-            }
-
-            if (it is AuthEvent.HostValidation) {
-                hostValid = it.error == null
+                is AuthEvent.UserDataValidation -> userDataValid = it.isDataValid
+                is AuthEvent.HostValidation -> hostValid = it.error == null
             }
 
             loginButton.isEnabled = hostValid && userDataValid
