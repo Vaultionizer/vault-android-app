@@ -68,6 +68,10 @@
     <string name="menu_section_vaults">Your spaces</string>
 
     <string name="file_viewer_create_folder_title">What would you like to call the folder?</string>
+    <string name="file_viewer_request_key_title">This Space is missing a valid cryptographical key!</string>
+    <string name="file_viewer_request_key_message">In order to store your files in a secure manner, Vaultionizer requires a cryptographical key for every space. If this message appears after the startup, please choose to generate a new key.</string>
+    <string name="file_viewer_request_key_positive">Generate Key</string>
+    <string name="file_viewer_request_key_negative">Import Key</string>
 
     <string name="create_space_name">Name</string>
     <string name="create_space_shared_vault">Shared vault</string>

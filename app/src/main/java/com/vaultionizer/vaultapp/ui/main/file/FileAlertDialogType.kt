@@ -88,6 +88,13 @@ enum class FileAlertDialogType(
         R.string.quit_all_spaces_title,
         R.string.quit_all_spaces_body,
         R.string.quit_all_spaces_button_text,
+    ),
+  
+    REQUEST_KEY_GENERATION(
+        R.string.file_viewer_request_key_title,
+        R.string.file_viewer_request_key_message,
+        R.string.file_viewer_request_key_positive,
+        R.string.file_viewer_request_key_negative,
     );
 
     fun createDialog(

@@ -14,6 +14,7 @@ sealed class Resource<out T : Any> {
     data class Loading<out T : Any>(val data: T?) : Resource<T>()
     object UnknownError : Resource<Nothing>()
     object ConsistencyError : Resource<Nothing>()
+    object CryptographicalError : Resource<Nothing>()
 
     /**
      * User errors

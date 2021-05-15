@@ -51,7 +51,6 @@ class FileFragment : Fragment(), View.OnClickListener {
     private lateinit var backPressedCallback: OnBackPressedCallback
 
     private var bottomSheet: BottomSheet? = null
-    private var fileStatusDialog: MaterialDialog? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -105,6 +104,7 @@ class FileFragment : Fragment(), View.OnClickListener {
             val action = FileFragmentDirections.actionFileFragmentToFileStatusFragment()
             findNavController().navigate(action)
         }
+
         statusViewModel.fileStatus.observe(viewLifecycleOwner) {
             val size: Int = it.size // Necessary because the gradle linter has a bug atm.
             fileProcessingStatusButton.text = if (it.isEmpty()) {

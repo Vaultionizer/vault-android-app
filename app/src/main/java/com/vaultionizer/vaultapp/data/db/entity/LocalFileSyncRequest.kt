@@ -18,7 +18,7 @@ data class LocalFileSyncRequest(
     val localFileId: Long,
 
     @ColumnInfo(name = "crypto_opt_done")
-    val cryptographicOperationDone: Boolean = false,
+    var cryptographicOperationDone: Boolean = false,
 
     @ColumnInfo(name = "remote_file_id")
     var remoteFileId: Long?,
@@ -28,7 +28,7 @@ data class LocalFileSyncRequest(
      * Only present if [type] is [Type.UPLOAD] and [isVirtualFolder] is false.
      */
     @ColumnInfo(name = "data", typeAffinity = ColumnInfo.BLOB)
-    val data: ByteArray? = null,
+    var data: ByteArray? = null,
 ) {
 
     enum class Type(val id: Int) {
