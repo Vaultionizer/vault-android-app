@@ -35,14 +35,14 @@ class CreateSpaceViewModel @Inject constructor(val spaceRepository: SpaceReposit
             spaceRepository.createSpace(name, isPrivate).collect {
                 when (it) {
                     is Resource.Success -> {
-                        _spaceCreationResult.value = SpaceCreationResult(it.data, true)
-
                         Cryptography().createSingleUserKey(
                             it.data.id,
                             CryptoType.AES,
                             CryptoMode.GCM,
                             CryptoPadding.NoPadding
                         )
+
+                        _spaceCreationResult.value = SpaceCreationResult(it.data, true)
                     }
                     else -> {
                         _spaceCreationResult.value = SpaceCreationResult(null, false)

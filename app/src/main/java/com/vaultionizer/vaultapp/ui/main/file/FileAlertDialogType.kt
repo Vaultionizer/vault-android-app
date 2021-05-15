@@ -70,6 +70,13 @@ enum class FileAlertDialogType(
         R.string.regen_auth_key_title,
         R.string.regen_auth_key_body,
         R.string.regen_auth_key_button_text,
+    ),
+
+    REQUEST_KEY_GENERATION(
+        R.string.file_viewer_request_key_title,
+        R.string.file_viewer_request_key_message,
+        R.string.file_viewer_request_key_positive,
+        R.string.file_viewer_request_key_negative
     );
 
     fun createDialog(

@@ -13,6 +13,7 @@ import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.AppBarConfiguration
 import androidx.navigation.ui.navigateUp
 import androidx.navigation.ui.setupActionBarWithNavController
+import com.afollestad.materialdialogs.MaterialDialog
 import com.mikepenz.iconics.typeface.library.fontawesome.FontAwesome
 import com.mikepenz.iconics.typeface.library.googlematerial.OutlinedGoogleMaterial
 import com.mikepenz.materialdrawer.iconics.iconicsIcon
@@ -32,6 +33,8 @@ import com.mikepenz.materialdrawer.widget.MaterialDrawerSliderView
 import com.vaultionizer.vaultapp.R
 import com.vaultionizer.vaultapp.data.cache.AuthCache
 import com.vaultionizer.vaultapp.data.model.domain.VNSpace
+import com.vaultionizer.vaultapp.ui.main.file.FileAlertDialogType
+import com.vaultionizer.vaultapp.ui.main.file.FileEvent
 import com.vaultionizer.vaultapp.ui.viewmodel.MainActivityViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -50,8 +53,6 @@ class MainActivity : AppCompatActivity() {
 
     // UI
     var itemIdentifier = 0L
-
-    private var addNewSpaceIdentifier: Long = -1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -72,7 +73,7 @@ class MainActivity : AppCompatActivity() {
             identifier = nextIdentifier()
         }
 
-        val headerView = AccountHeaderView(this).apply {
+        AccountHeaderView(this).apply {
             attachToSliderView(navView)
             addProfiles(userProfile)
             dividerBelowHeader = false
@@ -91,17 +92,14 @@ class MainActivity : AppCompatActivity() {
             val copy = drawerItem.tag
 
             if (copy is VNSpace) {
-                actionBar?.title = "Space ${copy.remoteId}"
-                viewModel.selectedSpaceChanged(copy)
-                Log.e("Vault", "Changing space to ${copy.id}")
+                trySwitchSpace(copy)
             }
 
             preserved(v, drawerItem, position)
         }
 
         rebuildGeneralUi(navView)
-
-        viewModel.userSpaces.observe(this, androidx.lifecycle.Observer {
+        viewModel.userSpaces.observe(this) {
             navView.removeAllItems()
             rebuildGeneralUi(navView)
 
@@ -136,13 +134,30 @@ class MainActivity : AppCompatActivity() {
                     )
                 }
             }
+        }
 
-            if (viewModel.selectedSpace.value == null && it.size > 0) {
-                viewModel.selectedSpaceChanged(it[0])
+        viewModel.fileEvent.observe(this) {
+            if (it is FileEvent.EncryptionKeyRequired) {
+                val generateKeyCallback: (dialog: MaterialDialog) -> Unit = { dialog ->
+                    dialog.dismiss()
+                    viewModel.generateSpaceKey(it.space)
+                    trySwitchSpace(it.space)
+                }
+
+                val importKeyCallback: (dialog: MaterialDialog) -> Unit = { _ ->
+                    // TODO(jatsqi): Import key
+                }
+
+                val dialog =
+                    FileAlertDialogType.REQUEST_KEY_GENERATION.createDialog(
+                        this,
+                        positiveClick = generateKeyCallback,
+                        negativeClick = importKeyCallback
+                    )
+                dialog.setCancelable(false)
+                dialog.show()
             }
-        })
-
-        viewModel.updateUserSpaces()
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -154,6 +169,13 @@ class MainActivity : AppCompatActivity() {
     override fun onSupportNavigateUp(): Boolean {
         val navController = findNavController(R.id.nav_host_fragment)
         return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
+    }
+
+    private fun trySwitchSpace(space: VNSpace) {
+        if (viewModel.selectedSpaceChanged(space)) {
+            actionBar?.title = "Space ${space.remoteId}"
+            Log.e("Vault", "Changing space to ${space.id}")
+        }
     }
 
     private fun nextIdentifier(): Long {
