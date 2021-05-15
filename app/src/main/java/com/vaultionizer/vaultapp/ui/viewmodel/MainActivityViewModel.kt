@@ -102,7 +102,11 @@ class MainActivityViewModel @Inject constructor(
                             updateCurrentFiles()
                         }
                         is Resource.CryptographicalError -> {
-
+                            _fileEvent.postValue(
+                                FileEvent.EncryptionKeyRequired(
+                                    selectedSpace.value!!
+                                )
+                            )
                         }
                     }
                 }
