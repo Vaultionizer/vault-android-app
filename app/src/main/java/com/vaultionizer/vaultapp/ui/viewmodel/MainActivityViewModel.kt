@@ -14,8 +14,6 @@ import com.vaultionizer.vaultapp.data.model.domain.VNSpace
 import com.vaultionizer.vaultapp.data.model.rest.result.Resource
 import com.vaultionizer.vaultapp.repository.FileRepository
 import com.vaultionizer.vaultapp.repository.SpaceRepository
-import com.vaultionizer.vaultapp.ui.main.file.FileAlertDialogType
-import com.vaultionizer.vaultapp.ui.main.file.FileDialogState
 import com.vaultionizer.vaultapp.util.Constants
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -43,11 +41,12 @@ class MainActivityViewModel @Inject constructor(
     private val _currentDirectory = MutableLiveData<VNFile>()
     val currentDirectory: LiveData<VNFile> = _currentDirectory
 
-    private val _fileDialogState = MutableLiveData<FileDialogState>()
-    val fileDialogState: LiveData<FileDialogState> = _fileDialogState
-
     val fileWorkerInfo: LiveData<List<WorkInfo>> =
         WorkManager.getInstance(context).getWorkInfosByTagLiveData(Constants.WORKER_TAG_FILE)
+
+    init {
+        updateUserSpaces()
+    }
 
     fun updateUserSpaces() {
         viewModelScope.launch {
@@ -97,7 +96,6 @@ class MainActivityViewModel @Inject constructor(
                 _currentDirectory.value!!,
                 uri
             )
-            _fileDialogState.value = FileDialogState(isValid = true)
         }
     }
 
@@ -135,8 +133,6 @@ class MainActivityViewModel @Inject constructor(
                         _currentDirectory.value = null
                         updateUserSpaces()
                         updateCurrentFiles()
-
-                        _fileDialogState.value = FileDialogState(isValid = true)
                     }
                 }
             }
@@ -150,16 +146,9 @@ class MainActivityViewModel @Inject constructor(
     fun selectedSpaceChanged(space: VNSpace) {
         Log.e("Vault", "Change space...")
         if (!space.isKeyAvailable) {
-            _fileDialogState.postValue(
-                FileDialogState(
-                    null,
-                    FileAlertDialogType.REQUEST_KEY_GENERATION,
-                    false
-                )
-            )
-            return
+            // TODO
         } else {
-            _fileDialogState.postValue(FileDialogState(null, null, true))
+            // TODO
         }
 
         _currentDirectory.value = null

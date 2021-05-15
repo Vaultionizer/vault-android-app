@@ -32,7 +32,6 @@ import com.mikepenz.materialdrawer.widget.MaterialDrawerSliderView
 import com.vaultionizer.vaultapp.R
 import com.vaultionizer.vaultapp.data.cache.AuthCache
 import com.vaultionizer.vaultapp.data.model.domain.VNSpace
-import com.vaultionizer.vaultapp.ui.main.file.FileAlertDialogType
 import com.vaultionizer.vaultapp.ui.viewmodel.MainActivityViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -51,8 +50,6 @@ class MainActivity : AppCompatActivity() {
 
     // UI
     var itemIdentifier = 0L
-
-    private var addNewSpaceIdentifier: Long = -1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -73,7 +70,7 @@ class MainActivity : AppCompatActivity() {
             identifier = nextIdentifier()
         }
 
-        val headerView = AccountHeaderView(this).apply {
+        AccountHeaderView(this).apply {
             attachToSliderView(navView)
             addProfiles(userProfile)
             dividerBelowHeader = false
@@ -101,18 +98,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         rebuildGeneralUi(navView)
-
-        viewModel.fileDialogState.observe(this) {
-            if (it.isValid) {
-                return@observe
-            }
-
-            if (it.fileAlertType == FileAlertDialogType.REQUEST_KEY_GENERATION) {
-                onSpaceKeyRequest()
-            }
-        }
-
-        viewModel.userSpaces.observe(this, androidx.lifecycle.Observer {
+        viewModel.userSpaces.observe(this) {
             navView.removeAllItems()
             rebuildGeneralUi(navView)
 
@@ -147,9 +133,7 @@ class MainActivity : AppCompatActivity() {
                     )
                 }
             }
-        })
-
-        viewModel.updateUserSpaces()
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -161,19 +145,6 @@ class MainActivity : AppCompatActivity() {
     override fun onSupportNavigateUp(): Boolean {
         val navController = findNavController(R.id.nav_host_fragment)
         return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
-    }
-
-    private fun onSpaceKeyRequest() {
-        val dialog =
-            FileAlertDialogType.REQUEST_KEY_GENERATION.createDialog(this,
-                { it ->
-
-                },
-                { it ->
-
-                })
-        dialog.setCancelable(false)
-        dialog.show()
     }
 
     private fun nextIdentifier(): Long {
