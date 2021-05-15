@@ -35,7 +35,7 @@ class DataEncryptionWorker @AssistedInject constructor(
             val file = fileRepository.getFile(request.localFileId) ?: return@withContext Result.failure()
 
             try {
-                val encryptedBytes = Cryptography().encryptorNoPadder(file.space.id, request.data!!)
+                val encryptedBytes = Cryptography().encryptor(file.space.id, request.data!!)
                 request.data = encryptedBytes
                 request.cryptographicOperationDone = true
                 syncRequestService.updateRequest(request)
