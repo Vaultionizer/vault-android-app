@@ -30,14 +30,19 @@ class DataEncryptionWorker @AssistedInject constructor(
             if (requestId == -1L) {
                 return@withContext Result.failure()
             }
+
             val request = syncRequestService.getRequest(requestId)
             val file = fileRepository.getFile(request.localFileId) ?: return@withContext Result.failure()
+
             try {
-                Cryptography().encryptorNoPadder(file.space.id, request.data!!)
+                val encryptedBytes = Cryptography().encryptorNoPadder(file.space.id, request.data!!)
+                request.data = encryptedBytes
+                request.cryptographicOperationDone = true
+                syncRequestService.updateRequest(request)
             } catch (e : RuntimeException) {
                 return@withContext Result.failure()
             }
-            // TODO(jatsqi): Encrypt bytes stored in request.
+
             return@withContext Result.success()
         }
     }
