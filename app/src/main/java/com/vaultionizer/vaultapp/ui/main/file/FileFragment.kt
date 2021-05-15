@@ -51,7 +51,6 @@ class FileFragment : Fragment(), View.OnClickListener {
     private lateinit var backPressedCallback: OnBackPressedCallback
 
     private var bottomSheet: BottomSheet? = null
-    private var fileStatusDialog: MaterialDialog? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
