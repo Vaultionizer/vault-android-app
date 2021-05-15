@@ -21,9 +21,6 @@ class DataEncryptionWorker @AssistedInject constructor(
     val fileRepository: FileRepository
 ) : CoroutineWorker(appContext, params) {
 
-    /**
-     * TODO(johannesquast): Implement encryption
-     */
     override suspend fun doWork(): Result {
         return withContext(Dispatchers.IO) {
             val requestId = inputData.getLong(Constants.WORKER_SYNC_REQUEST_ID, -1)

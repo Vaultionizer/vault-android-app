@@ -89,7 +89,7 @@ class FileExchangeServiceImpl @Inject constructor(
             val downloadedFile = downloadedFileFlow.first()
 
             downloadSession.disconnect()
-            return@withContext downloadedFile.body?.bytes
+            return@withContext Base64.decode(downloadedFile.body?.bytes, Base64.NO_WRAP)
         }
     }
 }

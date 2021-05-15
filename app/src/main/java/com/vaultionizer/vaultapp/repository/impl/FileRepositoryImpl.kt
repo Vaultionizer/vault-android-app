@@ -23,10 +23,7 @@ import com.vaultionizer.vaultapp.service.FileService
 import com.vaultionizer.vaultapp.util.Constants
 import com.vaultionizer.vaultapp.util.extension.collectSuccess
 import com.vaultionizer.vaultapp.util.getFileName
-import com.vaultionizer.vaultapp.worker.DataEncryptionWorker
-import com.vaultionizer.vaultapp.worker.FileDownloadWorker
-import com.vaultionizer.vaultapp.worker.FileUploadWorker
-import com.vaultionizer.vaultapp.worker.ReferenceFileSyncWorker
+import com.vaultionizer.vaultapp.worker.*
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
@@ -237,6 +234,9 @@ class FileRepositoryImpl @Inject constructor(
             val downloadWorkData = workDataOf(
                 Constants.WORKER_SYNC_REQUEST_ID to request.requestId
             )
+            val decryptionWorkData = workDataOf(
+                Constants.WORKER_FILE_ID to file.localId
+            )
 
             file.state = VNFile.State.DOWNLOADING
 
@@ -244,8 +244,11 @@ class FileRepositoryImpl @Inject constructor(
                 prepareFileWorkerBuilder<FileDownloadWorker>(file, downloadWorkData)
                     .addTag(Constants.WORKER_TAG_FILE)
                     .build()
+            val decryptionWorker =
+                prepareFileWorkerBuilder<DataDecryptionWorker>(file, decryptionWorkData)
+                    .build()
 
-            enqueueUniqueFileWork(file, downloadWorker, buildReferenceFileWorker(file))
+            enqueueUniqueFileWork(file, downloadWorker, decryptionWorker)
         }
     }
 

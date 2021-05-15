@@ -1,7 +1,6 @@
 package com.vaultionizer.vaultapp.worker
 
 import android.content.Context
-import android.net.Uri
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
@@ -9,6 +8,7 @@ import com.vaultionizer.vaultapp.cryptography.Cryptography
 import com.vaultionizer.vaultapp.data.cache.DecryptionResultCache
 import com.vaultionizer.vaultapp.repository.FileRepository
 import com.vaultionizer.vaultapp.util.Constants
+import com.vaultionizer.vaultapp.util.readFileFromInternal
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers
@@ -37,8 +37,7 @@ class DataDecryptionWorker @AssistedInject constructor(
             try {
                 val file = fileRepository.getFile(fileId) ?: return@withContext Result.failure()
                 val bytes =
-                    applicationContext.contentResolver.openInputStream(Uri.parse("$fileId.${Constants.VN_FILE_SUFFIX}"))
-                        ?.readBytes() ?: return@withContext Result.failure()
+                    readFileFromInternal(applicationContext, "$fileId.${Constants.VN_FILE_SUFFIX}")
 
                 decryptionResultCache.addDecryptionResult(
                     file,

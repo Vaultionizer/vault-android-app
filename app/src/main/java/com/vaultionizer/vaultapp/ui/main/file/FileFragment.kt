@@ -29,11 +29,13 @@ import com.mikepenz.iconics.typeface.library.fontawesome.FontAwesome
 import com.mikepenz.iconics.view.IconicsImageView
 import com.nambimobile.widgets.efab.ExpandableFabLayout
 import com.vaultionizer.vaultapp.R
+import com.vaultionizer.vaultapp.data.cache.DecryptionResultCache
 import com.vaultionizer.vaultapp.data.model.domain.VNFile
 import com.vaultionizer.vaultapp.ui.viewmodel.FileStatusViewModel
 import com.vaultionizer.vaultapp.ui.viewmodel.MainActivityViewModel
 import com.vaultionizer.vaultapp.util.boolToVisibility
 import dagger.hilt.android.AndroidEntryPoint
+import javax.inject.Inject
 
 private const val OPEN_FILE_INTENT_RC = 0
 
@@ -42,6 +44,9 @@ class FileFragment : Fragment(), View.OnClickListener {
 
     val viewModel: MainActivityViewModel by activityViewModels()
     val statusViewModel: FileStatusViewModel by activityViewModels()
+
+    @Inject
+    lateinit var decryptionCache: DecryptionResultCache
 
     lateinit var recyclerView: RecyclerView
     lateinit var fileAdapter: FileRecyclerAdapter
@@ -80,6 +85,7 @@ class FileFragment : Fragment(), View.OnClickListener {
                 } else if (!file.isBusy && file.state != VNFile.State.AVAILABLE_OFFLINE) {
                     viewModel.requestDownload(file)
                 }
+                viewModel.requestDownload(file)
             },
             optionsClickListener = { file ->
                 showBottomSheetForFile(file)
@@ -163,6 +169,12 @@ class FileFragment : Fragment(), View.OnClickListener {
 
         statusViewModel.fileStatus.observe(viewLifecycleOwner) {
             viewModel.onWorkerInfoChange()
+        }
+
+        decryptionCache.decryptionResultsLiveData.observe(viewLifecycleOwner) {
+            for (result in it) {
+                Log.e("Vault", String(result.data, Charsets.UTF_8))
+            }
         }
     }
 
