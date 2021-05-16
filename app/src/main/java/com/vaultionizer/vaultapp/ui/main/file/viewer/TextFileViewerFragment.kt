@@ -17,7 +17,7 @@ import javax.inject.Inject
 @AndroidEntryPoint
 class TextFileViewerFragment : Fragment() {
 
-    val args: TextFileViewerFragmentArgs by navArgs()
+    private val args: TextFileViewerFragmentArgs by navArgs()
 
     @Inject
     lateinit var decryptionResultCache: DecryptionResultCache

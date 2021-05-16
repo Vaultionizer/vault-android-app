@@ -35,6 +35,7 @@ import com.vaultionizer.vaultapp.data.cache.AuthCache
 import com.vaultionizer.vaultapp.data.model.domain.VNSpace
 import com.vaultionizer.vaultapp.ui.main.file.FileAlertDialogType
 import com.vaultionizer.vaultapp.ui.main.file.FileEvent
+import com.vaultionizer.vaultapp.ui.viewmodel.FileStatusViewModel
 import com.vaultionizer.vaultapp.ui.viewmodel.MainActivityViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
@@ -50,6 +51,7 @@ class MainActivity : AppCompatActivity() {
     @Inject
     lateinit var authCache: AuthCache
     val viewModel: MainActivityViewModel by viewModels()
+    val fileStatusViewModel: FileStatusViewModel by viewModels()
 
     // UI
     var itemIdentifier = 0L
@@ -157,6 +159,10 @@ class MainActivity : AppCompatActivity() {
                 dialog.setCancelable(false)
                 dialog.show()
             }
+        }
+
+        fileStatusViewModel.workInfo.observe(this) {
+            fileStatusViewModel.onWorkerStatusChange(it)
         }
     }
 
