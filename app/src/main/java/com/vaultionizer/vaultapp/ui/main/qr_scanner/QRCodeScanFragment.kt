@@ -76,8 +76,8 @@ class QRCodeScanFragment : Fragment() {
     }
 
     private fun evaluateQRCode(content: String){
-        if(!CRC32Handler().checkValid(content)) return
-        val payload = CRC32Handler().parsePayload(content) ?: return
+        if(!CRC32Handler.checkValid(content)) return
+        val payload = CRC32Handler.parsePayload(content) ?: return
 
         if (args.scanType == 0){
             // authentication code parsing

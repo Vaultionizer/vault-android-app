@@ -3,7 +3,7 @@ package com.vaultionizer.vaultapp.util.qr
 import android.util.Log
 import java.util.zip.CRC32
 
-class CRC32Handler {
+object CRC32Handler {
 
     fun parsePayload(content: String): String? {
         val index = content.lastIndexOf('@')

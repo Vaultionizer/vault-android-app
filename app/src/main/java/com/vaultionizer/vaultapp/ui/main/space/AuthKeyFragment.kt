@@ -53,14 +53,14 @@ class AuthKeyFragment : Fragment() {
 
     private fun showQRCode(){
         // create QR code
-        val payloadCRC = CRC32Handler().createQRPayload(
+        val payloadCRC = CRC32Handler.createQRPayload(
             args.authKey!!, args.remoteSpaceId,
             args.symmetricKey!!
         )
-        payload = CRC32Handler().parsePayload(payloadCRC).toString()
+        payload = CRC32Handler.parsePayload(payloadCRC).toString()
         Log.e("Vault", "QR Code Payload: $payloadCRC")
 
-        bitmap = QRCodeGen().generateQRCode(payloadCRC)
+        bitmap = QRCodeGen.generateQRCode(payloadCRC)
         if (bitmap != null && view != null) {
             view?.findViewById<ImageView>(R.id.qr_code_image_view)?.setImageBitmap(bitmap)
         } else returnToSettings()

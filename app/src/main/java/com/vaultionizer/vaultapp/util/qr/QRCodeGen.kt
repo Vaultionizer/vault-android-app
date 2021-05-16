@@ -8,7 +8,7 @@ import com.google.zxing.qrcode.QRCodeWriter
 import java.lang.Exception
 
 
-class QRCodeGen {
+object QRCodeGen {
     fun generateQRCode(authKey: String) : Bitmap? {
         val writer = QRCodeWriter()
         return try {
