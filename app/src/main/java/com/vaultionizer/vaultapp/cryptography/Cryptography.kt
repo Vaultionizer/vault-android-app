@@ -9,7 +9,6 @@ import com.vaultionizer.vaultapp.cryptography.model.*
 import com.vaultionizer.vaultapp.util.Constants
 import java.security.KeyStore
 import java.security.KeyStoreException
-import java.security.SecureRandom
 import java.util.*
 import javax.crypto.SecretKey
 import javax.crypto.SecretKeyFactory
@@ -148,6 +147,12 @@ class Cryptography {
         val cipher = pairIvCipher.cipher
 
         return dewrapper(secretKey, decryptData(secretKey, iv, cipher)).cipher
+    }
+
+    fun deleteKey(tag: String) {
+        val keyStore: KeyStore = KeyStore.getInstance(Constants.VN_KEYSTORE_PROVIDER)
+        keyStore.load(null)
+        keyStore.deleteEntry(tag)
     }
 
     fun deleteKey(spaceID: Long): Boolean {
