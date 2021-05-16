@@ -31,6 +31,7 @@ import com.nambimobile.widgets.efab.ExpandableFabLayout
 import com.vaultionizer.vaultapp.R
 import com.vaultionizer.vaultapp.data.cache.DecryptionResultCache
 import com.vaultionizer.vaultapp.data.model.domain.VNFile
+import com.vaultionizer.vaultapp.ui.main.file.viewer.FileViewerArgs
 import com.vaultionizer.vaultapp.ui.viewmodel.FileStatusViewModel
 import com.vaultionizer.vaultapp.ui.viewmodel.MainActivityViewModel
 import com.vaultionizer.vaultapp.util.boolToVisibility
@@ -174,8 +175,16 @@ class FileFragment : Fragment(), View.OnClickListener {
 
         decryptionCache.decryptionResultsLiveData.observe(viewLifecycleOwner) {
             for (result in it) {
-                val action =
-                    FileFragmentDirections.actionFileFragmentToTextFileViewerFragment(result.file.localId)
+                val action = if (result.file.name.endsWith(".jpg")) {
+                    FileFragmentDirections.actionFileFragmentToImageFileViewerFragment(
+                        FileViewerArgs(result.file.localId)
+                    )
+                } else {
+                    FileFragmentDirections.actionFileFragmentToTextFileViewerFragment(
+                        FileViewerArgs(result.file.localId)
+                    )
+                }
+
                 findNavController().navigate(action)
             }
         }
