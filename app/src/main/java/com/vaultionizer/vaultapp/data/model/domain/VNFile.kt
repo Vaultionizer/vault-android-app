@@ -19,7 +19,9 @@ class VNFile(
         AVAILABLE_REMOTE,
         AVAILABLE_OFFLINE,
         UPLOADING,
-        DOWNLOADING
+        DOWNLOADING,
+        ENCRYPTING,
+        DECRYPTING
     }
 
     var remoteId: Long? = null
@@ -34,7 +36,7 @@ class VNFile(
     var lastSyncTimestamp: Long = System.currentTimeMillis()
     var state: State? = State.AVAILABLE_REMOTE
     val isBusy: Boolean
-        get() = state == State.DOWNLOADING || state == State.UPLOADING
+        get() = state == State.DOWNLOADING || state == State.UPLOADING || state == State.ENCRYPTING || state == State.DECRYPTING
 
     // TODO(jatsqi) Refactor constructors
     constructor(
