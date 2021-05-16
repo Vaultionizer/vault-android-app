@@ -30,9 +30,15 @@ class CreateSpaceViewModel @Inject constructor(val spaceRepository: SpaceReposit
 
     private var spaceNameFormData: String? = null
 
-    fun createSpace(name: String, isPrivate: Boolean, algorithm: String) {
+    fun createSpace(
+        name: String,
+        isPrivate: Boolean,
+        algorithm: String,
+        writeAccess: Boolean,
+        authKeyAccess: Boolean
+    ) {
         viewModelScope.launch {
-            spaceRepository.createSpace(name, isPrivate).collect {
+            spaceRepository.createSpace(name, isPrivate, writeAccess, authKeyAccess).collect {
                 when (it) {
                     is Resource.Success -> {
                         Cryptography().createSingleUserKey(

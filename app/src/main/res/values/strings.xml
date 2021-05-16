@@ -218,11 +218,8 @@
     <!-- Sync Preferences -->
     <string name="sync_title">Sync email periodically</string>
     <string name="attachment_title">Download incoming attachments</string>
-    <string name="attachment_summary_on">Automatically download attachments for incoming emails
-    </string>
+    <string name="attachment_summary_on">Automatically download attachments for incoming emails</string>
     <string name="attachment_summary_off">Only download attachments when manually requested</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
 
     <string name="create_space_navigation">Add new space</string>
     <string name="join_space_navigation">Join shared space</string>
@@ -273,4 +270,7 @@
     <string name="toast_failed_quit_spaces">Failed quitting all spaces.</string>
     <string name="toast_failed_delete_user">Failed deleting user.</string>
     <string name="toast_failed_delete_local_files">Failed deleting local files.</string>
+
+    <string name="users_have_write_access_checkbox_text">Users have write access</string>
+    <string name="users_can_invite_other_users_checkbox_text">Users can invite other users</string>
 </resources>

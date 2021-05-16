@@ -8,17 +8,15 @@ import retrofit2.http.*
 import java.util.*
 
 interface UserService {
-    @POST("api/users/create")
+    @POST("api/user/create")
     suspend fun createUser(@Body createUserRequest: CreateUserRequest): ApiResult<NetworkUserAuthPair>
 
-    @POST("api/users/login")
+    @POST("api/user/login")
     suspend fun loginUser(@Body loginUserRequest: LoginUserRequest): ApiResult<NetworkUserAuthPair>
 
-    @DELETE("api/users/delete")
-    @Headers("Content-Type: application/json")
-    suspend fun deleteUser(@Body objects: LoginUserRequest)
+    @DELETE("api/user")
+    suspend fun deleteUser(@Body objects: Objects)
 
-    @PUT("api/users/logout")
-    @Headers("Content-Type: application/json")
-    suspend fun logoutUser(@Body objects: LoginUserRequest)
+    @PUT("api/user/logout")
+    suspend fun logoutUser(@Body objects: Objects)
 }
