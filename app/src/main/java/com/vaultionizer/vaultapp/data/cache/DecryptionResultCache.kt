@@ -22,4 +22,7 @@ class DecryptionResultCache {
         }
     }
 
+    fun getResultByFileId(fileId: Long): ByteArray? =
+        fileDataPairs.firstOrNull { it.file.localId == fileId }?.data
+
 }
