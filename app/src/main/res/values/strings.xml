@@ -207,4 +207,9 @@
     <string name="attachment_summary_off">Only download attachments when manually requested</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+
+    <string name="create_space_navigation">Add new space</string>
+    <string name="join_space_navigation">Join shared space</string>
+    <string name="auth_key_space_key">Auth key + space key</string>
+    <string name="join_space_title">Enter auth key or scan QR code</string>
 </resources>

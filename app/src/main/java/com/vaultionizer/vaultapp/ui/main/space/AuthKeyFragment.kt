@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.fragment.app.Fragment
 import com.vaultionizer.vaultapp.R
+import com.vaultionizer.vaultapp.util.qr.CRC32Handler
 import com.vaultionizer.vaultapp.util.qr.QRCodeGen
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -22,7 +23,7 @@ class AuthKeyFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        val bitmap = QRCodeGen().generateQRCode("Hallo Welt")
+        val bitmap = QRCodeGen().generateQRCode(CRC32Handler().generateCRC32("Hallo Welt"))
         Log.e("Vault", "QR Code")
         if (bitmap != null) {
             view.findViewById<ImageView>(R.id.qr_code_image_view).setImageBitmap(bitmap)
