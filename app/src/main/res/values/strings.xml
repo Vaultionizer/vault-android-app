@@ -163,7 +163,7 @@
     <string name="regen_auth_key_button_text">Yes, regenerate!</string>
     <string name="really_show_auth_key_title">Show space credentials?</string>
     <string name="really_show_auth_key_body">Whoever sees this QR code can potentially join your space and read all your personal data. Do you really want to show the QR code?</string>
-    <string name="really_show_auth_key_positive">Yes, I am 100% sure!</string>
+    <string name="really_show_auth_key_positive">Yes, I am 100\% sure!</string>
     <string name="really_show_auth_key_negative">Hell, no!</string>
 
     <string name="really_copy_auth_key_title">Copy contents?</string>
@@ -173,7 +173,7 @@
 
     <string name="really_save_auth_key_title">Save space credentials?</string>
     <string name="really_save_auth_key_body">Damn, that\'s some risky business! Whoever sees your QR code can potentially join this space and read ALL of your data. Do you really think that this is not too risky for you? Honestly, you should really exchange your key in person!</string>
-    <string name="really_save_auth_key_positive">Yes, I am 100% sure!</string>
+    <string name="really_save_auth_key_positive">Yes, I am 100\% sure!</string>
     <string name="really_save_auth_key_negative">No, don\'t export key!</string>
 
     <!-- creator space management texts -->
