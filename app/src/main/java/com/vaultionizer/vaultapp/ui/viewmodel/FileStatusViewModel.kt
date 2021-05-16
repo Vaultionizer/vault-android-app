@@ -1,6 +1,7 @@
 package com.vaultionizer.vaultapp.ui.viewmodel
 
 import android.content.Context
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -29,15 +30,16 @@ class FileStatusViewModel @Inject constructor(
                 listOf(
                     Constants.WORKER_TAG_FILE
                 )
-            )
-            .addStates(
-                listOf(
-                    WorkInfo.State.ENQUEUED,
-                    WorkInfo.State.RUNNING,
-                    WorkInfo.State.FAILED
-                )
-            )
-            .build()
+            ).build()
+
+        val WORKER_STATUS_WEIGHT_MAP = mapOf(
+            WorkInfo.State.RUNNING to 4,
+            WorkInfo.State.ENQUEUED to 3,
+            WorkInfo.State.FAILED to 2,
+            WorkInfo.State.CANCELLED to 2,
+            WorkInfo.State.BLOCKED to 2,
+            WorkInfo.State.SUCCEEDED to 1,
+        )
     }
 
     val workInfo =
@@ -48,8 +50,9 @@ class FileStatusViewModel @Inject constructor(
     fun onWorkerStatusChange(workInfoList: List<WorkInfo>) {
         viewModelScope.launch {
             val newStatus = mutableListOf<FileWorkerStatusPair>()
+            val fileMap = mutableMapOf<VNFile, MutableList<WorkInfo>>()
 
-            for (info in workInfoList) {
+            outer@ for (info in workInfoList) {
                 for (tag in info.tags) {
                     if (!tag.startsWith(Constants.WORKER_TAG_FILE_ID_TEMPLATE_BEGIN)) {
                         continue
@@ -61,37 +64,53 @@ class FileStatusViewModel @Inject constructor(
                             ""
                         ).toLong()
                     )
-                    if (file != null) {
-                        newStatus.add(FileWorkerStatusPair(file, info.state))
-                        adjustFileStatus(file, info)
-                    }
 
-                    break
+                    if (file != null) {
+                        val list = fileMap[file] ?: mutableListOf()
+                        list.add(info)
+                        fileMap[file] = list
+                    }
+                }
+            }
+
+            for (fileStatusPair in fileMap) {
+                var allWorkersFinished = true
+                val mostValuableState = fileStatusPair.value.maxByOrNull {
+                    if (it.state != WorkInfo.State.SUCCEEDED) {
+                        allWorkersFinished = false
+                    }
+                    return@maxByOrNull WORKER_STATUS_WEIGHT_MAP[it.state]!!
+                }
+
+                if (allWorkersFinished) {
+                    resetFileStatus(fileStatusPair.key)
+                } else {
+                    mostValuableState?.let {
+                        adjustFileStatus(fileStatusPair.key, it)
+                        newStatus.add(FileWorkerStatusPair(fileStatusPair.key, it.state))
+                    }
                 }
             }
 
             fileStatus_.postValue(newStatus)
+            WorkManager.getInstance(applicationContext).pruneWork()
         }
+    }
 
-        WorkManager.getInstance(applicationContext).pruneWork()
+    private fun resetFileStatus(file: VNFile) {
+        Log.e("Vault", "Changing state!")
+        file.state = if (file.isDownloaded(applicationContext))
+            VNFile.State.AVAILABLE_OFFLINE
+        else
+            VNFile.State.AVAILABLE_REMOTE
     }
 
     private fun adjustFileStatus(file: VNFile, workInfo: WorkInfo) {
-        if (workInfo.state == WorkInfo.State.FAILED || workInfo.state == WorkInfo.State.CANCELLED || workInfo.state == WorkInfo.State.SUCCEEDED) {
-            file.state = if (file.isDownloaded(applicationContext))
-                VNFile.State.AVAILABLE_OFFLINE
-            else
-                VNFile.State.AVAILABLE_REMOTE
-            return
-        }
-
         if (workInfo.state == WorkInfo.State.ENQUEUED || workInfo.state == WorkInfo.State.RUNNING) {
-            file.state = if (workInfo.tags.contains(Constants.WORKER_TAG_DECRYPTION))
-                VNFile.State.DECRYPTING
+            if (workInfo.tags.contains(Constants.WORKER_TAG_DECRYPTION))
+                file.state = VNFile.State.DECRYPTING
             else if (workInfo.tags.contains(Constants.WORKER_TAG_ENCRYPTION))
-                VNFile.State.ENCRYPTING
-            else
-                return
+                file.state = VNFile.State.ENCRYPTING
         }
     }
 }
