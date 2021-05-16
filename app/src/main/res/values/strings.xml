@@ -161,6 +161,20 @@
     <string name="regen_auth_key_title">Regenerate Auth key?</string>
     <string name="regen_auth_key_body">Do you really want to regenerate the auth key? The prior auth key will become invalid.</string>
     <string name="regen_auth_key_button_text">Yes, regenerate!</string>
+    <string name="really_show_auth_key_title">Show space credentials?</string>
+    <string name="really_show_auth_key_body">Whoever sees this QR code can potentially join your space and read all your personal data. Do you really want to show the QR code?</string>
+    <string name="really_show_auth_key_positive">Yes, I am 100% sure!</string>
+    <string name="really_show_auth_key_negative">Hell, no!</string>
+
+    <string name="really_copy_auth_key_title">Copy contents?</string>
+    <string name="really_copy_auth_key_body">Ideally, you should not copy your auth key as your clipboard is unsafe and the auth key contains the symmetric key to all the data in the space! Can\'t you just show the QR code in person?</string>
+    <string name="really_copy_auth_key_positive">No, I cannot. Just copy!</string>
+    <string name="really_copy_auth_key_negative">That\'s too risky. Don\'t copy!</string>
+
+    <string name="really_save_auth_key_title">Save space credentials?</string>
+    <string name="really_save_auth_key_body">Damn, that\'s some risky business! Whoever sees your QR code can potentially join this space and read ALL of your data. Do you really think that this is not too risky for you? Honestly, you should really exchange your key in person!</string>
+    <string name="really_save_auth_key_positive">Yes, I am 100% sure!</string>
+    <string name="really_save_auth_key_negative">No, don\'t export key!</string>
 
     <!-- creator space management texts -->
     <string name="space_management_title_category">Manage Vault</string>
@@ -210,6 +224,18 @@
 
     <string name="create_space_navigation">Add new space</string>
     <string name="join_space_navigation">Join shared space</string>
-    <string name="auth_key_space_key">Auth key + space key</string>
+    <string name="auth_key_space_key">SpaceId + Auth key + space key</string>
     <string name="join_space_title">Enter auth key or scan QR code</string>
+    <string name="join_space_success_toast">Successfully joined space!</string>
+    <string name="join_space_btn_text">Join space!</string>
+    <string name="join_space_input_state">The input is malformed. The structure should be "number@string@string".</string>
+    <string name="scan_qr_code_successful">Successfully scanned QR code.</string>
+    <string name="trying_to_join_space">Trying to join space. Please wait.</string>
+    <string name="save_auth_key_btn_text">Save to file.</string>
+    <string name="copy_auth_key_btn_text">Copy contents.</string>
+
+    <string name="copied_auth_key_success">Successfully copied but our trust in you as a user... Hope you act wisely.</string>
+    <string name="failed_saving_auth_key">Failed saving auth key.</string>
+    <string name="success_saving_auth_key">Successfully saved auth key.</string>
+    <string name="wise_decision_not_copy_save">A very wise decision! Well done!</string>
 </resources>

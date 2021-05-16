@@ -1,9 +1,7 @@
 package com.vaultionizer.vaultapp.ui.main.qr_scanner
 
-import android.graphics.BitmapFactory
 import android.media.Image
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -19,16 +17,11 @@ import com.otaliastudios.cameraview.size.Size
 import com.vaultionizer.vaultapp.R
 import com.vaultionizer.vaultapp.util.qr.CRC32Handler
 import dagger.hilt.android.AndroidEntryPoint
-import java.lang.Exception
-import java.util.zip.CRC32
+import java.util.*
 
 @AndroidEntryPoint
 class QRCodeScanFragment : Fragment() {
     private val args: QRCodeScanFragmentArgs by navArgs()
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -40,24 +33,37 @@ class QRCodeScanFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
         val camera: CameraView = view.findViewById(R.id.camera)
         camera.setLifecycleOwner(viewLifecycleOwner)
-        var hintMap: MutableMap<EncodeHintType, ErrorCorrectionLevel> = HashMap()
+
+        val hintMap: MutableMap<EncodeHintType, ErrorCorrectionLevel> =
+            EnumMap(com.google.zxing.EncodeHintType::class.java)
         hintMap[EncodeHintType.ERROR_CORRECTION] = ErrorCorrectionLevel.L
-        // camera.frameProcessingFormat = ImageFormat.NV21
+
+        // we use Camera1 engine
         camera.addFrameProcessor(FrameProcessor { frame ->
             val size: Size = frame.size
             if (frame.dataClass === ByteArray::class.java) {
                 val data: ByteArray = frame.getData()
                 val binaryBitmap = BinaryBitmap(
                     HybridBinarizer(
-                        PlanarYUVLuminanceSource(data, size.width, size.height, 0,0, size.width, size.height, false)
+                        PlanarYUVLuminanceSource(
+                            data,
+                            size.width,
+                            size.height,
+                            0,
+                            0,
+                            size.width,
+                            size.height,
+                            false
+                        )
                     )
                 )
-                try{
+                try {
                     val qrCodeResult: Result = MultiFormatReader().decodeWithState(binaryBitmap)
                     evaluateQRCode(qrCodeResult.text)
-                }catch (e:Exception){
+                } catch (e: Exception) {
                     return@FrameProcessor
                 }
 
@@ -70,8 +76,6 @@ class QRCodeScanFragment : Fragment() {
     }
 
     private fun evaluateQRCode(content: String){
-        Log.e("Vault", content)
-        Log.e("Vault", "Type"+args.scanType)
         if(!CRC32Handler().checkValid(content)) return
         val payload = CRC32Handler().parsePayload(content) ?: return
 

@@ -11,7 +11,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="24dp"
         android:text="@string/join_space_title"
         android:textColor="@android:color/black"
         android:textStyle="bold"
@@ -40,5 +40,19 @@
             android:inputType="text"
             android:selectAllOnFocus="true" />
     </com.google.android.material.textfield.TextInputLayout>
+
+    <Button
+        android:id="@+id/join_space_btn"
+        style="@style/AppOutlineButton"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="start"
+        android:layout_marginTop="24dp"
+        android:enabled="false"
+        android:text="@string/join_space_btn_text"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/input_auth_key_layout"
+        app:layout_constraintWidth_percent="0.7" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

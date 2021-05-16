@@ -77,6 +77,27 @@ enum class FileAlertDialogType(
         R.string.file_viewer_request_key_message,
         R.string.file_viewer_request_key_positive,
         R.string.file_viewer_request_key_negative
+    ),
+
+    SHOW_AUTH_KEY(
+        R.string.really_show_auth_key_title,
+        R.string.really_show_auth_key_body,
+        R.string.really_show_auth_key_positive,
+        R.string.really_show_auth_key_negative
+    ),
+
+    SAVE_AUTH_KEY(
+        R.string.really_save_auth_key_title,
+        R.string.really_save_auth_key_body,
+        R.string.really_save_auth_key_positive,
+        R.string.really_save_auth_key_negative
+    ),
+
+    COPY_AUTH_KEY(
+        R.string.really_copy_auth_key_title,
+        R.string.really_copy_auth_key_body,
+        R.string.really_copy_auth_key_positive,
+        R.string.really_copy_auth_key_negative
     );
 
     fun createDialog(

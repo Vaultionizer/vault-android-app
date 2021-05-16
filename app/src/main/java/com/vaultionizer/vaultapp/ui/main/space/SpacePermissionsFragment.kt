@@ -114,7 +114,11 @@ class SpacePermissionsFragment : PreferenceFragmentCompat(){
 
 
     private fun showAuthKey(){
-        findNavController().navigate(SpacePermissionsFragmentDirections.actionSpacePermissionsFragmentToAuthKeyFragment())
+        findNavController().navigate(
+            SpacePermissionsFragmentDirections.actionSpacePermissionsFragmentToAuthKeyFragment(
+                "Test", "symmetric", 69
+            )
+        )
     }
 
 
