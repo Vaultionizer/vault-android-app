@@ -234,9 +234,6 @@ class FileRepositoryImpl @Inject constructor(
             val downloadWorkData = workDataOf(
                 Constants.WORKER_SYNC_REQUEST_ID to request.requestId
             )
-            val decryptionWorkData = workDataOf(
-                Constants.WORKER_FILE_ID to file.localId
-            )
 
             file.state = VNFile.State.DOWNLOADING
 
@@ -244,12 +241,20 @@ class FileRepositoryImpl @Inject constructor(
                 prepareFileWorkerBuilder<FileDownloadWorker>(file, downloadWorkData)
                     .addTag(Constants.WORKER_TAG_FILE)
                     .build()
-            val decryptionWorker =
-                prepareFileWorkerBuilder<DataDecryptionWorker>(file, decryptionWorkData)
-                    .build()
 
-            enqueueUniqueFileWork(file, downloadWorker, decryptionWorker)
+            enqueueUniqueFileWork(file, downloadWorker)
         }
+    }
+
+    override suspend fun decryptFile(file: VNFile) {
+        val decryptionWorkData = workDataOf(
+            Constants.WORKER_FILE_ID to file.localId
+        )
+        val decryptionWorker =
+            prepareFileWorkerBuilder<DataDecryptionWorker>(file, decryptionWorkData)
+                .build()
+
+        enqueueUniqueFileWork(file, decryptionWorker)
     }
 
     override suspend fun getFile(fileId: Long): VNFile? {

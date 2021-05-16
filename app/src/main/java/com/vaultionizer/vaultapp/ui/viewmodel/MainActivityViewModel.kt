@@ -48,6 +48,11 @@ class MainActivityViewModel @Inject constructor(
 
     init {
         updateUserSpaces()
+
+        /*val crypto = Cryptography()
+        for(key in crypto.listKeys()) {
+            crypto.deleteKey(key)
+        } */
     }
 
     fun updateUserSpaces() {
@@ -120,6 +125,12 @@ class MainActivityViewModel @Inject constructor(
     fun requestDownload(file: VNFile) {
         viewModelScope.launch {
             fileRepository.downloadFile(file)
+        }
+    }
+
+    fun requestDecryption(file: VNFile) {
+        viewModelScope.launch {
+            fileRepository.decryptFile(file)
         }
     }
 
