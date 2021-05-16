@@ -156,6 +156,7 @@ class FileRepositoryImpl @Inject constructor(
             val encryptionWorker =
                 prepareFileWorkerBuilder<DataEncryptionWorker>(vnFile, encryptionWorkData)
                     .addTag(Constants.WORKER_TAG_FILE)
+                    .addTag(Constants.WORKER_TAG_ENCRYPTION)
                     .build()
             val uploadWorker =
                 prepareFileWorkerBuilder<FileUploadWorker>(vnFile, uploadWorkData)
@@ -252,6 +253,8 @@ class FileRepositoryImpl @Inject constructor(
         )
         val decryptionWorker =
             prepareFileWorkerBuilder<DataDecryptionWorker>(file, decryptionWorkData)
+                .addTag(Constants.WORKER_TAG_FILE)
+                .addTag(Constants.WORKER_TAG_DECRYPTION)
                 .build()
 
         enqueueUniqueFileWork(file, decryptionWorker)

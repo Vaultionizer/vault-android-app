@@ -36,6 +36,8 @@ object Constants {
      */
     const val WORKER_TAG_FILE = "FILE_WORKER"
     const val WORKER_TAG_REFERENCE_FILE = "REFERENCE_FILE_WORKER"
+    const val WORKER_TAG_ENCRYPTION = "ENCRYPTION_WORKER"
+    const val WORKER_TAG_DECRYPTION = "DECRYPTION_WORKER"
     const val WORKER_SYNC_REQUEST_ID = "SYNC_REQUEST_ID"
     const val WORKER_FILE_ID = "FILE_ID"
     const val WORKER_SPACE_ID = "SPACE_ID"
