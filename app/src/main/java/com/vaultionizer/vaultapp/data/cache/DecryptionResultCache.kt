@@ -22,6 +22,16 @@ class DecryptionResultCache {
         }
     }
 
+    fun invalidateResultByFileId(fileId: Long) {
+        val iterator = fileDataPairs.iterator()
+        while (iterator.hasNext()) {
+            val element = iterator.next()
+            if (element.file.localId == fileId) {
+                iterator.remove()
+            }
+        }
+    }
+
     fun getResultByFileId(fileId: Long): ByteArray? =
         fileDataPairs.firstOrNull { it.file.localId == fileId }?.data
 

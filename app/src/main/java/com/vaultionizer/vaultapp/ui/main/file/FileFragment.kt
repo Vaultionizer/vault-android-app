@@ -174,7 +174,9 @@ class FileFragment : Fragment(), View.OnClickListener {
 
         decryptionCache.decryptionResultsLiveData.observe(viewLifecycleOwner) {
             for (result in it) {
-                Log.e("Vault", String(result.data, Charsets.UTF_8))
+                val action =
+                    FileFragmentDirections.actionFileFragmentToTextFileViewerFragment(result.file.localId)
+                findNavController().navigate(action)
             }
         }
     }

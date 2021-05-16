@@ -32,12 +32,11 @@ class TextFileViewerFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         val textViewer = view.findViewById<TextView>(R.id.viewer_text)
-        textViewer.setText(
-            String(
-                decryptionResultCache.getResultByFileId(args.fileId)
-                    ?: getString(R.string.text_file_viewer_error).toByteArray(), Charsets.UTF_8
-            )
+        textViewer.text = String(
+            decryptionResultCache.getResultByFileId(args.fileId)
+                ?: getString(R.string.text_file_viewer_error).toByteArray(), Charsets.UTF_8
         )
+        decryptionResultCache.invalidateResultByFileId(args.fileId)
     }
 
 }
