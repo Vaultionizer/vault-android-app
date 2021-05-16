@@ -22,7 +22,7 @@
     <string name="login_header">Login</string>
     <string name="login_login">Login</string>
     <string name="login_login_progress">logging in</string>
-    <string name="login_error_invalid_credentials"></string>
+    <string name="login_error_invalid_credentials">Invalid credentials.</string>
 
     <!-- Register -->
     <string name="register_step_user_header">How shall we remember you?</string>

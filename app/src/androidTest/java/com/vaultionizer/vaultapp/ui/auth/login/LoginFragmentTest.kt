@@ -6,6 +6,7 @@ import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.action.ViewActions.typeText
 import androidx.test.espresso.assertion.ViewAssertions.matches
+import androidx.test.espresso.matcher.RootMatchers.withDecorView
 import androidx.test.espresso.matcher.ViewMatchers.*
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
@@ -19,6 +20,10 @@ import androidx.test.rule.ActivityTestRule
 import com.vaultionizer.vaultapp.ui.auth.AuthenticationActivity
 
 import com.google.android.material.textfield.TextInputLayout
+import org.hamcrest.Matchers.not
+
+import org.hamcrest.Matchers.`is`
+import org.hamcrest.Matchers.not
 
 
 @RunWith(AndroidJUnit4::class)
@@ -63,7 +68,15 @@ class LoginFragmentTest{
             .perform(typeText("password000+++PASSWORD--Invalid"))
         onView(withId(R.id.login))
             .perform(click())
-        assertTrue(activityTestRule.activity.isFinishing)
+
+
+        onView(withText(R.string.login_error_invalid_credentials)).inRoot(
+            withDecorView(
+                not(
+                    activityTestRule.activity.window.decorView
+                )
+
+        )).check(matches(isDisplayed()))
     }
 
     @Test
