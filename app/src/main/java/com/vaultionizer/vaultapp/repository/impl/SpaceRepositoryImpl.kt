@@ -84,7 +84,9 @@ class SpaceRepositoryImpl @Inject constructor(
 
     override suspend fun createSpace(
         name: String,
-        isPrivate: Boolean
+        isPrivate: Boolean,
+        writeAccess: Boolean,
+        authKeyAccess: Boolean
     ): Flow<Resource<VNSpace>> {
         return flow {
             // TODO(jatsqi) Replace LoremIpsum with real authKey
@@ -92,7 +94,9 @@ class SpaceRepositoryImpl @Inject constructor(
                 CreateSpaceRequest(
                     AuthKeyGen().generateAuthKey(),
                     isPrivate,
-                    gson.toJson(NetworkReferenceFile.EMPTY_FILE)
+                    gson.toJson(NetworkReferenceFile.EMPTY_FILE),
+                    authKeyAccess,
+                    writeAccess
                 )
             )
 

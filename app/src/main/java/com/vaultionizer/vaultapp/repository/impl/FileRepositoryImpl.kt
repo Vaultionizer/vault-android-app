@@ -282,10 +282,8 @@ class FileRepositoryImpl @Inject constructor(
         val space = spaceRepository.getSpace(spaceId).collectSuccess() ?: return null
 
         val saveIndex = fileService.uploadFile(
-            UploadFileRequest(
-                1,
-                space.remoteId
-            )
+            UploadFileRequest(1),
+            space.remoteId
         )
 
         if (saveIndex !is ApiResult.Success) {
