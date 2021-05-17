@@ -1,6 +1,7 @@
 package com.vaultionizer.vaultapp.ui.viewmodel
 
 import android.content.Context
+import android.net.ConnectivityManager
 import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.LiveData
@@ -11,6 +12,7 @@ import com.vaultionizer.vaultapp.cryptography.Cryptography
 import com.vaultionizer.vaultapp.cryptography.crypto.CryptoMode
 import com.vaultionizer.vaultapp.cryptography.crypto.CryptoPadding
 import com.vaultionizer.vaultapp.cryptography.crypto.CryptoType
+import com.vaultionizer.vaultapp.data.live.NetworkLiveData
 import com.vaultionizer.vaultapp.data.model.domain.VNFile
 import com.vaultionizer.vaultapp.data.model.domain.VNSpace
 import com.vaultionizer.vaultapp.data.model.rest.result.Resource
@@ -45,6 +47,9 @@ class MainActivityViewModel @Inject constructor(
 
     private val _fileEvent = MutableLiveData<FileEvent>()
     val fileEvent: LiveData<FileEvent> = _fileEvent
+
+    val networkStatus =
+        NetworkLiveData(context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager)
 
     init {
         updateUserSpaces()
