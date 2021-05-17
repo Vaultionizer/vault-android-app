@@ -4,8 +4,10 @@ import com.vaultionizer.vaultapp.data.model.rest.request.CreateUserRequest
 import com.vaultionizer.vaultapp.data.model.rest.request.LoginUserRequest
 import com.vaultionizer.vaultapp.data.model.rest.result.ApiResult
 import com.vaultionizer.vaultapp.data.model.rest.user.NetworkUserAuthPair
-import retrofit2.http.*
-import java.util.*
+import retrofit2.http.Body
+import retrofit2.http.DELETE
+import retrofit2.http.POST
+import retrofit2.http.PUT
 
 interface UserService {
     @POST("api/user/create")
@@ -15,8 +17,8 @@ interface UserService {
     suspend fun loginUser(@Body loginUserRequest: LoginUserRequest): ApiResult<NetworkUserAuthPair>
 
     @DELETE("api/user")
-    suspend fun deleteUser(@Body objects: Objects)
+    suspend fun deleteUser()
 
     @PUT("api/user/logout")
-    suspend fun logoutUser(@Body objects: Objects)
+    suspend fun logoutUser()
 }
