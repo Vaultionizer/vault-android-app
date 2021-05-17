@@ -14,7 +14,7 @@ class FileCache(private val strategy: IdCachingStrategy = IdCachingStrategy.LOCA
         private set
 
     val rootFile: VNFile?
-        get() = getFileByStrategy(FileRepository.ROOT_FOLDER_ID, IdCachingStrategy.REMOTE_ID)
+        get() = getFileByStrategy(FileRepository.ROOT_FOLDER_ID, IdCachingStrategy.LOCAL_ID)
 
     private var files = mutableMapOf<Long, VNFile>()
 
