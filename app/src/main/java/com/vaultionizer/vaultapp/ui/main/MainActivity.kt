@@ -21,10 +21,7 @@ import com.mikepenz.materialdrawer.model.NavigationDrawerItem
 import com.mikepenz.materialdrawer.model.PrimaryDrawerItem
 import com.mikepenz.materialdrawer.model.ProfileDrawerItem
 import com.mikepenz.materialdrawer.model.SectionDrawerItem
-import com.mikepenz.materialdrawer.model.interfaces.descriptionRes
-import com.mikepenz.materialdrawer.model.interfaces.descriptionText
-import com.mikepenz.materialdrawer.model.interfaces.nameRes
-import com.mikepenz.materialdrawer.model.interfaces.nameText
+import com.mikepenz.materialdrawer.model.interfaces.*
 import com.mikepenz.materialdrawer.util.addItems
 import com.mikepenz.materialdrawer.util.removeAllItems
 import com.mikepenz.materialdrawer.util.setupWithNavController
@@ -108,8 +105,14 @@ class MainActivity : AppCompatActivity() {
             navView.apply {
                 addItems(NavigationDrawerItem(R.id.createSpaceFragment, PrimaryDrawerItem().apply {
                     identifier = nextIdentifier()
-                    nameText = "Add new space"
+                    nameText = getString(R.string.create_space_navigation)
                     iconicsIcon = FontAwesome.Icon.faw_plus_circle
+                    isSelectable = false
+                }),
+                    NavigationDrawerItem(R.id.joinSpaceFragment, PrimaryDrawerItem().apply {
+                    identifier = nextIdentifier()
+                    nameText = getString(R.string.join_space_navigation)
+                    iconDrawable = getDrawable(R.drawable.ic_baseline_qr_code_scanner_24)
                     isSelectable = false
                 }))
                 for (space in it) {

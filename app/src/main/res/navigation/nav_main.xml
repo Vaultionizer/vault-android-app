@@ -19,6 +19,9 @@
             android:id="@+id/action_fileFragment_to_spacePermissionsFragment"
             app:destination="@id/spacePermissionsFragment" />
         <action
+            android:id="@+id/action_fileFragment_to_joinSpaceFragment"
+            app:destination="@id/joinSpaceFragment" />
+        <action
             android:id="@+id/action_fileFragment_to_settingsFragment"
             app:destination="@id/settingsFragment" />
         <action
@@ -119,9 +122,51 @@
         android:name="com.vaultionizer.vaultapp.ui.main.space.AuthKeyFragment"
         android:label="View auth key"
         tools:layout="@layout/fragment_auth_key">
+        <argument
+            android:name="authKey"
+            app:argType="string"
+            android:defaultValue="@null"
+            app:nullable="true"/>
+        <argument
+            android:name="symmetricKey"
+            app:argType="string"
+            android:defaultValue="@null"
+            app:nullable="true"/>
+        <argument
+            android:name="remoteSpaceId"
+            app:argType="long"
+            android:defaultValue="-1L"/>
         <action
             android:id="@+id/action_authKeyFragment_to_spacePermissionsFragment"
             app:destination="@id/spacePermissionsFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/joinSpaceFragment"
+        android:name="com.vaultionizer.vaultapp.ui.main.space.JoinSpaceFragment"
+        android:label="Join shared space" >
+        <argument
+            android:name="authData"
+            app:argType="string"
+            android:defaultValue="@null"
+            app:nullable="true"/>
+        <action
+            android:id="@+id/action_joinSpaceFragment_to_fileFragment"
+            app:destination="@id/fileFragment" />
+        <action
+            android:id="@+id/action_joinSpaceFragment_to_QRCodeScanFragment"
+            app:destination="@id/QRCodeScanFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/QRCodeScanFragment"
+        android:name="com.vaultionizer.vaultapp.ui.main.qr_scanner.QRCodeScanFragment"
+        android:label="Scan QR code" >
+        <argument
+            android:name="scanType"
+            app:argType="integer"
+            android:defaultValue="0"/>
+        <action
+            android:id="@+id/action_QRCodeScanFragment_to_joinSpaceFragment"
+            app:destination="@id/joinSpaceFragment" />
     </fragment>
     <fragment
         android:id="@+id/settingsFragment"

@@ -176,6 +176,8 @@ dependencies {
     // for BCrypt hashing
     implementation "org.mindrot:jbcrypt:0.4"
 
+    // CameraKit
+    implementation 'com.otaliastudios:cameraview:2.7.0'
 }
 
 def getInstrumentation() {
