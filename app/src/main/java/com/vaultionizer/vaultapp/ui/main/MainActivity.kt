@@ -192,20 +192,18 @@ class MainActivity : AppCompatActivity() {
                     identifier = nextIdentifier()
                     nameText = "App management"
                 },
-                PrimaryDrawerItem().apply {
+                NavigationDrawerItem(R.id.settingsFragment, PrimaryDrawerItem().apply {
                     identifier = nextIdentifier()
-                    isSelectable = false
                     nameRes = R.string.menu_settings
                     iconicsIcon = OutlinedGoogleMaterial.Icon.gmo_settings
                     descriptionRes = R.string.menu_settings_description
-                },
+                }),
                 NavigationDrawerItem(R.id.keyManagementFragment, PrimaryDrawerItem().apply {
                     identifier = nextIdentifier()
                     nameRes = R.string.menu_keys
                     iconicsIcon = OutlinedGoogleMaterial.Icon.gmo_vpn_key
                     descriptionRes = R.string.menu_keys_description
-                }
-                ),
+                }),
                 SectionDrawerItem().apply {
                     identifier = nextIdentifier()
                     nameRes = R.string.menu_section_vaults

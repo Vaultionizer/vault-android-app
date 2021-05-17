@@ -72,6 +72,24 @@ enum class FileAlertDialogType(
         R.string.regen_auth_key_button_text,
     ),
 
+    DELETE_LOCAL_FILES(
+        R.string.delete_local_files_title,
+        R.string.delete_local_files_body,
+        R.string.delete_local_files_button_text,
+    ),
+
+    DELETE_USER(
+        R.string.delete_user_title,
+        R.string.delete_user_body,
+        R.string.delete_user_button_text,
+    ),
+
+    QUIT_ALL_SPACES(
+        R.string.quit_all_spaces_title,
+        R.string.quit_all_spaces_body,
+        R.string.quit_all_spaces_button_text,
+    ),
+  
     REQUEST_KEY_GENERATION(
         R.string.file_viewer_request_key_title,
         R.string.file_viewer_request_key_message,
