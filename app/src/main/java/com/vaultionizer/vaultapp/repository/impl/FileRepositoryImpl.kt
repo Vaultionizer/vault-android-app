@@ -164,7 +164,7 @@ class FileRepositoryImpl @Inject constructor(
                     .build()
 
             fileCaches[parent.space.id]?.addFile(vnFile)
-            parent.content?.add(vnFile)
+            parent.content!!.add(vnFile)
 
             enqueueUniqueFileWork(
                 vnFile,
