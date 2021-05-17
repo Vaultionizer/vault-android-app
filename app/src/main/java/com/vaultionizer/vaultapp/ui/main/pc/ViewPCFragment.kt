@@ -24,8 +24,8 @@ import com.arthurivanets.bottomsheets.sheets.listeners.OnItemSelectedListener
 import com.arthurivanets.bottomsheets.sheets.model.Option
 import com.nambimobile.widgets.efab.ExpandableFabLayout
 import com.vaultionizer.vaultapp.R
-import com.vaultionizer.vaultapp.data.pc.PCCategory
-import com.vaultionizer.vaultapp.data.pc.PCPair
+import com.vaultionizer.vaultapp.data.model.pc.PCCategory
+import com.vaultionizer.vaultapp.data.model.pc.PCPair
 import com.vaultionizer.vaultapp.ui.main.file.FileAlertDialogType
 import com.vaultionizer.vaultapp.ui.main.file.showDialog
 import com.vaultionizer.vaultapp.ui.viewmodel.MainActivityViewModel
