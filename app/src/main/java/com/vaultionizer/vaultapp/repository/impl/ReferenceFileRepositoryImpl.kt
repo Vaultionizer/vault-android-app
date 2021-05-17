@@ -6,6 +6,7 @@ import com.vaultionizer.vaultapp.data.model.domain.VNFile
 import com.vaultionizer.vaultapp.data.model.domain.VNSpace
 import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkFolder
 import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkReferenceFile
+import com.vaultionizer.vaultapp.data.model.rest.request.DownloadReferenceFileRequest
 import com.vaultionizer.vaultapp.data.model.rest.request.UploadReferenceFileRequest
 import com.vaultionizer.vaultapp.data.model.rest.result.ApiResult
 import com.vaultionizer.vaultapp.data.model.rest.result.Resource
@@ -37,7 +38,10 @@ class ReferenceFileRepositoryImpl @Inject constructor(
             }
 
             val downloadResponse =
-                referenceFileService.downloadReferenceFile(space.remoteId)
+                referenceFileService.downloadReferenceFile(
+                    space.remoteId,
+                    DownloadReferenceFileRequest(0)
+                )
 
             if (downloadResponse is ApiResult.Success) {
                 cachedReferenceFiles[space.id] =
