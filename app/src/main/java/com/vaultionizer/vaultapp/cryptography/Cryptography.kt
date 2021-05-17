@@ -15,7 +15,7 @@ import javax.crypto.SecretKeyFactory
 import javax.crypto.spec.SecretKeySpec
 
 
-class Cryptography {
+object Cryptography {
 
     // TODO: Import- / Export-Keys may have different ciphers, block-modes or paddings. ATM only AesGcmNopadding. This also applies for the transferred keys themself
 
@@ -137,7 +137,10 @@ class Cryptography {
     }
 
     fun encryptorNoPadder(spaceID: Long, bytes: ByteArray): ByteArray {
-        return wrapper(encryptData(getKey(spaceID), bytes))
+        if (existsKey(spaceID)){
+            return wrapper(encryptData(getKey(spaceID), bytes))
+        }
+        throw RuntimeException("Tried to encrypted with a nonexistent key")
     }
 
     fun decrytor(spaceID: Long, bytes: ByteArray): ByteArray {

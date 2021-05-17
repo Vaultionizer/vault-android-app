@@ -15,7 +15,7 @@ class AesCbcNopaddingTest{
 
     @Before
     fun cleanup() {
-        Cryptography().deleteKey(testingSpaceID)
+        Cryptography.deleteKey(testingSpaceID)
     }
 
     @Test
@@ -33,8 +33,8 @@ class AesCbcNopaddingTest{
 
     @Test
     fun testCryptography_en_de_crypt_AES_GCM_NoPadding_from_Keystore(){
-        Cryptography().deleteKey(testingSpaceID)
-        Cryptography().createSingleUserKey(
+        Cryptography.deleteKey(testingSpaceID)
+        Cryptography.createSingleUserKey(
             testingSpaceID,
             CryptoType.AES,
             CryptoMode.CBC,
@@ -47,10 +47,10 @@ class AesCbcNopaddingTest{
         val generatedString = String(array, Charset.forName("UTF-8"))
 
 
-        val message = Cryptography().padder(generatedString.toByteArray())
-        val secretKey = Cryptography().getKey(testingSpaceID)
+        val message = Cryptography.padder(generatedString.toByteArray())
+        val secretKey = Cryptography.getKey(testingSpaceID)
         val encrypt =  AesCbcNopadding().encrypt(secretKey, message)
-        val result = Cryptography().padder(AesCbcNopadding().decrypt(secretKey, encrypt.iv, encrypt.cipher))
+        val result = Cryptography.padder(AesCbcNopadding().decrypt(secretKey, encrypt.iv, encrypt.cipher))
 
         Truth.assertThat(result).isEqualTo(message)
     }

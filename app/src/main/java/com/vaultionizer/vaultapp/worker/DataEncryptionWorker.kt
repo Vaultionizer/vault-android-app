@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import com.vaultionizer.vaultapp.cryptography.CryptoUtils
 import com.vaultionizer.vaultapp.cryptography.Cryptography
 import com.vaultionizer.vaultapp.repository.FileRepository
 import com.vaultionizer.vaultapp.repository.SyncRequestRepository
@@ -32,7 +33,7 @@ class DataEncryptionWorker @AssistedInject constructor(
             val file = fileRepository.getFile(request.localFileId) ?: return@withContext Result.failure()
 
             try {
-                val encryptedBytes = Cryptography().encryptor(file.space.id, request.data!!)
+                val encryptedBytes = CryptoUtils.encryptData(file.space.id, request.data!!)
                 request.data = encryptedBytes
                 request.cryptographicOperationDone = true
                 syncRequestService.updateRequest(request)

@@ -10,6 +10,7 @@ import androidx.lifecycle.observe
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.vaultionizer.vaultapp.R
+import com.vaultionizer.vaultapp.cryptography.CryptoUtils
 import com.vaultionizer.vaultapp.cryptography.Cryptography
 import com.vaultionizer.vaultapp.ui.viewmodel.MainActivityViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -36,13 +37,13 @@ class KeyManagementFragment : Fragment() {
 
         list.layoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
         list.adapter = KeyManagementAdapter {
-            Cryptography().deleteKey(it.id)
+            CryptoUtils.deleteKey(it.id)
 
             val adapter = list.adapter
             if (adapter != null) {
                 if (adapter is KeyManagementAdapter) {
                     adapter.updateSpaces(viewModel.userSpaces.value!!.filter {
-                        Cryptography().existsKey(
+                        CryptoUtils.existsKey(
                             it.id
                         )
                     }.toMutableList())
@@ -54,7 +55,7 @@ class KeyManagementFragment : Fragment() {
             val adapter = list.adapter
             if (adapter != null) {
                 if (adapter is KeyManagementAdapter) {
-                    adapter.updateSpaces(it.filter { Cryptography().existsKey(it.id) }
+                    adapter.updateSpaces(it.filter { CryptoUtils.existsKey(it.id) }
                         .toMutableList())
                 }
             }

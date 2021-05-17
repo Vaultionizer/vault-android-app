@@ -5,6 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vaultionizer.vaultapp.R
+import com.vaultionizer.vaultapp.cryptography.CryptoUtils
 import com.vaultionizer.vaultapp.cryptography.Cryptography
 import com.vaultionizer.vaultapp.cryptography.crypto.CryptoMode
 import com.vaultionizer.vaultapp.cryptography.crypto.CryptoPadding
@@ -41,7 +42,7 @@ class CreateSpaceViewModel @Inject constructor(val spaceRepository: SpaceReposit
             spaceRepository.createSpace(name, isPrivate, writeAccess, authKeyAccess).collect {
                 when (it) {
                     is Resource.Success -> {
-                        Cryptography().createSingleUserKey(
+                        CryptoUtils.generateKeyForSingleUserSpace(
                             it.data.id,
                             CryptoType.AES,
                             CryptoMode.GCM,
