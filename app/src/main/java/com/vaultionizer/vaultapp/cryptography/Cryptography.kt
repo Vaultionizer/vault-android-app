@@ -149,12 +149,6 @@ class Cryptography {
         return dewrapper(secretKey, decryptData(secretKey, iv, cipher)).cipher
     }
 
-    fun deleteKey(tag: String) {
-        val keyStore: KeyStore = KeyStore.getInstance(Constants.VN_KEYSTORE_PROVIDER)
-        keyStore.load(null)
-        keyStore.deleteEntry(tag)
-    }
-
     fun deleteKey(spaceID: Long): Boolean {
         val keyStore: KeyStore = KeyStore.getInstance(Constants.VN_KEYSTORE_PROVIDER)
         keyStore.load(null)
