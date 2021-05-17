@@ -30,4 +30,6 @@ interface FileRepository {
     suspend fun deleteFile(file: VNFile)
 
     suspend fun updateFileRemoteId(fileId: Long, remoteId: Long)
+
+    suspend fun clearLocalFiles(userId: Long)
 }

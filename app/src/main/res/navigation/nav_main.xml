@@ -18,6 +18,9 @@
         <action
             android:id="@+id/action_fileFragment_to_spacePermissionsFragment"
             app:destination="@id/spacePermissionsFragment" />
+        <action
+            android:id="@+id/action_fileFragment_to_settingsFragment"
+            app:destination="@id/settingsFragment" />
     </fragment>
     <fragment
         android:id="@+id/keyManagementFragment"
@@ -114,4 +117,20 @@
             android:id="@+id/action_authKeyFragment_to_spacePermissionsFragment"
             app:destination="@id/spacePermissionsFragment" />
     </fragment>
+    <fragment
+        android:id="@+id/settingsFragment"
+        android:name="com.vaultionizer.vaultapp.ui.main.settings.SettingsFragment"
+        android:label="SettingsFragment" >
+        <action
+            android:id="@+id/action_settingsFragment_to_fileFragment"
+            app:destination="@id/fileFragment" />
+        <action
+            android:id="@+id/action_settingsFragment_to_authenticationActivity"
+            app:destination="@id/authenticationActivity" />
+    </fragment>
+    <activity
+        android:id="@+id/authenticationActivity"
+        android:name="com.vaultionizer.vaultapp.ui.auth.AuthenticationActivity"
+        android:label="activity_authentication"
+        tools:layout="@layout/activity_authentication" />
 </navigation>

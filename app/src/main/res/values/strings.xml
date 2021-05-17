@@ -190,21 +190,36 @@
     <string name="space_management_quit_space_title">Quit space</string>
     <string name="space_management_quit_space_summary">Quit the space, delete all local copies and associated keys.</string>
 
+    <!-- Settings screen -->
+    <string name="logout_title">Logout</string>
+    <string name="logout_summary">Log out of the current user.</string>
+    <string name="delete_local_files_btn_title">Delete all local files</string>
+    <string name="delete_local_files_summary">Delete all local copies of files.</string>
+    <string name="delete_user_btn_title">Delete user</string>
+    <string name="delete_user_summary">Delete your user</string>
+    <string name="quit_spaces_title">Quit all spaces</string>
+    <string name="quit_spaces_summary">Quit all spaces and delete all associated files/keys.</string>
+    <string name="category_manage_account">Manage account</string>
+    <string name="category_visual_settings">Visual settings</string>
+    <string name="theme_selector_title">Visual theme</string>
+    <string name="theme_selector_summary">Select the color theme for the application.</string>
+    <string name="delete_local_files_title">Delete all local files?</string>
+    <string name="delete_local_files_body">Do you really want to delete all local copies of your files?</string>
+    <string name="delete_local_files_button_text">Yes, delete the files!</string>
+    <string name="delete_user_title">Delete user?</string>
+    <string name="delete_user_body">Do you really want to delete your account? This cannot be undone!</string>
+    <string name="delete_user_button_text">Yes, delete user!</string>
+    <string name="quit_all_spaces_title">Quit all spaces?</string>
+    <string name="quit_all_spaces_body">Do you really want to quit all spaces? Those spaces you created will be deleted as well. This cannot be undone!</string>
+    <string name="quit_all_spaces_button_text">Yes, quit all spaces!</string>
 
-    <!-- Preference Titles -->
-    <string name="messages_header">Messages</string>
-    <string name="sync_header">Sync</string>
+    <string name="toast_success_logout">Successfully logged out.</string>
+    <string name="toast_success_quit_spaces">Successfully quit all spaces.</string>
+    <string name="toast_success_delete_user">Successfully deleted user.</string>
+    <string name="toast_success_delete_local_files">Successfully delete all local files.</string>
 
-    <!-- Messages Preferences -->
-    <string name="signature_title">Your signature</string>
-    <string name="reply_title">Default reply action</string>
-
-    <!-- Sync Preferences -->
-    <string name="sync_title">Sync email periodically</string>
-    <string name="attachment_title">Download incoming attachments</string>
-    <string name="attachment_summary_on">Automatically download attachments for incoming emails
-    </string>
-    <string name="attachment_summary_off">Only download attachments when manually requested</string>
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="toast_failed_logout">Failed logging out.</string>
+    <string name="toast_failed_quit_spaces">Failed quitting all spaces.</string>
+    <string name="toast_failed_delete_user">Failed deleting user.</string>
+    <string name="toast_failed_delete_local_files">Failed deleting local files.</string>
 </resources>

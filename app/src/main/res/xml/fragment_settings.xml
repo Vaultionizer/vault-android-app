@@ -1,0 +1,36 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory android:title="@string/category_manage_account">
+        <Preference
+            android:title="@string/logout_title"
+            android:key="logoutBtn"
+            android:summary="@string/logout_summary"
+        />
+        <Preference
+            android:title="@string/delete_local_files_btn_title"
+            android:key="deleteLocalFilesBtn"
+            android:summary="@string/delete_local_files_summary"
+            />
+        <Preference
+            android:title="@string/quit_spaces_title"
+            android:key="quitAllSpacesBtn"
+            android:summary="@string/quit_spaces_summary"
+            />
+        <Preference
+            android:title="@string/delete_user_btn_title"
+            android:key="deleteUserBtn"
+            android:summary="@string/delete_user_summary"
+            />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/category_visual_settings">
+
+        <ListPreference
+            android:defaultValue="1"
+            android:entries="@array/visual_theme_entries"
+            android:entryValues="@array/visual_theme_values"
+            android:key="theme_list"
+            android:title="@string/theme_selector_title"
+            android:summary="@string/theme_selector_summary"/>
+
+    </PreferenceCategory>
+</PreferenceScreen>

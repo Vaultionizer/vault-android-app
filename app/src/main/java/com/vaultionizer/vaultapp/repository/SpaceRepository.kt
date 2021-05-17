@@ -14,4 +14,8 @@ interface SpaceRepository {
     suspend fun createSpace(name: String, isPrivate: Boolean): Flow<Resource<VNSpace>>
 
     suspend fun deleteSpace(space: VNSpace): Flow<Resource<VNSpace>>
+
+    suspend fun quitAllSpaces(): Boolean
+
+    suspend fun deleteAllSpaces(): Boolean
 }
