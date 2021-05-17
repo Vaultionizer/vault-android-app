@@ -21,6 +21,12 @@
         <action
             android:id="@+id/action_fileFragment_to_settingsFragment"
             app:destination="@id/settingsFragment" />
+        <action
+            android:id="@+id/action_fileFragment_to_textFileViewerFragment"
+            app:destination="@id/textFileViewerFragment"></action>
+        <action
+            android:id="@+id/action_fileFragment_to_imageFileViewerFragment"
+            app:destination="@id/imageFileViewerFragment" />
     </fragment>
     <fragment
         android:id="@+id/keyManagementFragment"
@@ -133,4 +139,20 @@
         android:name="com.vaultionizer.vaultapp.ui.auth.AuthenticationActivity"
         android:label="activity_authentication"
         tools:layout="@layout/activity_authentication" />
+    <fragment
+        android:id="@+id/textFileViewerFragment"
+        android:name="com.vaultionizer.vaultapp.ui.main.file.viewer.TextFileViewerFragment"
+        android:label="TextFileViewerFragment">
+        <argument
+            android:name="fileArgs"
+            app:argType="com.vaultionizer.vaultapp.ui.main.file.viewer.FileViewerArgs" />
+    </fragment>
+    <fragment
+        android:id="@+id/imageFileViewerFragment"
+        android:name="com.vaultionizer.vaultapp.ui.main.file.viewer.ImageFileViewerFragment"
+        android:label="ImageFileViewerFragment">
+        <argument
+            android:name="fileArgs"
+            app:argType="com.vaultionizer.vaultapp.ui.main.file.viewer.FileViewerArgs" />
+    </fragment>
 </navigation>

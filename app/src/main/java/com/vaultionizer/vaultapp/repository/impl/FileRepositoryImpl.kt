@@ -23,10 +23,7 @@ import com.vaultionizer.vaultapp.service.FileService
 import com.vaultionizer.vaultapp.util.Constants
 import com.vaultionizer.vaultapp.util.extension.collectSuccess
 import com.vaultionizer.vaultapp.util.getFileName
-import com.vaultionizer.vaultapp.worker.DataEncryptionWorker
-import com.vaultionizer.vaultapp.worker.FileDownloadWorker
-import com.vaultionizer.vaultapp.worker.FileUploadWorker
-import com.vaultionizer.vaultapp.worker.ReferenceFileSyncWorker
+import com.vaultionizer.vaultapp.worker.*
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
@@ -159,6 +156,7 @@ class FileRepositoryImpl @Inject constructor(
             val encryptionWorker =
                 prepareFileWorkerBuilder<DataEncryptionWorker>(vnFile, encryptionWorkData)
                     .addTag(Constants.WORKER_TAG_FILE)
+                    .addTag(Constants.WORKER_TAG_ENCRYPTION)
                     .build()
             val uploadWorker =
                 prepareFileWorkerBuilder<FileUploadWorker>(vnFile, uploadWorkData)
@@ -245,8 +243,21 @@ class FileRepositoryImpl @Inject constructor(
                     .addTag(Constants.WORKER_TAG_FILE)
                     .build()
 
-            enqueueUniqueFileWork(file, downloadWorker, buildReferenceFileWorker(file))
+            enqueueUniqueFileWork(file, downloadWorker)
         }
+    }
+
+    override suspend fun decryptFile(file: VNFile) {
+        val decryptionWorkData = workDataOf(
+            Constants.WORKER_FILE_ID to file.localId
+        )
+        val decryptionWorker =
+            prepareFileWorkerBuilder<DataDecryptionWorker>(file, decryptionWorkData)
+                .addTag(Constants.WORKER_TAG_FILE)
+                .addTag(Constants.WORKER_TAG_DECRYPTION)
+                .build()
+
+        enqueueUniqueFileWork(file, decryptionWorker)
     }
 
     override suspend fun getFile(fileId: Long): VNFile? {

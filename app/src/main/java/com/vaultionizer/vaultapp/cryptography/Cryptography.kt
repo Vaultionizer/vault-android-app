@@ -9,7 +9,6 @@ import com.vaultionizer.vaultapp.cryptography.model.*
 import com.vaultionizer.vaultapp.util.Constants
 import java.security.KeyStore
 import java.security.KeyStoreException
-import java.security.SecureRandom
 import java.util.*
 import javax.crypto.SecretKey
 import javax.crypto.SecretKeyFactory

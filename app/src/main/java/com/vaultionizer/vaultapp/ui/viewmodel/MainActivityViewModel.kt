@@ -7,8 +7,6 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.work.WorkInfo
-import androidx.work.WorkManager
 import com.vaultionizer.vaultapp.cryptography.Cryptography
 import com.vaultionizer.vaultapp.cryptography.crypto.CryptoMode
 import com.vaultionizer.vaultapp.cryptography.crypto.CryptoPadding
@@ -19,7 +17,6 @@ import com.vaultionizer.vaultapp.data.model.rest.result.Resource
 import com.vaultionizer.vaultapp.repository.FileRepository
 import com.vaultionizer.vaultapp.repository.SpaceRepository
 import com.vaultionizer.vaultapp.ui.main.file.FileEvent
-import com.vaultionizer.vaultapp.util.Constants
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.collect
@@ -48,9 +45,6 @@ class MainActivityViewModel @Inject constructor(
 
     private val _fileEvent = MutableLiveData<FileEvent>()
     val fileEvent: LiveData<FileEvent> = _fileEvent
-
-    val fileWorkerInfo: LiveData<List<WorkInfo>> =
-        WorkManager.getInstance(context).getWorkInfosByTagLiveData(Constants.WORKER_TAG_FILE)
 
     init {
         updateUserSpaces()
@@ -129,6 +123,12 @@ class MainActivityViewModel @Inject constructor(
         }
     }
 
+    fun requestDecryption(file: VNFile) {
+        viewModelScope.launch {
+            fileRepository.decryptFile(file)
+        }
+    }
+
     fun requestFolder(name: String) {
         if (_selectedSpace.value != null && _currentDirectory.value != null) {
             viewModelScope.launch {
@@ -141,6 +141,7 @@ class MainActivityViewModel @Inject constructor(
     fun requestDeletion(file: VNFile) {
         viewModelScope.launch {
             fileRepository.deleteFile(file)
+            updateCurrentFiles()
         }
     }
 

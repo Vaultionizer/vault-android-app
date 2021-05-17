@@ -21,6 +21,8 @@ interface FileRepository {
 
     suspend fun downloadFile(file: VNFile)
 
+    suspend fun decryptFile(file: VNFile)
+
     suspend fun getFile(fileId: Long): VNFile?
 
     fun getFileByRemote(spaceId: Long, fileRemoteId: Long): VNFile?

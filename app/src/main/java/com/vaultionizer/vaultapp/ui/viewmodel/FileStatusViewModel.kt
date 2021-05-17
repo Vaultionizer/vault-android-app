@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import androidx.work.WorkQuery
+import com.vaultionizer.vaultapp.data.model.domain.VNFile
 import com.vaultionizer.vaultapp.repository.FileRepository
 import com.vaultionizer.vaultapp.ui.main.status.FileWorkerStatusPair
 import com.vaultionizer.vaultapp.util.Constants
@@ -29,37 +30,31 @@ class FileStatusViewModel @Inject constructor(
                 listOf(
                     Constants.WORKER_TAG_FILE
                 )
-            )
-            .addStates(
-                listOf(
-                    WorkInfo.State.ENQUEUED,
-                    WorkInfo.State.RUNNING,
-                    WorkInfo.State.FAILED
-                )
-            )
-            .build()
+            ).build()
+
+        val WORKER_STATUS_WEIGHT_MAP = mapOf(
+            WorkInfo.State.RUNNING to 4,
+            WorkInfo.State.ENQUEUED to 3,
+            WorkInfo.State.FAILED to 2,
+            WorkInfo.State.CANCELLED to 2,
+            WorkInfo.State.BLOCKED to 2,
+            WorkInfo.State.SUCCEEDED to 1,
+        )
     }
 
-    private val workInfo =
+    val workInfo =
         WorkManager.getInstance(applicationContext).getWorkInfosLiveData(WORKER_QUERY)
     private val fileStatus_ = MutableLiveData<List<FileWorkerStatusPair>>(emptyList())
     val fileStatus: LiveData<List<FileWorkerStatusPair>> = fileStatus_
 
-    init {
-        workInfo.observeForever {
-            onWorkerStatusChange(it)
-            WorkManager.getInstance(applicationContext).pruneWork()
-        }
-    }
-
     fun onWorkerStatusChange(workInfoList: List<WorkInfo>) {
         viewModelScope.launch {
             val newStatus = mutableListOf<FileWorkerStatusPair>()
+            val fileMap = mutableMapOf<VNFile, MutableList<WorkInfo>>()
 
-            for (info in workInfoList) {
+            outer@ for (info in workInfoList) {
                 for (tag in info.tags) {
                     if (!tag.startsWith(Constants.WORKER_TAG_FILE_ID_TEMPLATE_BEGIN)) {
-                        Log.e("Vault", "TAG $tag")
                         continue
                     }
 
@@ -69,20 +64,53 @@ class FileStatusViewModel @Inject constructor(
                             ""
                         ).toLong()
                     )
-                    if (file != null) {
-                        newStatus.add(FileWorkerStatusPair(file, info.state))
-                    }
 
-                    break
+                    if (file != null) {
+                        val list = fileMap[file] ?: mutableListOf()
+                        list.add(info)
+                        fileMap[file] = list
+                    }
                 }
             }
 
-            Log.d("Vault", "------ Status begin ------")
-            newStatus.forEach {
-                Log.d("Vault", "${it.file.name} ${it.status.toString()}")
+            for (fileStatusPair in fileMap) {
+                var allWorkersFinished = true
+                val mostValuableState = fileStatusPair.value.maxByOrNull {
+                    if (it.state != WorkInfo.State.SUCCEEDED) {
+                        allWorkersFinished = false
+                    }
+                    return@maxByOrNull WORKER_STATUS_WEIGHT_MAP[it.state]!!
+                }
+
+                if (allWorkersFinished) {
+                    resetFileStatus(fileStatusPair.key)
+                } else {
+                    mostValuableState?.let {
+                        adjustFileStatus(fileStatusPair.key, it)
+                        newStatus.add(FileWorkerStatusPair(fileStatusPair.key, it.state))
+                    }
+                }
             }
-            Log.d("Vault", "------ Status end ------")
-            fileStatus_.value = newStatus
+
+            fileStatus_.postValue(newStatus)
+            WorkManager.getInstance(applicationContext).pruneWork()
+        }
+    }
+
+    private fun resetFileStatus(file: VNFile) {
+        Log.e("Vault", "Changing state!")
+        file.state = if (file.isDownloaded(applicationContext))
+            VNFile.State.AVAILABLE_OFFLINE
+        else
+            VNFile.State.AVAILABLE_REMOTE
+    }
+
+    private fun adjustFileStatus(file: VNFile, workInfo: WorkInfo) {
+        if (workInfo.state == WorkInfo.State.ENQUEUED || workInfo.state == WorkInfo.State.RUNNING) {
+            if (workInfo.tags.contains(Constants.WORKER_TAG_DECRYPTION))
+                file.state = VNFile.State.DECRYPTING
+            else if (workInfo.tags.contains(Constants.WORKER_TAG_ENCRYPTION))
+                file.state = VNFile.State.ENCRYPTING
         }
     }
 }
