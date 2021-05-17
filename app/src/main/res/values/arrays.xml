@@ -1,0 +1,11 @@
+<resources>
+    <string-array name="visual_theme_entries">
+        <item>Light</item>
+        <item>Dark</item>
+    </string-array>
+
+    <string-array name="visual_theme_values">
+        <item>light_theme</item>
+        <item>dark_theme</item>
+    </string-array>
+</resources>

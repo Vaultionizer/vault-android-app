@@ -3,7 +3,6 @@ package com.vaultionizer.vaultapp.service.impl
 import android.util.Base64
 import com.google.gson.Gson
 import com.vaultionizer.vaultapp.data.cache.AuthCache
-import com.vaultionizer.vaultapp.data.model.rest.request.DownloadFileRequest
 import com.vaultionizer.vaultapp.service.FileExchangeService
 import com.vaultionizer.vaultapp.service.FileService
 import com.vaultionizer.vaultapp.util.Constants
@@ -85,11 +84,11 @@ class FileExchangeServiceImpl @Inject constructor(
             )
 
             val downloadedFileFlow = downloadSession.subscribe(headers)
-            fileService.downloadFile(DownloadFileRequest(fileRemoteId, spaceRemoteId))
+            fileService.downloadFile(spaceRemoteId, fileRemoteId)
             val downloadedFile = downloadedFileFlow.first()
 
             downloadSession.disconnect()
-            return@withContext downloadedFile.body?.bytes
+            return@withContext Base64.decode(downloadedFile.body?.bytes, Base64.NO_WRAP)
         }
     }
 }

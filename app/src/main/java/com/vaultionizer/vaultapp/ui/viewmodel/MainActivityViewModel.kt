@@ -7,16 +7,16 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.work.WorkInfo
-import androidx.work.WorkManager
-import com.vaultionizer.vaultapp.R
+import com.vaultionizer.vaultapp.cryptography.Cryptography
+import com.vaultionizer.vaultapp.cryptography.crypto.CryptoMode
+import com.vaultionizer.vaultapp.cryptography.crypto.CryptoPadding
+import com.vaultionizer.vaultapp.cryptography.crypto.CryptoType
 import com.vaultionizer.vaultapp.data.model.domain.VNFile
 import com.vaultionizer.vaultapp.data.model.domain.VNSpace
-import com.vaultionizer.vaultapp.data.model.rest.result.ManagedResult
+import com.vaultionizer.vaultapp.data.model.rest.result.Resource
 import com.vaultionizer.vaultapp.repository.FileRepository
 import com.vaultionizer.vaultapp.repository.SpaceRepository
-import com.vaultionizer.vaultapp.ui.main.file.FileDialogState
-import com.vaultionizer.vaultapp.util.Constants
+import com.vaultionizer.vaultapp.ui.main.file.FileEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.collect
@@ -43,22 +43,39 @@ class MainActivityViewModel @Inject constructor(
     private val _currentDirectory = MutableLiveData<VNFile>()
     val currentDirectory: LiveData<VNFile> = _currentDirectory
 
-    private val _fileDialogState = MutableLiveData<FileDialogState>()
-    val fileDialogState: LiveData<FileDialogState> = _fileDialogState
+    private val _fileEvent = MutableLiveData<FileEvent>()
+    val fileEvent: LiveData<FileEvent> = _fileEvent
 
-    val fileWorkerInfo: LiveData<List<WorkInfo>> =
-        WorkManager.getInstance(context).getWorkInfosByTagLiveData(Constants.WORKER_TAG_FILE)
+    init {
+        updateUserSpaces()
+    }
 
     fun updateUserSpaces() {
         viewModelScope.launch {
             val result = spaceRepository.getAllSpaces()
 
+            // TODO(jatsqi): Error handling
             result.collect {
-                if (it is ManagedResult.Success) {
+                if (it is Resource.Success) {
                     _userSpaces.value = it.data
+
+                    val lastAccessedSpace =
+                        it.data.sortedByDescending { it.lastAccess }.firstOrNull()
+                    lastAccessedSpace?.let { space ->
+                        selectedSpaceChanged(space)
+                    }
                 }
             }
         }
+    }
+
+    fun generateSpaceKey(space: VNSpace) {
+        Cryptography().createSingleUserKey(
+            space.id,
+            CryptoType.AES,
+            CryptoMode.GCM,
+            CryptoPadding.NoPadding
+        )
     }
 
     private fun updateCurrentFiles() {
@@ -74,9 +91,16 @@ class MainActivityViewModel @Inject constructor(
 
                 response.collect {
                     when (it) {
-                        is ManagedResult.Success -> {
+                        is Resource.Success -> {
                             _currentDirectory.value = it.data
                             updateCurrentFiles()
+                        }
+                        is Resource.CryptographicalError -> {
+                            _fileEvent.postValue(
+                                FileEvent.EncryptionKeyRequired(
+                                    selectedSpace.value!!
+                                )
+                            )
                         }
                     }
                 }
@@ -90,13 +114,18 @@ class MainActivityViewModel @Inject constructor(
                 _currentDirectory.value!!,
                 uri
             )
-            _fileDialogState.value = FileDialogState(isValid = true)
         }
     }
 
     fun requestDownload(file: VNFile) {
         viewModelScope.launch {
             fileRepository.downloadFile(file)
+        }
+    }
+
+    fun requestDecryption(file: VNFile) {
+        viewModelScope.launch {
+            fileRepository.decryptFile(file)
         }
     }
 
@@ -111,18 +140,8 @@ class MainActivityViewModel @Inject constructor(
 
     fun requestDeletion(file: VNFile) {
         viewModelScope.launch {
-            fileRepository.deleteFile(file).collect {
-                when (it) {
-                    is ManagedResult.Success -> {
-                        _fileDialogState.value = FileDialogState(isValid = true)
-                        updateCurrentFiles()
-                    }
-                    else -> { // TODO(jatsqi) Error handling
-                        _fileDialogState.value =
-                            FileDialogState(fileError = R.string.host_error_network)
-                    }
-                }
-            }
+            fileRepository.deleteFile(file)
+            updateCurrentFiles()
         }
     }
 
@@ -131,7 +150,7 @@ class MainActivityViewModel @Inject constructor(
         viewModelScope.launch {
             spaceRepository.deleteSpace(_selectedSpace.value!!).collect {
                 when (it) {
-                    is ManagedResult.Success -> {
+                    is Resource.Success -> {
                         val spaces = _userSpaces.value!!.toMutableList()
                         spaces.remove(it)
 
@@ -139,19 +158,28 @@ class MainActivityViewModel @Inject constructor(
                         _currentDirectory.value = null
                         updateUserSpaces()
                         updateCurrentFiles()
-
-                        _fileDialogState.value = FileDialogState(isValid = true)
                     }
                 }
             }
         }
     }
 
-    fun selectedSpaceChanged(space: VNSpace) {
+    fun requestQuitSpace() {
+        // TODO
+    }
+
+    fun selectedSpaceChanged(space: VNSpace): Boolean {
         Log.e("Vault", "Change space...")
+        if (!space.isKeyAvailable) {
+            _fileEvent.postValue(FileEvent.EncryptionKeyRequired(space))
+            return false
+        }
+
         _currentDirectory.value = null
         _selectedSpace.value = space
         updateCurrentFiles()
+
+        return true
     }
 
     fun onDirectoryChange(newFolder: VNFile?) {

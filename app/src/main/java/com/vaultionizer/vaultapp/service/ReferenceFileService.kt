@@ -6,13 +6,21 @@ import com.vaultionizer.vaultapp.data.model.rest.request.UploadReferenceFileRequ
 import com.vaultionizer.vaultapp.data.model.rest.result.ApiResult
 import retrofit2.http.Body
 import retrofit2.http.POST
+import retrofit2.http.PUT
+import retrofit2.http.Path
 
 interface ReferenceFileService {
 
-    @POST("api/refFile/read")
-    suspend fun downloadReferenceFile(@Body downloadReq: DownloadReferenceFileRequest): ApiResult<NetworkReferenceFile>
+    @POST("api/refFile/{remoteSpaceId}/read")
+    suspend fun downloadReferenceFile( // TODO add current timestamp
+        @Path("remoteSpaceId") remoteSpaceId: Long,
+        @Body downloadRequest: DownloadReferenceFileRequest
+    ): ApiResult<NetworkReferenceFile>
 
-    @POST("api/refFile/update/")
-    suspend fun uploadReferenceFile(@Body uploadReq: UploadReferenceFileRequest): ApiResult<Unit>
+    @PUT("api/refFile/{remoteSpaceId}/update")
+    suspend fun uploadReferenceFile(
+        @Body uploadRequest: UploadReferenceFileRequest,
+        @Path("remoteSpaceId") remoteSpaceId: Long
+    ): ApiResult<Unit>
 
 }

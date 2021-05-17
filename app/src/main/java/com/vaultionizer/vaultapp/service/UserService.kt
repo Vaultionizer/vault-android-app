@@ -8,18 +8,17 @@ import retrofit2.http.Body
 import retrofit2.http.DELETE
 import retrofit2.http.POST
 import retrofit2.http.PUT
-import java.util.*
 
 interface UserService {
-    @POST("api/users/create")
+    @POST("api/user/create")
     suspend fun createUser(@Body createUserRequest: CreateUserRequest): ApiResult<NetworkUserAuthPair>
 
-    @POST("api/users/login")
+    @POST("api/user/login")
     suspend fun loginUser(@Body loginUserRequest: LoginUserRequest): ApiResult<NetworkUserAuthPair>
 
-    @DELETE("api/users/delete")
-    suspend fun deleteUser(@Body objects: Objects)
+    @DELETE("api/user")
+    suspend fun deleteUser()
 
-    @PUT("api/users/logout")
-    suspend fun logoutUser(@Body objects: Objects)
+    @PUT("api/user/logout")
+    suspend fun logoutUser()
 }

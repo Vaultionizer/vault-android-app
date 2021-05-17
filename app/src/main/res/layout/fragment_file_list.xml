@@ -1,10 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
+
+    <Button
+        android:id="@+id/file_processing_button"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:insetTop="0dp"
+        android:insetBottom="0dp"
+        app:cornerRadius="0dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/path_list"
@@ -22,7 +31,7 @@
         android:id="@+id/progress_space"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/file_processing_button"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -44,40 +53,45 @@
     <com.nambimobile.widgets.efab.ExpandableFabLayout
         android:id="@+id/file_efab_layout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_height="0dp"
+        app:layout_constraintBottom_toTopOf="@+id/file_processing_button"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
         <com.nambimobile.widgets.efab.ExpandableFab
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|end"
-            android:layout_marginBottom="@dimen/efab_ui_margin_medium"
             android:layout_marginEnd="@dimen/efab_ui_margin_medium"
             android:layout_marginRight="@dimen/efab_ui_margin_medium"
+            android:layout_marginBottom="@dimen/efab_ui_margin_medium"
             app:efab_icon="@drawable/ic_outline_cloud_upload_24"
-            app:efab_orientation="portrait"/>
+            app:efab_orientation="portrait" />
+
         <com.nambimobile.widgets.efab.FabOption
             android:id="@+id/fab_option_upload_file"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            app:fab_icon="@drawable/ic_baseline_attach_file_24"
             app:fab_orientation="portrait"
-            app:label_text="Upload file"
-            app:fab_icon="@drawable/ic_baseline_attach_file_24" />
+            app:label_text="Upload file" />
+
         <com.nambimobile.widgets.efab.FabOption
             android:id="@+id/fab_option_upload_folder"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            app:fab_icon="@drawable/ic_outline_folder_24"
             app:fab_orientation="portrait"
-            app:label_text="Create folder"
-            app:fab_icon="@drawable/ic_outline_folder_24"/>
+            app:label_text="Create folder" />
+
         <com.nambimobile.widgets.efab.FabOption
             android:id="@+id/fab_option_create_pc"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            app:fab_icon="@drawable/ic_baseline_description_24"
             app:fab_orientation="portrait"
-            app:label_text="Create personal container"
-            app:fab_icon="@drawable/ic_baseline_description_24"/>
+            app:label_text="Create personal container" />
 
     </com.nambimobile.widgets.efab.ExpandableFabLayout>
 
@@ -87,7 +101,6 @@
         android:layout_height="32dp"
         android:visibility="invisible"
         app:iiv_icon="faw-frown"
-        app:iiv_color="@android:color/holo_red_dark"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
