@@ -1,4 +1,4 @@
-package com.vaultionizer.vaultapp.data.pc
+package com.vaultionizer.vaultapp.data.model.pc
 
 data class PCPair constructor(
     var id: Int,

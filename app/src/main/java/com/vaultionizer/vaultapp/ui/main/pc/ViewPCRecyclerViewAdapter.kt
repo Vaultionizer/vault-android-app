@@ -10,9 +10,9 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.RecyclerView
 import com.vaultionizer.vaultapp.R
-import com.vaultionizer.vaultapp.data.pc.PCCategory
-import com.vaultionizer.vaultapp.data.pc.PCFile
-import com.vaultionizer.vaultapp.data.pc.PCPair
+import com.vaultionizer.vaultapp.data.model.pc.PCCategory
+import com.vaultionizer.vaultapp.data.model.pc.PCFile
+import com.vaultionizer.vaultapp.data.model.pc.PCPair
 import kotlinx.android.synthetic.main.sample_pair_view.*
 import kotlinx.android.synthetic.main.sample_pair_view.view.*
 

@@ -27,6 +27,7 @@ import com.arthurivanets.bottomsheets.sheets.model.Option
 import com.mikepenz.iconics.IconicsDrawable
 import com.mikepenz.iconics.typeface.library.fontawesome.FontAwesome
 import com.mikepenz.iconics.view.IconicsImageView
+import com.mikepenz.iconics.view.IconicsTextView
 import com.nambimobile.widgets.efab.ExpandableFabLayout
 import com.vaultionizer.vaultapp.R
 import com.vaultionizer.vaultapp.data.cache.DecryptionResultCache
@@ -187,6 +188,11 @@ class FileFragment : Fragment(), View.OnClickListener {
 
                 findNavController().navigate(action)
             }
+        }
+
+        val offlineHint = view.findViewById<IconicsTextView>(R.id.offline_indicator)
+        viewModel.networkStatus.observe(viewLifecycleOwner) {
+            offlineHint.visibility = boolToVisibility(!it, View.GONE)
         }
     }
 

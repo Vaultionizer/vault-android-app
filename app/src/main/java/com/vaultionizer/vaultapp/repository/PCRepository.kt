@@ -1,7 +1,7 @@
 package com.vaultionizer.vaultapp.repository
 
 import com.vaultionizer.vaultapp.data.model.domain.VNFile
-import com.vaultionizer.vaultapp.data.pc.PCFile
+import com.vaultionizer.vaultapp.data.model.pc.PCFile
 
 interface PCRepository {
     val changed: Boolean

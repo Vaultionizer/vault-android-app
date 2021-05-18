@@ -2,9 +2,9 @@ package com.vaultionizer.vaultapp.repository.impl
 
 import com.google.gson.Gson
 import com.vaultionizer.vaultapp.data.model.domain.VNFile
-import com.vaultionizer.vaultapp.data.pc.PCCategory
-import com.vaultionizer.vaultapp.data.pc.PCFile
-import com.vaultionizer.vaultapp.data.pc.PCPair
+import com.vaultionizer.vaultapp.data.model.pc.PCCategory
+import com.vaultionizer.vaultapp.data.model.pc.PCFile
+import com.vaultionizer.vaultapp.data.model.pc.PCPair
 import com.vaultionizer.vaultapp.repository.FileRepository
 import com.vaultionizer.vaultapp.repository.PCRepository
 import java.util.*
