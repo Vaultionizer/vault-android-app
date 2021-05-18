@@ -266,10 +266,6 @@ class FileFragment : Fragment(), View.OnClickListener {
         dialog.show()
     }
 
-    private fun monitorNetworkState() {
-
-    }
-
     private fun onClickFileUpload(view: View) {
         val intent = Intent(Intent.ACTION_GET_CONTENT)
         intent.type = "*/*"
