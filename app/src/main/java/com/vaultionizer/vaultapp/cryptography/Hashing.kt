@@ -71,7 +71,7 @@ class Hashing {
         val hashString = BCrypt.hashpw(pwd.toString(), hashSalt.salt.toString())
         val hash = hashString.toByteArray(Charsets.UTF_8)
 
-        val trueHash = Hash(hash.sliceArray(29 until hash.size)+ByteArray(1))
+        val trueHash = Hash(hash.sliceArray(29 until hash.size)+"V".toByteArray(Charsets.UTF_8))
 
         if (trueHash.hash.contentEquals(hashSalt.hash.hash)){
             return true

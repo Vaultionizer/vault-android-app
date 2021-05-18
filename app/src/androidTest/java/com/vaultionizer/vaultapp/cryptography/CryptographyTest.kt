@@ -63,7 +63,7 @@ class CryptographyTest {
         )
         val saltIvcipher = Cryptography.desalter(transferBytes)
 
-        assertThat(saltIvcipher.salt.size).isEqualTo(16)
+        assertThat(saltIvcipher.salt.size).isEqualTo(29)
 
     }
 
