@@ -146,7 +146,7 @@ class Cryptography {
         val iv = pairIvCipher.iv
         val cipher = pairIvCipher.cipher
 
-        return dewrapper(secretKey, decryptData(secretKey, iv, cipher)).cipher
+        return decryptData(secretKey, iv, cipher)
     }
 
     fun deleteKey(spaceID: Long): Boolean {
