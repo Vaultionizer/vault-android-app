@@ -17,11 +17,11 @@ class CryptographyTest {
 
     @Before
     fun cleanup() {
-        Cryptography().deleteKey(testingSpaceID)
+        Cryptography.deleteKey(testingSpaceID)
     }
 
     fun createSingleUserKey_AES_GCM_NoPadding() {
-        Cryptography().createSingleUserKey(
+        Cryptography.createSingleUserKey(
             testingSpaceID,
             CryptoType.AES,
             CryptoMode.GCM,
@@ -32,7 +32,7 @@ class CryptographyTest {
     @Test
     fun testCryptography_keyDoesExist() {
         createSingleUserKey_AES_GCM_NoPadding()
-        val result = Cryptography().existsKey(testingSpaceID)
+        val result = Cryptography.existsKey(testingSpaceID)
 
         assertThat(result).isTrue()
     }
@@ -40,49 +40,49 @@ class CryptographyTest {
     @Test
     fun testCryptography_deleteKeySuccessful() {
         createSingleUserKey_AES_GCM_NoPadding()
-        val result = Cryptography().deleteKey(testingSpaceID)
+        val result = Cryptography.deleteKey(testingSpaceID)
 
         assertThat(result).isTrue()
     }
 
     @Test
     fun testCryptography_keyDoesNotExist() {
-        val result = Cryptography().existsKey(testingSpaceID)
+        val result = Cryptography.existsKey(testingSpaceID)
 
         assertThat(result).isFalse()
     }
 
     @Test
     fun testCryptography_deSalterWorks() {
-        val transferBytes = Cryptography().createSharedKey(
+        val transferBytes = Cryptography.createSharedKey(
             testingSpaceID,
             CryptoType.AES,
             CryptoMode.GCM,
             CryptoPadding.NoPadding,
             password
         )
-        val saltIvcipher = Cryptography().desalter(transferBytes)
+        val saltIvcipher = Cryptography.desalter(transferBytes)
 
-        assertThat(saltIvcipher.salt.size).isEqualTo(16)
+        assertThat(saltIvcipher.salt.size).isEqualTo(29)
 
     }
 
     @Test
     fun testCryptography_importExport() {
-        val transferBytes = Cryptography().createSharedKey(
+        val transferBytes = Cryptography.createSharedKey(
             testingSpaceID,
             CryptoType.AES,
             CryptoMode.GCM,
             CryptoPadding.NoPadding,
             password
         )
-        val secretKey = Cryptography().getKey(testingSpaceID)
+        val secretKey = Cryptography.getKey(testingSpaceID)
         val ivCipher = AesGcmNopadding().encrypt(secretKey, message.toByteArray())
-        Cryptography().deleteKey(testingSpaceID)
+        Cryptography.deleteKey(testingSpaceID)
 
-        Cryptography().importKey(testingSpaceID, transferBytes, password)
-        val result = Cryptography().decryptData(
-            Cryptography().getKey(testingSpaceID),
+        Cryptography.importKey(testingSpaceID, transferBytes, password)
+        val result = Cryptography.decryptData(
+            Cryptography.getKey(testingSpaceID),
             ivCipher.iv,
             ivCipher.cipher
         )
@@ -92,14 +92,14 @@ class CryptographyTest {
 
     @Test(expected = AEADBadTagException::class)
     fun testCryptography_importExportFalsePassword() {
-        val transferBytes = Cryptography().createSharedKey(
+        val transferBytes = Cryptography.createSharedKey(
             testingSpaceID,
             CryptoType.AES,
             CryptoMode.GCM,
             CryptoPadding.NoPadding,
             password
         )
-        Cryptography().importKey(testingSpaceID, transferBytes, Password(password.pwd+0))
+        Cryptography.importKey(testingSpaceID, transferBytes, Password(password.pwd+0))
     }
 
 

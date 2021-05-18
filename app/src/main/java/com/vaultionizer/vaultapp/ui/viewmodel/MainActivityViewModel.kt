@@ -8,7 +8,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.vaultionizer.vaultapp.cryptography.Cryptography
+import com.vaultionizer.vaultapp.cryptography.CryptoUtils
 import com.vaultionizer.vaultapp.cryptography.crypto.CryptoMode
 import com.vaultionizer.vaultapp.cryptography.crypto.CryptoPadding
 import com.vaultionizer.vaultapp.cryptography.crypto.CryptoType
@@ -75,7 +75,7 @@ class MainActivityViewModel @Inject constructor(
     }
 
     fun generateSpaceKey(space: VNSpace) {
-        Cryptography().createSingleUserKey(
+        CryptoUtils.generateKeyForSingleUserSpace(
             space.id,
             CryptoType.AES,
             CryptoMode.GCM,

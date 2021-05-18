@@ -4,7 +4,7 @@ import android.content.Context
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import com.vaultionizer.vaultapp.cryptography.Cryptography
+import com.vaultionizer.vaultapp.cryptography.CryptoUtils
 import com.vaultionizer.vaultapp.data.cache.DecryptionResultCache
 import com.vaultionizer.vaultapp.repository.FileRepository
 import com.vaultionizer.vaultapp.util.Constants
@@ -23,10 +23,6 @@ class DataDecryptionWorker @AssistedInject constructor(
     val fileRepository: FileRepository
 ) : CoroutineWorker(appContext, params) {
 
-    companion object {
-        val CRYPTOGRAPHY = Cryptography()
-    }
-
     override suspend fun doWork(): Result {
         return withContext(Dispatchers.IO) {
             val fileId = inputData.getLong(Constants.WORKER_FILE_ID, -1)
@@ -41,7 +37,7 @@ class DataDecryptionWorker @AssistedInject constructor(
 
                 decryptionResultCache.addDecryptionResult(
                     file,
-                    CRYPTOGRAPHY.decrytor(file.space.id, bytes)
+                    CryptoUtils.decryptData(file.space.id, bytes)
                 )
             } catch (ex: FileNotFoundException) {
                 return@withContext Result.failure()

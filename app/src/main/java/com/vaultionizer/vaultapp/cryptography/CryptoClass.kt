@@ -17,7 +17,7 @@ abstract class CryptoClass {
 
         addKeyToKeyStore(secretKey, keystoreAlias)
 
-        val importExportKeyAndSalt = Cryptography().generateImportExportKeyAndSalt(pwd)
+        val importExportKeyAndSalt = Cryptography.generateImportExportKeyAndSalt(pwd)
         val importExportKey = importExportKeyAndSalt.key
         val importExportSalt = importExportKeyAndSalt.salt
 

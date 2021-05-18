@@ -1,6 +1,6 @@
 package com.vaultionizer.vaultapp.data.model.domain
 
-import com.vaultionizer.vaultapp.cryptography.Cryptography
+import com.vaultionizer.vaultapp.cryptography.CryptoUtils
 
 class VNSpace(
     val id: Long,
@@ -13,6 +13,6 @@ class VNSpace(
 ) {
 
     val isKeyAvailable
-        get() = Cryptography().existsKey(id)
+        get() = CryptoUtils.existsKey(id)
 
 }
