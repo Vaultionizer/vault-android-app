@@ -1,6 +1,5 @@
 package com.vaultionizer.vaultapp.data.model.rest.result
 
-import android.util.Log
 import retrofit2.Call
 import retrofit2.CallAdapter
 import retrofit2.Retrofit
@@ -14,20 +13,19 @@ class ApiCallFactory : CallAdapter.Factory() {
         annotations: Array<Annotation>,
         retrofit: Retrofit
     ): CallAdapter<*, *>? {
-        Log.e("Vault", "FACTORY")
+        // Return type should be Call<*>
         if (getRawType(returnType) != Call::class.java) {
-            Log.e("Vault", "NOT CALL")
             return null
         }
 
+        // Query generic type A of Call<A>
         val callType = getParameterUpperBound(0, returnType as ParameterizedType)
         if (getRawType(callType) != ApiResult::class.java) {
-            Log.e("Vault", "NOT APIRESULT ${callType.javaClass.canonicalName}")
             return null
         }
 
+        // Query generic type B of Call<ApiResult<B>>
         val callGenericType = getParameterUpperBound(0, callType as ParameterizedType)
-        Log.e("Vault", "RETURN END ${getRawType(callGenericType)}")
         return ApiResultAdapter(callGenericType, getRawType(callGenericType))
     }
 }
