@@ -34,10 +34,6 @@ class LoginFragmentTest{
     @get:Rule
     var activityTestRule: ActivityTestRule<AuthenticationActivity>
             = ActivityTestRule(AuthenticationActivity::class.java)
-//    @Rule
-//    var activityTestRule: ActivityTestRule<AuthenticationActivity?>? =
-//        ActivityTestRule(AuthenticationActivity::class.java)
-
 
     @Before
     fun skipWelcomeScreen() {
@@ -68,8 +64,6 @@ class LoginFragmentTest{
             .perform(typeText("password000+++PASSWORD--Invalid"))
         onView(withId(R.id.login))
             .perform(click())
-
-
         onView(withText(R.string.login_error_invalid_credentials)).inRoot(
             withDecorView(
                 not(
