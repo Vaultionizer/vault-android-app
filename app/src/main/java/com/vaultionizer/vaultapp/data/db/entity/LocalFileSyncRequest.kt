@@ -25,7 +25,7 @@ data class LocalFileSyncRequest(
     /**
      * Only present if [type] is [LocalFileSyncRequest.Type.UPLOAD].
      */
-    @ColumnInfo(name = "url")
+    @ColumnInfo(name = "uri")
     var uri: String?
 ) {
 
