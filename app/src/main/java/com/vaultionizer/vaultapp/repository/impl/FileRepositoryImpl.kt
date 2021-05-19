@@ -233,6 +233,7 @@ class FileRepositoryImpl @Inject constructor(
             val downloadWorker =
                 prepareFileWorkerBuilder<FileDownloadWorker>(file, downloadWorkData)
                     .addTag(Constants.WORKER_TAG_FILE)
+                    .addTag(Constants.WORKER_TAG_DOWNLOAD)
                     .build()
 
             enqueueUniqueFileWork(file, downloadWorker)

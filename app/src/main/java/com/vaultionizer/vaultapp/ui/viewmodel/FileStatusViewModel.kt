@@ -74,7 +74,7 @@ class FileStatusViewModel @Inject constructor(
             }
 
             for (fileStatusPair in fileMap) {
-                var allWorkersFinished = true
+                var allWorkersFinished = fileStatusPair.value[0].state == WorkInfo.State.SUCCEEDED
                 val mostValuableState = fileStatusPair.value.maxByOrNull {
                     if (it.state != WorkInfo.State.SUCCEEDED) {
                         allWorkersFinished = false
@@ -111,6 +111,9 @@ class FileStatusViewModel @Inject constructor(
                 file.state = VNFile.State.DECRYPTING
             else if (workInfo.tags.contains(Constants.WORKER_TAG_ENCRYPTION))
                 file.state = VNFile.State.ENCRYPTING
+            else if (workInfo.tags.contains(Constants.WORKER_TAG_DOWNLOAD)) {
+                file.state = VNFile.State.DOWNLOADING
+            }
         }
     }
 }
