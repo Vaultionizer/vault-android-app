@@ -17,9 +17,7 @@ import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import okhttp3.RequestBody
 import okhttp3.logging.HttpLoggingInterceptor
-import okio.Buffer
 import org.json.JSONObject
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -80,21 +78,6 @@ object RestModule {
         .addInterceptor(HttpLoggingInterceptor().apply {
             level = HttpLoggingInterceptor.Level.BODY
         }).connectTimeout(20000, TimeUnit.MILLISECONDS).build()
-
-    private fun requestBodyToString(body: RequestBody?): String {
-        if (body == null || body.contentLength() == 0L) {
-            return "{}"
-        }
-
-        val buffer = Buffer()
-        body.writeTo(buffer)
-
-        if (buffer.size == 0L) {
-            return "{}"
-        }
-
-        return buffer.readUtf8()
-    }
 
     private fun injectHostUrl(request: Request): HttpUrl =
         request.url.newBuilder().host(host).port(port).scheme(Constants.DEFAULT_PROTOCOL).addPathSegments(relativePath).build()
