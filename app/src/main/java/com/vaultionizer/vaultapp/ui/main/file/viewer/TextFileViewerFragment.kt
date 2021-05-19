@@ -32,13 +32,14 @@ class TextFileViewerFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
         val textViewer = view.findViewById<TextView>(R.id.viewer_text)
-        textViewer.text = String(
+
+        val text = String(
             decryptionResultCache.getResultByFileId(args.fileArgs.fileId)
                 ?: getString(R.string.text_file_viewer_error).toByteArray(), Charsets.UTF_8
         )
         textViewer.movementMethod = ScrollingMovementMethod()
+        textViewer.text = text
 
         decryptionResultCache.invalidateResultByFileId(args.fileArgs.fileId)
     }
