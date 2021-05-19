@@ -13,11 +13,11 @@ interface FileRepository {
 
     suspend fun getFileTree(space: VNSpace): Flow<Resource<VNFile>>
 
-    suspend fun uploadFile(data: ByteArray, name: String, parent: VNFile)
+    suspend fun uploadFile(uri: Uri, parent: VNFile): VNFile?
 
-    suspend fun uploadFile(parent: VNFile, uri: Uri)
+    suspend fun uploadFile(data: ByteArray, name: String, parent: VNFile): VNFile?
 
-    suspend fun uploadFolder(space: VNSpace, name: String, parent: VNFile)
+    suspend fun uploadFolder(space: VNSpace, name: String, parent: VNFile): VNFile?
 
     suspend fun downloadFile(file: VNFile)
 

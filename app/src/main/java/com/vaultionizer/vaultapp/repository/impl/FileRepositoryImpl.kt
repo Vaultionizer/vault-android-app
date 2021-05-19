@@ -2,8 +2,10 @@ package com.vaultionizer.vaultapp.repository.impl
 
 import android.content.Context
 import android.net.Uri
+import androidx.core.net.toUri
 import androidx.work.*
 import com.google.gson.Gson
+import com.vaultionizer.vaultapp.cryptography.CryptoUtils
 import com.vaultionizer.vaultapp.data.cache.FileCache
 import com.vaultionizer.vaultapp.data.db.dao.LocalFileDao
 import com.vaultionizer.vaultapp.data.db.dao.LocalSpaceDao
@@ -21,8 +23,10 @@ import com.vaultionizer.vaultapp.repository.SpaceRepository
 import com.vaultionizer.vaultapp.repository.SyncRequestRepository
 import com.vaultionizer.vaultapp.service.FileService
 import com.vaultionizer.vaultapp.util.Constants
+import com.vaultionizer.vaultapp.util.buildVaultionizerFilePath
 import com.vaultionizer.vaultapp.util.extension.collectSuccess
 import com.vaultionizer.vaultapp.util.getFileName
+import com.vaultionizer.vaultapp.util.writeFileToInternal
 import com.vaultionizer.vaultapp.worker.*
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -111,85 +115,71 @@ class FileRepositoryImpl @Inject constructor(
     }
 
     override suspend fun uploadFile(
-        data: ByteArray,
-        name: String,
+        uri: Uri,
         parent: VNFile,
-    ) {
-        withContext(Dispatchers.IO) {
-            val name = resolveFileNameConflicts(parent, name)
+    ): VNFile? {
+        return withContext(Dispatchers.IO) {
+            if (!parent.space.isKeyAvailable) {
+                return@withContext null
+            }
+
+            val name = resolveFileNameConflicts(
+                parent,
+                applicationContext.contentResolver.getFileName(uri) ?: "Unknown Name"
+            )
 
             // Create file in DB
-            val fileLocalId = localFileDao.createFile(
-                LocalFile(
-                    0,
-                    parent.space.id,
-                    null,
-                    parent.localId,
-                    name,
-                    LocalFile.Type.FILE,
-                    System.currentTimeMillis(),
-                    System.currentTimeMillis(),
-                    System.currentTimeMillis()
-                )
-            )
-
-            // Add temporary file to parent
-            val vnFile = VNFile(
-                name,
-                parent.space,
+            val fileLocalId = createUnsynchronizedLocalFile(name, parent)
+            return@withContext uploadFile(
+                uri,
+                applicationContext.contentResolver.getFileName(uri) ?: "Unknown",
                 parent,
-                fileLocalId
-            )
-            vnFile.state = VNFile.State.UPLOADING
-
-            // Create upload request
-            val uploadRequest =
-                syncRequestService.createUploadRequest(vnFile, data)
-
-            val encryptionWorkData = workDataOf(
-                Constants.WORKER_SYNC_REQUEST_ID to uploadRequest.requestId,
-            )
-            val uploadWorkData = workDataOf(
-                Constants.WORKER_SYNC_REQUEST_ID to uploadRequest.requestId,
-            )
-
-            val encryptionWorker =
-                prepareFileWorkerBuilder<DataEncryptionWorker>(vnFile, encryptionWorkData)
-                    .addTag(Constants.WORKER_TAG_FILE)
-                    .addTag(Constants.WORKER_TAG_ENCRYPTION)
-                    .build()
-            val uploadWorker =
-                prepareFileWorkerBuilder<FileUploadWorker>(vnFile, uploadWorkData)
-                    .addTag(Constants.WORKER_TAG_FILE)
-                    .build()
-
-            fileCaches[parent.space.id]?.addFile(vnFile)
-            parent.content!!.add(vnFile)
-
-            enqueueUniqueFileWork(
-                vnFile,
-                encryptionWorker,
-                uploadWorker,
-                buildReferenceFileWorker(vnFile)
+                fileLocalId,
+                false
             )
         }
     }
 
-    override suspend fun uploadFile(parent: VNFile, uri: Uri) {
-        // TODO(jatsqi): Uri error handling
-        uploadFile(
-            applicationContext.contentResolver.openInputStream(uri)!!.readBytes(),
-            applicationContext.contentResolver.getFileName(uri) ?: "UNKNOWN",
-            parent
-        )
+    override suspend fun uploadFile(data: ByteArray, name: String, parent: VNFile): VNFile? {
+        return withContext(Dispatchers.IO) {
+            if (!parent.space.isKeyAvailable) {
+                return@withContext null
+            }
+
+            val name = resolveFileNameConflicts(parent, name)
+            var encryptedBytes: ByteArray?
+
+            try {
+                encryptedBytes = CryptoUtils.encryptData(parent.space.id, data)
+            } catch (ex: Exception) {
+                return@withContext null
+            }
+
+            // Create file in DB
+            val localFileId = createUnsynchronizedLocalFile(name, parent)
+            writeFileToInternal(
+                applicationContext,
+                buildVaultionizerFilePath(localFileId),
+                encryptedBytes
+            )
+
+            return@withContext uploadFile(
+                applicationContext.getFileStreamPath(buildVaultionizerFilePath(localFileId))
+                    .toUri(),
+                name,
+                parent,
+                localFileId,
+                true
+            )
+        }
     }
 
     override suspend fun uploadFolder(
         space: VNSpace,
         name: String,
         parent: VNFile
-    ) {
-        withContext(Dispatchers.IO) {
+    ): VNFile? {
+        return withContext(Dispatchers.IO) {
             if (!minimumIdCache.containsKey(space.id)) {
                 minimumIdCache[space.id] = -2
             } else {
@@ -225,6 +215,8 @@ class FileRepositoryImpl @Inject constructor(
             parent.content?.add(folder)
 
             enqueueUniqueFileWork(folder, buildReferenceFileWorker(folder))
+
+            return@withContext folder
         }
     }
 
@@ -241,6 +233,7 @@ class FileRepositoryImpl @Inject constructor(
             val downloadWorker =
                 prepareFileWorkerBuilder<FileDownloadWorker>(file, downloadWorkData)
                     .addTag(Constants.WORKER_TAG_FILE)
+                    .addTag(Constants.WORKER_TAG_DOWNLOAD)
                     .build()
 
             enqueueUniqueFileWork(file, downloadWorker)
@@ -309,6 +302,83 @@ class FileRepositoryImpl @Inject constructor(
             localFileDao.updateFileRemoteId(fileId, remoteId)
             getFile(fileId)?.remoteId = remoteId
         }
+    }
+
+    private suspend fun uploadFile(
+        uri: Uri,
+        name: String,
+        parent: VNFile,
+        localFileId: Long,
+        isAlreadyEncrypted: Boolean
+    ): VNFile? {
+        return withContext(Dispatchers.IO) {
+            @Suppress("NAME_SHADOWING") val name = resolveFileNameConflicts(parent, name)
+
+            // Add temporary file to parent
+            val vnFile = VNFile(
+                name,
+                parent.space,
+                parent,
+                localFileId
+            )
+            vnFile.state = VNFile.State.UPLOADING
+
+            fileCaches[parent.space.id]?.addFile(vnFile)
+            parent.content?.add(vnFile)
+
+            // Create upload request
+            val uploadRequest =
+                syncRequestService.createUploadRequest(
+                    vnFile,
+                    uri
+                )
+            if (isAlreadyEncrypted) {
+                uploadRequest.cryptographicOperationDone = true
+                syncRequestService.updateRequest(uploadRequest)
+            }
+
+            val uploadWorkData = workDataOf(
+                Constants.WORKER_SYNC_REQUEST_ID to uploadRequest.requestId,
+            )
+            val uploadWorker =
+                prepareFileWorkerBuilder<FileUploadWorker>(vnFile, uploadWorkData)
+                    .addTag(Constants.WORKER_TAG_FILE)
+                    .build()
+
+            val encryptionWorkData = workDataOf(
+                Constants.WORKER_SYNC_REQUEST_ID to uploadRequest.requestId,
+            )
+            val encryptionWorker =
+                prepareFileWorkerBuilder<DataEncryptionWorker>(vnFile, encryptionWorkData)
+                    .addTag(Constants.WORKER_TAG_FILE)
+                    .addTag(Constants.WORKER_TAG_ENCRYPTION)
+                    .build()
+
+            enqueueUniqueFileWork(
+                vnFile,
+                encryptionWorker,
+                uploadWorker,
+                buildReferenceFileWorker(vnFile)
+            )
+
+            return@withContext vnFile
+        }
+    }
+
+    private suspend fun createUnsynchronizedLocalFile(name: String, parent: VNFile): Long {
+        return localFileDao.createFile(
+            LocalFile(
+                0,
+                parent.space.id,
+                null,
+                parent.localId,
+                name,
+                LocalFile.Type.FILE,
+                System.currentTimeMillis(),
+                System.currentTimeMillis(),
+                System.currentTimeMillis()
+            )
+        )
     }
 
     private suspend fun persistNetworkTree(

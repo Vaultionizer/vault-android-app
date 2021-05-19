@@ -116,8 +116,8 @@ class MainActivityViewModel @Inject constructor(
     fun requestUpload(uri: Uri) {
         viewModelScope.launch {
             fileRepository.uploadFile(
+                uri,
                 _currentDirectory.value!!,
-                uri
             )
         }
     }

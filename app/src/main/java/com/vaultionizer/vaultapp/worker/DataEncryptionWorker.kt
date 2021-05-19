@@ -1,14 +1,17 @@
 package com.vaultionizer.vaultapp.worker
 
 import android.content.Context
+import android.net.Uri
+import androidx.core.net.toUri
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.vaultionizer.vaultapp.cryptography.CryptoUtils
-import com.vaultionizer.vaultapp.cryptography.Cryptography
 import com.vaultionizer.vaultapp.repository.FileRepository
 import com.vaultionizer.vaultapp.repository.SyncRequestRepository
 import com.vaultionizer.vaultapp.util.Constants
+import com.vaultionizer.vaultapp.util.buildVaultionizerFilePath
+import com.vaultionizer.vaultapp.util.writeFileToInternal
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers
@@ -30,12 +33,31 @@ class DataEncryptionWorker @AssistedInject constructor(
             }
 
             val request = syncRequestService.getRequest(requestId)
-            val file = fileRepository.getFile(request.localFileId) ?: return@withContext Result.failure()
+            if (request.cryptographicOperationDone) {
+                return@withContext Result.success()
+            }
+
+            val file =
+                fileRepository.getFile(request.localFileId) ?: return@withContext Result.failure()
+            val uri = Uri.parse(request.uri ?: return@withContext Result.failure())
+            val bytes = applicationContext.contentResolver.openInputStream(uri)?.readBytes()
+                ?: return@withContext Result.failure()
 
             try {
-                val encryptedBytes = CryptoUtils.encryptData(file.space.id, request.data!!)
-                request.data = encryptedBytes
+                val encryptedBytes = CryptoUtils.encryptData(
+                    file.space.id, bytes
+                )
+
+                writeFileToInternal(
+                    applicationContext,
+                    buildVaultionizerFilePath(file.localId),
+                    encryptedBytes
+                )
+
                 request.cryptographicOperationDone = true
+                request.uri =
+                    applicationContext.getFileStreamPath(buildVaultionizerFilePath(file.localId))
+                        .toUri().toString()
                 syncRequestService.updateRequest(request)
             } catch (e : RuntimeException) {
                 return@withContext Result.failure()

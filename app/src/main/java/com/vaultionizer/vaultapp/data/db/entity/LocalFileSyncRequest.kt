@@ -3,7 +3,6 @@ package com.vaultionizer.vaultapp.data.db.entity
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.vaultionizer.vaultapp.data.db.entity.LocalFileSyncRequest.Type
 
 @Entity
 data class LocalFileSyncRequest(
@@ -24,11 +23,10 @@ data class LocalFileSyncRequest(
     var remoteFileId: Long?,
 
     /**
-     * URI to the file in the local file system.
-     * Only present if [type] is [Type.UPLOAD] and [isVirtualFolder] is false.
+     * Only present if [type] is [LocalFileSyncRequest.Type.UPLOAD].
      */
-    @ColumnInfo(name = "data", typeAffinity = ColumnInfo.BLOB)
-    var data: ByteArray? = null,
+    @ColumnInfo(name = "uri")
+    var uri: String?
 ) {
 
     enum class Type(val id: Int) {
