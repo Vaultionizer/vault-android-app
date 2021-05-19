@@ -1,6 +1,7 @@
 package com.vaultionizer.vaultapp.worker
 
 import android.content.Context
+import android.net.Uri
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
@@ -38,6 +39,7 @@ class FileUploadWorker @AssistedInject constructor(
             val request = syncRequestService.getRequest(requestId)
             val file =
                 fileRepository.getFile(request.localFileId) ?: return@withContext Result.failure()
+            val uri = Uri.parse(request.uri ?: return@withContext Result.failure())
 
             if (request.remoteFileId == null) {
                 val fileRemoteId =
@@ -50,11 +52,13 @@ class FileUploadWorker @AssistedInject constructor(
                 fileRepository.updateFileRemoteId(file.localId, fileRemoteId)
             }
 
+            val bytes = applicationContext.contentResolver.openInputStream(uri)?.readBytes()
+                ?: return@withContext Result.failure()
             try {
                 fileExchangeService.uploadFile(
                     fileRepository.getFile(request.localFileId)?.space!!.id,
                     request.remoteFileId!!,
-                    request.data ?: ByteArray(0)
+                    bytes
                 )
             } catch (exception: Exception) {
                 return@withContext Result.failure()
@@ -63,8 +67,8 @@ class FileUploadWorker @AssistedInject constructor(
             // Write file to local file system
             writeFileToInternal(
                 applicationContext,
-                "${request.localFileId.toString()}.${Constants.VN_FILE_SUFFIX}",
-                request.data ?: ByteArray(0)
+                "${request.localFileId}.${Constants.VN_FILE_SUFFIX}",
+                bytes
             )
 
             val vnFile = fileRepository.getFile(request.localFileId)
