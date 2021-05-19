@@ -26,7 +26,7 @@ data class LocalFileSyncRequest(
      * Only present if [type] is [LocalFileSyncRequest.Type.UPLOAD].
      */
     @ColumnInfo(name = "url")
-    val uri: String?
+    var uri: String?
 ) {
 
     enum class Type(val id: Int) {

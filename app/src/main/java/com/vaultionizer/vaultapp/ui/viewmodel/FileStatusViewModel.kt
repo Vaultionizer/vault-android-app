@@ -49,6 +49,7 @@ class FileStatusViewModel @Inject constructor(
 
     fun onWorkerStatusChange(workInfoList: List<WorkInfo>) {
         viewModelScope.launch {
+            // WorkManager.getInstance(applicationContext).pruneWork()
             val newStatus = mutableListOf<FileWorkerStatusPair>()
             val fileMap = mutableMapOf<VNFile, MutableList<WorkInfo>>()
 
@@ -93,7 +94,6 @@ class FileStatusViewModel @Inject constructor(
             }
 
             fileStatus_.postValue(newStatus)
-            WorkManager.getInstance(applicationContext).pruneWork()
         }
     }
 
