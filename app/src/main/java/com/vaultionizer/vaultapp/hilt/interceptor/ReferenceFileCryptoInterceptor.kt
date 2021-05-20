@@ -27,7 +27,7 @@ class ReferenceFileCryptoInterceptor(
     }
 
     override fun intercept(chain: Interceptor.Chain): Response {
-        var request = chain.request()
+        val request = chain.request()
         val urlString = request.url.toString()
 
         when {
@@ -103,6 +103,7 @@ class ReferenceFileCryptoInterceptor(
             .build()
     }
 
+    @Suppress("SameParameterValue")
     private fun getUrlPartFromBack(string: String, index: Int): String {
         val splitted = string.split("/")
         return splitted[splitted.size - index]
