@@ -67,6 +67,17 @@ class AuthRepositoryImpl @Inject constructor(
     ): Flow<Resource<LoggedInUser>> {
         RestModule.host = "${Constants.DEFAULT_PROTOCOL}://$host"
 
+        val nextId = spaceRepository.peekNextSpaceId()
+        if (CryptoUtils.existsKey(nextId)) {
+            CryptoUtils.deleteKey(nextId)
+        }
+        CryptoUtils.generateKeyForSingleUserSpace(
+            nextId,
+            CryptoType.AES,
+            CryptoMode.GCM,
+            CryptoPadding.NoPadding
+        )
+
         return object : NetworkBoundResource<LoggedInUser, NetworkUserAuthPair>() {
             override fun shouldFetch(): Boolean = true
 
@@ -75,12 +86,6 @@ class AuthRepositoryImpl @Inject constructor(
             }
 
             override suspend fun saveToDb(networkResult: NetworkUserAuthPair) {
-                CryptoUtils.generateKeyForSingleUserSpace(
-                    spaceRepository.peekNextSpaceId(),
-                    CryptoType.AES,
-                    CryptoMode.GCM,
-                    CryptoPadding.NoPadding
-                )
                 updateLocalUser(username, host, networkResult)
             }
 
