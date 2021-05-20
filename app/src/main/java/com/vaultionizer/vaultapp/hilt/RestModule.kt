@@ -7,6 +7,8 @@ import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkElement
 import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkFile
 import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkFolder
 import com.vaultionizer.vaultapp.data.model.rest.result.ApiCallFactory
+import com.vaultionizer.vaultapp.hilt.interceptor.ReferenceFileCryptoInterceptor
+import com.vaultionizer.vaultapp.repository.SpaceRepository
 import com.vaultionizer.vaultapp.util.Constants
 import com.vaultionizer.vaultapp.util.external.RuntimeTypeAdapterFactory
 import dagger.Module
@@ -62,19 +64,21 @@ object RestModule {
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(authCache: AuthCache) = OkHttpClient.Builder()
-        .addInterceptor {
-            val request = it.request()
-            val xAuthHeader = JSONObject()
-                .put("sessionKey", authCache.loggedInUser?.sessionToken)
-                .put("userID", authCache.loggedInUser?.localUser?.remoteUserId)
+    fun provideOkHttpClient(authCache: AuthCache, spaceRepository: SpaceRepository) =
+        OkHttpClient.Builder()
+            .addInterceptor {
+                val request = it.request()
+                val xAuthHeader = JSONObject()
+                    .put("sessionKey", authCache.loggedInUser?.sessionToken)
+                    .put("userID", authCache.loggedInUser?.localUser?.remoteUserId)
 
-            return@addInterceptor it.proceed(
-                request.newBuilder()
-                    .url(injectHostUrl(request))
-                    .header("xAuth", xAuthHeader.toString()).build()
-            )
-        }
+                return@addInterceptor it.proceed(
+                    request.newBuilder()
+                        .url(injectHostUrl(request))
+                        .header("xAuth", xAuthHeader.toString()).build()
+                )
+            }
+            .addInterceptor(ReferenceFileCryptoInterceptor(spaceRepository))
         .addInterceptor(HttpLoggingInterceptor().apply {
             level = HttpLoggingInterceptor.Level.BODY
         }).connectTimeout(20000, TimeUnit.MILLISECONDS).build()
