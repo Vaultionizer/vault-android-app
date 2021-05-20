@@ -17,6 +17,7 @@ import com.vaultionizer.vaultapp.service.SpaceService
 import com.vaultionizer.vaultapp.util.AuthKeyGen
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
@@ -50,7 +51,9 @@ class SpaceRepositoryImpl @Inject constructor(
                 // TODO(jatsqi): Return cached list
                 val list = mutableListOf<VNSpace>()
                 for (space in apiResult) {
-                    list.add(persistNetworkSpace(space))
+                    runBlocking {
+                        list.add(persistNetworkSpace(space))
+                    }
                 }
                 return list
             }
@@ -135,7 +138,7 @@ class SpaceRepositoryImpl @Inject constructor(
         }
     }
 
-    private fun persistNetworkSpace(
+    private suspend fun persistNetworkSpace(
         remoteSpaceId: Long,
         isPrivate: Boolean,
         name: String?,
@@ -170,7 +173,7 @@ class SpaceRepositoryImpl @Inject constructor(
         )
     }
 
-    private fun persistNetworkSpace(networkSpace: NetworkSpace): VNSpace =
+    private suspend fun persistNetworkSpace(networkSpace: NetworkSpace): VNSpace =
         persistNetworkSpace(networkSpace.spaceID, networkSpace.private, null, null)
 
     override suspend fun quitAllSpaces(): Boolean {

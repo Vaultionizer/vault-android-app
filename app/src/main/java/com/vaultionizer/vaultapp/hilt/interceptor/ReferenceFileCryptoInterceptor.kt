@@ -2,6 +2,7 @@ package com.vaultionizer.vaultapp.hilt.interceptor
 
 import android.util.Base64
 import com.vaultionizer.vaultapp.cryptography.CryptoUtils
+import com.vaultionizer.vaultapp.data.cache.AuthCache
 import com.vaultionizer.vaultapp.data.db.dao.LocalSpaceDao
 import kotlinx.coroutines.runBlocking
 import okhttp3.Interceptor
@@ -13,41 +14,48 @@ import okhttp3.ResponseBody.Companion.toResponseBody
 import okio.Buffer
 import org.json.JSONObject
 
-class ReferenceFileCryptoInterceptor(private val spaceDao: LocalSpaceDao) : Interceptor {
+class ReferenceFileCryptoInterceptor(
+    private val spaceDao: LocalSpaceDao,
+    private val authCache: AuthCache
+) : Interceptor {
 
     companion object {
-        const val REF_FILE_SUFFIX = "api/refFile/{remoteSpaceId}/read"
-        const val CREATE_USER_SUFFIX = "api/user/create"
+        val READ_REF_FILE_PATTERN = ".*/refFile/\\d+/read/".toRegex()
+        val UPDATE_REF_FILE_PATTERN = ".*/refFile/\\d+/update/".toRegex()
+        val CREATE_USER_PATTERN = ".*/api/user/create/".toRegex()
         val CONTENT_MEDIA_TYPE = "application/json; charset=utf-8".toMediaTypeOrNull()
     }
 
     override fun intercept(chain: Interceptor.Chain): Response {
         var request = chain.request()
         val urlString = request.url.toString()
-        var spaceId: Long
 
-        val bodyKey = when {
-            urlString.endsWith(REF_FILE_SUFFIX) -> {
-                spaceId = getUrlPartFromBack(urlString, 2).toLong()
-                "content"
+        when {
+            urlString.matches(READ_REF_FILE_PATTERN) -> {
+                val remoteSpaceId = getUrlPartFromBack(urlString, 3).toLong()
+                val spaceId = querySpaceId(remoteSpaceId) ?: return chain.proceed(request)
+
+                return handleResponse(chain.proceed(request), spaceId)
+            }
+            urlString.matches(UPDATE_REF_FILE_PATTERN) -> {
+                val remoteSpaceId = getUrlPartFromBack(urlString, 3).toLong()
+                val spaceId = querySpaceId(remoteSpaceId) ?: return chain.proceed(request)
+
+                return chain.proceed(handleRequest(request, "content", spaceId))
             }
             // Can only occur during user creation
-            urlString.endsWith(CREATE_USER_SUFFIX) -> {
+            urlString.matches(CREATE_USER_PATTERN) -> {
+                var spaceId: Long
                 runBlocking {
                     spaceId = spaceDao.getNextSpaceId()
                 }
-                "refFile"
+
+                return chain.proceed(handleRequest(request, "refFile", spaceId))
             }
             else -> {
                 return chain.proceed(request)
             }
         }
-
-        val modifiedRequest = handleRequest(request, bodyKey, spaceId)
-        if (bodyKey == "refFile") {
-            return handleResponse(chain.proceed(modifiedRequest), spaceId)
-        }
-        return chain.proceed(modifiedRequest)
     }
 
     private fun handleRequest(request: Request, bodyKey: String, spaceId: Long): Request {
@@ -60,7 +68,7 @@ class ReferenceFileCryptoInterceptor(private val spaceDao: LocalSpaceDao) : Inte
             jsonBody.getString(bodyKey).toByteArray()
         )
         jsonBody.put(
-            bodyKey, Base64.encode(
+            bodyKey, Base64.encodeToString(
                 encryptedRefFile, Base64.NO_WRAP
             )
         )
@@ -81,14 +89,32 @@ class ReferenceFileCryptoInterceptor(private val spaceDao: LocalSpaceDao) : Inte
         }
 
         val encryptedRefFile = response.body?.bytes() ?: ByteArray(0)
-        val decryptedRefFile = CryptoUtils.decryptData(spaceId, encryptedRefFile)
+        val decryptedRefFile =
+            CryptoUtils.decryptData(spaceId, Base64.decode(encryptedRefFile, Base64.NO_WRAP))
 
-        return response.newBuilder().body(decryptedRefFile.toResponseBody(CONTENT_MEDIA_TYPE))
+
+        var decryptedRefFileValidJson =
+            String(decryptedRefFile, Charsets.UTF_8)
+        // Ugly hack to bypass missing crypto functionalities.
+        decryptedRefFileValidJson = decryptedRefFileValidJson.replace("\u0000", "")
+
+        return response.newBuilder()
+            .body(decryptedRefFileValidJson.toResponseBody(CONTENT_MEDIA_TYPE))
             .build()
     }
 
     private fun getUrlPartFromBack(string: String, index: Int): String {
         val splitted = string.split("/")
         return splitted[splitted.size - index]
+    }
+
+    private fun querySpaceId(remoteSpaceId: Long): Long? {
+        return runBlocking {
+            val user = authCache.loggedInUser ?: return@runBlocking null
+            val space = spaceDao.getSpaceByRemoteId(user.localUser.userId, remoteSpaceId)
+                ?: return@runBlocking null
+
+            return@runBlocking space.spaceId
+        }
     }
 }

@@ -59,6 +59,7 @@ object RestModule {
 
         return GsonBuilder()
             .registerTypeAdapterFactory(factory)
+            .setLenient()
             .create()
     }
 
@@ -78,7 +79,7 @@ object RestModule {
                         .header("xAuth", xAuthHeader.toString()).build()
                 )
             }
-            .addInterceptor(ReferenceFileCryptoInterceptor(spaceDao))
+            .addInterceptor(ReferenceFileCryptoInterceptor(spaceDao, authCache))
         .addInterceptor(HttpLoggingInterceptor().apply {
             level = HttpLoggingInterceptor.Level.BODY
         }).connectTimeout(20000, TimeUnit.MILLISECONDS).build()
