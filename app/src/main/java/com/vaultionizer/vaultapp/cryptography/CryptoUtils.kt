@@ -43,7 +43,7 @@ object CryptoUtils {
     }
 
     fun encryptData(spaceID: Long, bytes: ByteArray): ByteArray {
-        return Cryptography.encryptor(spaceID, bytes)
+        return Cryptography.encryptorNoPadder(spaceID, bytes)
     }
 
     fun decryptData(spaceID: Long, bytes: ByteArray): ByteArray {
