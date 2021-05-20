@@ -16,7 +16,7 @@ interface LocalSpaceDao {
     @Query("SELECT * FROM LocalSpace WHERE remote_space_id = :remoteSpaceId AND user_id = :userId")
     suspend fun getSpaceByRemoteId(userId: Long, remoteSpaceId: Long): LocalSpace?
 
-    @Query("SELECT MAX(rowid)+1 FROM LocalSpace")
+    @Query("SELECT COALESCE(MAX(rowid), 0)+1 FROM LocalSpace")
     suspend fun getNextSpaceId(): Long
 
     @Transaction
