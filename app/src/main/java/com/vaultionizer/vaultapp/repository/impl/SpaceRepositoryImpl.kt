@@ -82,6 +82,10 @@ class SpaceRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun peekNextSpaceId(): Long {
+        return localSpaceDao.getNextSpaceId()
+    }
+
     override suspend fun createSpace(
         name: String,
         isPrivate: Boolean,

@@ -16,6 +16,9 @@ interface LocalSpaceDao {
     @Query("SELECT * FROM LocalSpace WHERE remote_space_id = :remoteSpaceId AND user_id = :userId")
     fun getSpaceByRemoteId(userId: Long, remoteSpaceId: Long): LocalSpace?
 
+    @Query("SELECT MAX(rowid)+1 FROM LocalSpace")
+    suspend fun getNextSpaceId(): Long
+
     @Transaction
     @Query("SELECT * FROM LocalSpace")
     fun getSpacesWithFiles(): List<SpaceWithFiles>
@@ -35,7 +38,6 @@ interface LocalSpaceDao {
 
     @Query("DELETE FROM LocalSpace WHERE user_id = :userId")
     fun quitAllSpaces(userId: Long)
-
 
     @Query("SELECT remote_space_id FROM LocalSpace WHERE user_id = :userId")
     fun getAllSpacesWithUser(userId: Long): List<Long>

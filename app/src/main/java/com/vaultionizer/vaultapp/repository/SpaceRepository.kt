@@ -11,7 +11,14 @@ interface SpaceRepository {
 
     suspend fun getSpaceRemoteId(spaceId: Long): Long?
 
-    suspend fun createSpace(name: String, isPrivate: Boolean, writeAccess: Boolean, authKeyAccess: Boolean): Flow<Resource<VNSpace>>
+    suspend fun peekNextSpaceId(): Long
+
+    suspend fun createSpace(
+        name: String,
+        isPrivate: Boolean,
+        writeAccess: Boolean,
+        authKeyAccess: Boolean
+    ): Flow<Resource<VNSpace>>
 
     suspend fun deleteSpace(space: VNSpace): Flow<Resource<VNSpace>>
 

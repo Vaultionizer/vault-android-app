@@ -2,6 +2,10 @@ package com.vaultionizer.vaultapp.repository.impl
 
 import android.util.Log
 import com.google.gson.Gson
+import com.vaultionizer.vaultapp.cryptography.CryptoUtils
+import com.vaultionizer.vaultapp.cryptography.crypto.CryptoMode
+import com.vaultionizer.vaultapp.cryptography.crypto.CryptoPadding
+import com.vaultionizer.vaultapp.cryptography.crypto.CryptoType
 import com.vaultionizer.vaultapp.data.cache.AuthCache
 import com.vaultionizer.vaultapp.data.db.dao.LocalUserDao
 import com.vaultionizer.vaultapp.data.db.entity.LocalUser
@@ -71,6 +75,12 @@ class AuthRepositoryImpl @Inject constructor(
             }
 
             override suspend fun saveToDb(networkResult: NetworkUserAuthPair) {
+                CryptoUtils.generateKeyForSingleUserSpace(
+                    spaceRepository.peekNextSpaceId(),
+                    CryptoType.AES,
+                    CryptoMode.GCM,
+                    CryptoPadding.NoPadding
+                )
                 updateLocalUser(username, host, networkResult)
             }
 
