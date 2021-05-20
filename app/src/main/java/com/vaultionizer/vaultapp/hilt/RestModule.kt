@@ -3,12 +3,12 @@ package com.vaultionizer.vaultapp.hilt
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.vaultionizer.vaultapp.data.cache.AuthCache
+import com.vaultionizer.vaultapp.data.db.dao.LocalSpaceDao
 import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkElement
 import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkFile
 import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkFolder
 import com.vaultionizer.vaultapp.data.model.rest.result.ApiCallFactory
 import com.vaultionizer.vaultapp.hilt.interceptor.ReferenceFileCryptoInterceptor
-import com.vaultionizer.vaultapp.repository.SpaceRepository
 import com.vaultionizer.vaultapp.util.Constants
 import com.vaultionizer.vaultapp.util.external.RuntimeTypeAdapterFactory
 import dagger.Module
@@ -64,7 +64,7 @@ object RestModule {
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(authCache: AuthCache, spaceRepository: SpaceRepository) =
+    fun provideOkHttpClient(authCache: AuthCache, spaceDao: LocalSpaceDao) =
         OkHttpClient.Builder()
             .addInterceptor {
                 val request = it.request()
@@ -78,7 +78,7 @@ object RestModule {
                         .header("xAuth", xAuthHeader.toString()).build()
                 )
             }
-            .addInterceptor(ReferenceFileCryptoInterceptor(spaceRepository))
+            .addInterceptor(ReferenceFileCryptoInterceptor(spaceDao))
         .addInterceptor(HttpLoggingInterceptor().apply {
             level = HttpLoggingInterceptor.Level.BODY
         }).connectTimeout(20000, TimeUnit.MILLISECONDS).build()

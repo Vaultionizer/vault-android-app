@@ -2,7 +2,7 @@ package com.vaultionizer.vaultapp.hilt.interceptor
 
 import android.util.Base64
 import com.vaultionizer.vaultapp.cryptography.CryptoUtils
-import com.vaultionizer.vaultapp.repository.SpaceRepository
+import com.vaultionizer.vaultapp.data.db.dao.LocalSpaceDao
 import kotlinx.coroutines.runBlocking
 import okhttp3.Interceptor
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -13,7 +13,7 @@ import okhttp3.ResponseBody.Companion.toResponseBody
 import okio.Buffer
 import org.json.JSONObject
 
-class ReferenceFileCryptoInterceptor(private val spaceRepository: SpaceRepository) : Interceptor {
+class ReferenceFileCryptoInterceptor(private val spaceDao: LocalSpaceDao) : Interceptor {
 
     companion object {
         const val REF_FILE_SUFFIX = "api/refFile/{remoteSpaceId}/read"
@@ -34,7 +34,7 @@ class ReferenceFileCryptoInterceptor(private val spaceRepository: SpaceRepositor
             // Can only occur during user creation
             urlString.endsWith(CREATE_USER_SUFFIX) -> {
                 runBlocking {
-                    spaceId = spaceRepository.peekNextSpaceId()
+                    spaceId = spaceDao.getNextSpaceId()
                 }
                 "refFile"
             }
