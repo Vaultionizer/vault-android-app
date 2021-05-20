@@ -92,12 +92,8 @@ class ReferenceFileCryptoInterceptor(
         val decryptedRefFile =
             CryptoUtils.decryptData(spaceId, Base64.decode(encryptedRefFile, Base64.NO_WRAP))
 
-
         var decryptedRefFileValidJson =
             String(decryptedRefFile, Charsets.UTF_8)
-        // Ugly hack to bypass missing crypto functionalities.
-        decryptedRefFileValidJson = decryptedRefFileValidJson.replace("\u0000", "")
-
         return response.newBuilder()
             .body(decryptedRefFileValidJson.toResponseBody(CONTENT_MEDIA_TYPE))
             .build()
