@@ -131,13 +131,6 @@ object Cryptography {
 
     fun encryptor(spaceID: Long, bytes: ByteArray): ByteArray {
         if (existsKey(spaceID)){
-            return wrapper(encryptData(getKey(spaceID), padder(bytes)))
-        }
-        throw RuntimeException("Tried to encrypted with a nonexistent key")
-    }
-
-    fun encryptorNoPadder(spaceID: Long, bytes: ByteArray): ByteArray {
-        if (existsKey(spaceID)){
             return wrapper(encryptData(getKey(spaceID), bytes))
         }
         throw RuntimeException("Tried to encrypted with a nonexistent key")
@@ -186,14 +179,6 @@ object Cryptography {
             }
         }
         return true
-    }
-
-    fun padder(input: ByteArray): ByteArray {
-        if (input.size % 16 == 0) {
-            return input
-        }
-        val due = 16 - (input.size % 16)
-        return input + ByteArray(due) { 0 }
     }
 
     fun wrapper(pair: IvCipher): ByteArray {
