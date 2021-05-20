@@ -175,11 +175,11 @@ class FileRepositoryImpl @Inject constructor(
     }
 
     override suspend fun uploadFolder(
-        space: VNSpace,
         name: String,
         parent: VNFile
     ): VNFile? {
         return withContext(Dispatchers.IO) {
+            val space = parent.space
             if (!minimumIdCache.containsKey(space.id)) {
                 minimumIdCache[space.id] = -2
             } else {

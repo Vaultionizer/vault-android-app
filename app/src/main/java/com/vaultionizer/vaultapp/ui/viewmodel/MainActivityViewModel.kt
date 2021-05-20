@@ -137,7 +137,7 @@ class MainActivityViewModel @Inject constructor(
     fun requestFolder(name: String) {
         if (_selectedSpace.value != null && _currentDirectory.value != null) {
             viewModelScope.launch {
-                fileRepository.uploadFolder(_selectedSpace.value!!, name, _currentDirectory.value!!)
+                fileRepository.uploadFolder(name, _currentDirectory.value!!)
                 updateCurrentFiles()
             }
         }
