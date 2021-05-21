@@ -176,17 +176,9 @@ class FileFragment : Fragment(), View.OnClickListener {
 
         decryptionCache.decryptionResultsLiveData.observe(viewLifecycleOwner) {
             for (result in it) {
-                val action = if (result.file.name.endsWith(".jpg")) {
-                    FileFragmentDirections.actionFileFragmentToImageFileViewerFragment(
-                        FileViewerArgs(result.file.localId)
-                    )
-                } else {
-                    FileFragmentDirections.actionFileFragmentToTextFileViewerFragment(
-                        FileViewerArgs(result.file.localId)
-                    )
+                if (!tryNavigateToDefaultViewer(result.file)) {
+                    // TODO(jatsqi): Implement content provider call.
                 }
-
-                findNavController().navigate(action)
             }
         }
 
@@ -252,6 +244,27 @@ class FileFragment : Fragment(), View.OnClickListener {
             R.id.fab_option_upload_folder -> onClickFolderUpload(v)
             R.id.fab_option_create_pc -> onClickCreatePC(v)
         }
+    }
+
+    private fun tryNavigateToDefaultViewer(file: VNFile): Boolean {
+        val action = when {
+            file.isImage -> {
+                FileFragmentDirections.actionFileFragmentToImageFileViewerFragment(
+                    FileViewerArgs(file.localId)
+                )
+            }
+            file.extension?.toLowerCase() == "txt" -> {
+                FileFragmentDirections.actionFileFragmentToTextFileViewerFragment(
+                    FileViewerArgs(file.localId)
+                )
+            }
+            else -> {
+                return false
+            }
+        }
+
+        findNavController().navigate(action)
+        return true
     }
 
     private fun onClickFolderUpload(view: View) {
