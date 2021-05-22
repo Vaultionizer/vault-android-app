@@ -116,6 +116,13 @@ enum class FileAlertDialogType(
         R.string.really_copy_auth_key_body,
         R.string.really_copy_auth_key_positive,
         R.string.really_copy_auth_key_negative
+    ),
+
+    UPLOAD_OR_REPLACE(
+        R.string.file_viewer_replace_or_upload_dialog_title,
+        R.string.file_viewer_replace_or_upload_dialog_message,
+        R.string.file_viewer_replace_or_upload_dialog_positive,
+        R.string.file_viewer_replace_or_upload_dialog_negative
     );
 
     fun createDialog(
