@@ -290,24 +290,37 @@ class FileFragment : Fragment(), View.OnClickListener {
         findNavController().navigate(action)
     }
 
-    private fun getActionOptions(): List<Option> {
-        return listOf(
+    private fun getActionOptions(file: VNFile): List<Option> {
+        val items = mutableListOf(
             Option().apply {
                 id = FileBottomSheetOption.DELETE.id
                 iconId = R.drawable.ic_baseline_delete_24
-                title = "Delete"
+                title = getString(R.string.file_viewer_file_options_delete_permanently)
             }
         )
+
+        if (file.isDownloaded(requireContext())) {
+            items.add(Option().apply {
+                id = FileBottomSheetOption.DELETE_LOCALLY.id
+                iconId = R.drawable.ic_baseline_delete_24
+                title = getString(R.string.file_viewer_file_options_delete_locally)
+
+            })
+        }
+
+        return items
     }
 
     private fun showBottomSheetForFile(file: VNFile) {
         bottomSheet = showActionPickerBottomSheet(
-            options = getActionOptions(),
+            options = getActionOptions(file),
             onItemSelectedListener = OnItemSelectedListener {
                 if (it.id == FileBottomSheetOption.DELETE.id) {
                     showDialog(FileAlertDialogType.DELETE_FILE, positiveClick = { _ ->
-                        viewModel.requestDeletion(file)
+                        viewModel.requestPermanentDeletion(file)
                     })
+                } else if (it.id == FileBottomSheetOption.DELETE_LOCALLY.id) {
+                    viewModel.requestLocalDeletion(file)
                 }
                 bottomSheet?.dismiss()
             }

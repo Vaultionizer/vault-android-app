@@ -16,6 +16,8 @@ fun writeFileToInternal(context: Context, path: String, data: ByteArray) {
 fun readFileFromInternal(context: Context, path: String): ByteArray =
     context.openFileInput(path).readBytes()
 
+fun deleteFileFromInternal(context: Context, path: String) = context.deleteFile(path)
+
 fun buildVaultionizerFilePath(fileId: Long) = "$fileId.${Constants.VN_FILE_SUFFIX}"
 
 /**

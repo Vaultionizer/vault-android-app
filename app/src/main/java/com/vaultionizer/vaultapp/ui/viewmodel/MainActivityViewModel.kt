@@ -19,6 +19,8 @@ import com.vaultionizer.vaultapp.data.model.rest.result.Resource
 import com.vaultionizer.vaultapp.repository.FileRepository
 import com.vaultionizer.vaultapp.repository.SpaceRepository
 import com.vaultionizer.vaultapp.ui.main.file.FileEvent
+import com.vaultionizer.vaultapp.util.buildVaultionizerFilePath
+import com.vaultionizer.vaultapp.util.deleteFileFromInternal
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.collect
@@ -143,9 +145,17 @@ class MainActivityViewModel @Inject constructor(
         }
     }
 
-    fun requestDeletion(file: VNFile) {
+    fun requestPermanentDeletion(file: VNFile) {
         viewModelScope.launch {
             fileRepository.deleteFile(file)
+            updateCurrentFiles()
+        }
+    }
+
+    fun requestLocalDeletion(file: VNFile) {
+        viewModelScope.launch {
+            file.state = VNFile.State.AVAILABLE_REMOTE
+            deleteFileFromInternal(context, buildVaultionizerFilePath(file.localId))
             updateCurrentFiles()
         }
     }
