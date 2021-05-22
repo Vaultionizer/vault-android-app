@@ -1,7 +1,6 @@
 package com.vaultionizer.vaultapp.ui.auth.welcome
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,7 +9,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import com.vaultionizer.vaultapp.R
-import com.vaultionizer.vaultapp.ui.auth.AuthenticationActivity
 
 class WelcomeFragment : Fragment() {
 
@@ -33,7 +31,7 @@ class WelcomeFragment : Fragment() {
         }
     }
 
-    private fun navigateToLogin(){
+    private fun navigateToLogin() {
         val action = WelcomeFragmentDirections.actionWelcomeFragmentToLoginFragment()
         findNavController().navigate(action)
     }

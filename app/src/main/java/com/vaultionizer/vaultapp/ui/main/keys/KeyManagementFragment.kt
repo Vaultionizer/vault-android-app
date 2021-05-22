@@ -11,7 +11,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.vaultionizer.vaultapp.R
 import com.vaultionizer.vaultapp.cryptography.CryptoUtils
-import com.vaultionizer.vaultapp.cryptography.Cryptography
 import com.vaultionizer.vaultapp.ui.viewmodel.MainActivityViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -19,9 +18,6 @@ import dagger.hilt.android.AndroidEntryPoint
 class KeyManagementFragment : Fragment() {
 
     private val viewModel: MainActivityViewModel by activityViewModels()
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,

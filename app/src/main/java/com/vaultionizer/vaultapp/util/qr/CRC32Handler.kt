@@ -11,7 +11,7 @@ object CRC32Handler {
         return content.subSequence(0, index).toString()
     }
 
-    fun checkValid(content: String): Boolean{
+    fun checkValid(content: String): Boolean {
         val crc32 = CRC32()
         val index = content.lastIndexOf('@')
         if (index == -1) return false

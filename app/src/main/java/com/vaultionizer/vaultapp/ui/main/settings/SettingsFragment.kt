@@ -2,7 +2,6 @@ package com.vaultionizer.vaultapp.ui.main.settings
 
 import android.app.ProgressDialog
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.fragment.app.viewModels
@@ -66,7 +65,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
     }
 
     private fun actionStatusChanged(status: SettingsAction) {
-        if (!status.done){
+        if (!status.done) {
             progressDialog = ProgressDialog.show(
                 context, "",
                 "Loading. Please wait...", true
@@ -119,7 +118,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
         // TODO: show toast (does not work yet)
     }
 
-    private fun navigateLogin(){
+    private fun navigateLogin() {
         // TODO(keksklauer4): Navigate to LoginFragment
         findNavController().navigate(SettingsFragmentDirections.actionSettingsFragmentToAuthenticationActivity())
     }

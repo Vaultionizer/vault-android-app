@@ -130,14 +130,14 @@ object Cryptography {
     }
 
     fun encryptor(spaceID: Long, bytes: ByteArray): ByteArray {
-        if (existsKey(spaceID)){
+        if (existsKey(spaceID)) {
             return wrapper(encryptData(getKey(spaceID), padder(bytes)))
         }
         throw RuntimeException("Tried to encrypted with a nonexistent key")
     }
 
     fun encryptorNoPadder(spaceID: Long, bytes: ByteArray): ByteArray {
-        if (existsKey(spaceID)){
+        if (existsKey(spaceID)) {
             return wrapper(encryptData(getKey(spaceID), bytes))
         }
         throw RuntimeException("Tried to encrypted with a nonexistent key")

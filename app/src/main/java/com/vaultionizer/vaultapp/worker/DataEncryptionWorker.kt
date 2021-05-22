@@ -52,7 +52,7 @@ class DataEncryptionWorker @AssistedInject constructor(
                 request.cryptographicOperationDone = true
                 request.uri = applicationContext.getAbsoluteFilePath(file.localId).toString()
                 syncRequestService.updateRequest(request)
-            } catch (e : RuntimeException) {
+            } catch (e: RuntimeException) {
                 return@withContext Result.failure()
             }
 
