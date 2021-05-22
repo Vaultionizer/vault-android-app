@@ -220,8 +220,8 @@ class FileRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getFile(fileId: Long): VNFile? {
-        fileCaches.values.forEach {
-            val file = it.getFileByStrategy(fileId, FileCache.IdCachingStrategy.LOCAL_ID)
+        for (cache in fileCaches.values) {
+            val file = cache.getFileByStrategy(fileId, FileCache.IdCachingStrategy.LOCAL_ID)
             if (file != null) {
                 return file
             }
@@ -395,21 +395,21 @@ class FileRepositoryImpl @Inject constructor(
         parentId: Long,
         affectedLocalFiles: MutableSet<Long>
     ) {
-        elements?.forEach {
-            val file = localFileDao.getFileByRemoteId(space.id, it.id)
+        for (element in elements ?: emptyList()) {
+            val file = localFileDao.getFileByRemoteId(space.id, element.id)
             if (file != null) {
                 file.parentFileId = parentId
                 affectedLocalFiles.add(file.fileId)
-                if (it is NetworkFolder) {
+                if (element is NetworkFolder) {
                     persistNetworkTree(
-                        it.content ?: listOf(),
+                        element.content ?: listOf(),
                         space,
                         file.fileId,
                         affectedLocalFiles
                     )
                 }
             } else {
-                val type = if (it is NetworkFolder) {
+                val type = if (element is NetworkFolder) {
                     LocalFile.Type.FOLDER
                 } else {
                     LocalFile.Type.FILE
@@ -418,9 +418,9 @@ class FileRepositoryImpl @Inject constructor(
                 val localFile = LocalFile(
                     0,
                     space.id,
-                    it.id,
+                    element.id,
                     parentId,
-                    it.name,
+                    element.name,
                     type,
                     // TODO(jatsqi): Set correct timestamps
                     System.currentTimeMillis(),
@@ -448,36 +448,37 @@ class FileRepositoryImpl @Inject constructor(
             flatChildrenTree[-1]
         )
 
-        elements.sortedBy {
+        val sortedElements = elements.sortedBy {
             it.parentFileId
-        }.forEach {
-            val parentId = it.parentFileId
+        }
+        for (element in sortedElements) {
+            val parentId = element.parentFileId
             val children: MutableList<VNFile>? =
-                if (it.type == LocalFile.Type.FOLDER) {
-                    flatChildrenTree[it.fileId] ?: mutableListOf()
+                if (element.type == LocalFile.Type.FOLDER) {
+                    flatChildrenTree[element.fileId] ?: mutableListOf()
                 } else {
                     null
                 }
             val childrenOfParent = flatChildrenTree[parentId] ?: mutableListOf()
 
-            if (it.remoteFileId != null
+            if (element.remoteFileId != null
                 && minimumIdCache.containsKey(space.id)
-                && minimumIdCache[space.id]!! > it.remoteFileId
+                && minimumIdCache[space.id]!! > element.remoteFileId
             ) {
-                minimumIdCache[space.id] = it.remoteFileId
+                minimumIdCache[space.id] = element.remoteFileId
             }
 
             val vnFile = VNFile(
-                it.name,
+                element.name,
                 space,
                 files[parentId],
-                it.fileId,
-                it.remoteFileId,
+                element.fileId,
+                element.remoteFileId,
                 children
             ).apply {
-                createdAt = it.createdAt
-                lastUpdated = it.lastUpdated
-                lastSyncTimestamp = it.lastSyncTimestamp
+                createdAt = element.createdAt
+                lastUpdated = element.lastUpdated
+                lastSyncTimestamp = element.lastSyncTimestamp
             }
 
             fileCaches[space.id]?.addFile(vnFile)
@@ -486,10 +487,10 @@ class FileRepositoryImpl @Inject constructor(
             }
 
             if (children != null) {
-                flatChildrenTree[it.fileId] = children
+                flatChildrenTree[element.fileId] = children
             }
             childrenOfParent.add(vnFile)
-            files[it.fileId] = vnFile
+            files[element.fileId] = vnFile
             flatChildrenTree[parentId] = childrenOfParent
         }
 
