@@ -297,7 +297,7 @@ class FileRepositoryImpl @Inject constructor(
             // Construct domain model of file.
             val vnFile: VNFile = when (filePushMode) {
                 is FilePushMode.Upload -> {
-                    val file = createUnsynchronizedLocalFile(
+                    val file = createUnsynchronizedFile(
                         resolveFileNameConflicts(
                             filePushMode.affectedFile,
                             name
@@ -371,7 +371,7 @@ class FileRepositoryImpl @Inject constructor(
         }
     }
 
-    private suspend fun createUnsynchronizedLocalFile(name: String, parent: VNFile): VNFile {
+    private suspend fun createUnsynchronizedFile(name: String, parent: VNFile): VNFile {
         val localFile = LocalFile(
             0,
             parent.space.id,
