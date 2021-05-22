@@ -176,23 +176,27 @@ class FileFragment : Fragment(), View.OnClickListener {
 
         decryptionCache.decryptionResultsLiveData.observe(viewLifecycleOwner) {
             for (result in it) {
-                val action = if (result.file.name.endsWith(".jpg")) {
-                    FileFragmentDirections.actionFileFragmentToImageFileViewerFragment(
-                        FileViewerArgs(result.file.localId)
-                    )
-                } else {
-                    FileFragmentDirections.actionFileFragmentToTextFileViewerFragment(
-                        FileViewerArgs(result.file.localId)
-                    )
+                if (!tryNavigateToDefaultViewer(result.file)) {
+                    // TODO(jatsqi): Implement content provider call.
                 }
-
-                findNavController().navigate(action)
             }
         }
 
         val offlineHint = view.findViewById<IconicsTextView>(R.id.offline_indicator)
         viewModel.networkStatus.observe(viewLifecycleOwner) {
             offlineHint.visibility = boolToVisibility(!it, View.GONE)
+        }
+
+        viewModel.fileEvent.observe(viewLifecycleOwner) {
+            if (it is FileEvent.UploadFileNameConflict) {
+                showDialog(FileAlertDialogType.UPLOAD_OR_REPLACE,
+                    positiveClick = { _ ->
+                        viewModel.requestUpload(it.fsSource, true)
+                    },
+                    negativeClick = { _ ->
+                        viewModel.requestUpdate(it.file, it.fsSource)
+                    })
+            }
         }
     }
 
@@ -254,6 +258,27 @@ class FileFragment : Fragment(), View.OnClickListener {
         }
     }
 
+    private fun tryNavigateToDefaultViewer(file: VNFile): Boolean {
+        val action = when {
+            file.isImage -> {
+                FileFragmentDirections.actionFileFragmentToImageFileViewerFragment(
+                    FileViewerArgs(file.localId)
+                )
+            }
+            file.extension?.toLowerCase() == "txt" -> {
+                FileFragmentDirections.actionFileFragmentToTextFileViewerFragment(
+                    FileViewerArgs(file.localId)
+                )
+            }
+            else -> {
+                return false
+            }
+        }
+
+        findNavController().navigate(action)
+        return true
+    }
+
     private fun onClickFolderUpload(view: View) {
         val dialog = MaterialDialog(requireContext()).show {
             input { dialog, text ->
@@ -277,24 +302,37 @@ class FileFragment : Fragment(), View.OnClickListener {
         findNavController().navigate(action)
     }
 
-    private fun getActionOptions(): List<Option> {
-        return listOf(
+    private fun getActionOptions(file: VNFile): List<Option> {
+        val items = mutableListOf(
             Option().apply {
                 id = FileBottomSheetOption.DELETE.id
                 iconId = R.drawable.ic_baseline_delete_24
-                title = "Delete"
+                title = getString(R.string.file_viewer_file_options_delete_permanently)
             }
         )
+
+        if (file.isDownloaded(requireContext())) {
+            items.add(Option().apply {
+                id = FileBottomSheetOption.DELETE_LOCALLY.id
+                iconId = R.drawable.ic_baseline_delete_24
+                title = getString(R.string.file_viewer_file_options_delete_locally)
+
+            })
+        }
+
+        return items
     }
 
     private fun showBottomSheetForFile(file: VNFile) {
         bottomSheet = showActionPickerBottomSheet(
-            options = getActionOptions(),
+            options = getActionOptions(file),
             onItemSelectedListener = OnItemSelectedListener {
                 if (it.id == FileBottomSheetOption.DELETE.id) {
                     showDialog(FileAlertDialogType.DELETE_FILE, positiveClick = { _ ->
-                        viewModel.requestDeletion(file)
+                        viewModel.requestPermanentDeletion(file)
                     })
+                } else if (it.id == FileBottomSheetOption.DELETE_LOCALLY.id) {
+                    viewModel.requestLocalDeletion(file)
                 }
                 bottomSheet?.dismiss()
             }

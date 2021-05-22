@@ -19,6 +19,10 @@ interface FileRepository {
 
     suspend fun uploadFolder(space: VNSpace, name: String, parent: VNFile): VNFile?
 
+    suspend fun updateFile(file: VNFile, uri: Uri): Boolean
+
+    suspend fun updateFile(file: VNFile, data: ByteArray): Boolean
+
     suspend fun downloadFile(file: VNFile)
 
     suspend fun decryptFile(file: VNFile)

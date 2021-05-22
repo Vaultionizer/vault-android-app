@@ -19,6 +19,9 @@ import com.vaultionizer.vaultapp.data.model.rest.result.Resource
 import com.vaultionizer.vaultapp.repository.FileRepository
 import com.vaultionizer.vaultapp.repository.SpaceRepository
 import com.vaultionizer.vaultapp.ui.main.file.FileEvent
+import com.vaultionizer.vaultapp.util.buildVaultionizerFilePath
+import com.vaultionizer.vaultapp.util.deleteFileFromInternal
+import com.vaultionizer.vaultapp.util.getFileName
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.collect
@@ -113,12 +116,41 @@ class MainActivityViewModel @Inject constructor(
         }
     }
 
-    fun requestUpload(uri: Uri) {
+    fun requestUpload(uri: Uri, forceUpload: Boolean = false) {
         viewModelScope.launch {
-            fileRepository.uploadFile(
-                uri,
-                _currentDirectory.value!!,
-            )
+            currentDirectory.value?.let {
+                if (forceUpload) {
+                    fileRepository.uploadFile(
+                        uri,
+                        _currentDirectory.value!!,
+                    )
+
+                    _fileEvent.postValue(null)
+                    return@launch
+                }
+
+                val folder = currentDirectory.value!!
+                val name = context.contentResolver.getFileName(uri)
+
+                folder.content?.forEach {
+                    if (it.name.equals(name)) {
+                        _fileEvent.postValue(
+                            FileEvent.UploadFileNameConflict(
+                                it,
+                                uri
+                            )
+                        )
+                        return@launch
+                    }
+                }
+            }
+        }
+    }
+
+    fun requestUpdate(file: VNFile, uri: Uri) {
+        viewModelScope.launch {
+            fileRepository.updateFile(file, uri)
+            _fileEvent.postValue(null)
         }
     }
 
@@ -143,9 +175,17 @@ class MainActivityViewModel @Inject constructor(
         }
     }
 
-    fun requestDeletion(file: VNFile) {
+    fun requestPermanentDeletion(file: VNFile) {
         viewModelScope.launch {
             fileRepository.deleteFile(file)
+            updateCurrentFiles()
+        }
+    }
+
+    fun requestLocalDeletion(file: VNFile) {
+        viewModelScope.launch {
+            file.state = VNFile.State.AVAILABLE_REMOTE
+            deleteFileFromInternal(context, buildVaultionizerFilePath(file.localId))
             updateCurrentFiles()
         }
     }

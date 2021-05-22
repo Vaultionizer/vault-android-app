@@ -45,6 +45,16 @@ class FileRepositoryImpl @Inject constructor(
     val syncRequestService: SyncRequestRepository,
 ) : FileRepository {
 
+    private sealed class FilePushMode(val affectedFile: VNFile) {
+        data class Upload(val parent: VNFile) : FilePushMode(parent)
+        data class Update(val file: VNFile) : FilePushMode(file)
+    }
+
+    private sealed class FilePushDataSource {
+        data class InMemory(val data: ByteArray, val fileName: String) : FilePushDataSource()
+        data class LocalFileSystem(val uri: Uri) : FilePushDataSource()
+    }
+
     /**
      * Simple in memory cache for files.
      */
@@ -117,62 +127,14 @@ class FileRepositoryImpl @Inject constructor(
     override suspend fun uploadFile(
         uri: Uri,
         parent: VNFile,
-    ): VNFile? {
-        return withContext(Dispatchers.IO) {
-            if (!parent.space.isKeyAvailable) {
-                return@withContext null
-            }
+    ): VNFile? = pushFile(FilePushMode.Upload(parent), FilePushDataSource.LocalFileSystem(uri))
 
-            val name = resolveFileNameConflicts(
-                parent,
-                applicationContext.contentResolver.getFileName(uri) ?: "Unknown Name"
-            )
-
-            // Create file in DB
-            val fileLocalId = createUnsynchronizedLocalFile(name, parent)
-            return@withContext uploadFile(
-                uri,
-                applicationContext.contentResolver.getFileName(uri) ?: "Unknown",
-                parent,
-                fileLocalId,
-                false
-            )
-        }
-    }
-
-    override suspend fun uploadFile(data: ByteArray, name: String, parent: VNFile): VNFile? {
-        return withContext(Dispatchers.IO) {
-            if (!parent.space.isKeyAvailable) {
-                return@withContext null
-            }
-
-            val name = resolveFileNameConflicts(parent, name)
-            var encryptedBytes: ByteArray?
-
-            try {
-                encryptedBytes = CryptoUtils.encryptData(parent.space.id, data)
-            } catch (ex: Exception) {
-                return@withContext null
-            }
-
-            // Create file in DB
-            val localFileId = createUnsynchronizedLocalFile(name, parent)
-            writeFileToInternal(
-                applicationContext,
-                buildVaultionizerFilePath(localFileId),
-                encryptedBytes
-            )
-
-            return@withContext uploadFile(
-                applicationContext.getFileStreamPath(buildVaultionizerFilePath(localFileId))
-                    .toUri(),
-                name,
-                parent,
-                localFileId,
-                true
-            )
-        }
-    }
+    override suspend fun uploadFile(data: ByteArray, name: String, parent: VNFile): VNFile? =
+        pushFile(
+            FilePushMode.Upload(
+                parent
+            ), FilePushDataSource.InMemory(data, name)
+        )
 
     override suspend fun uploadFolder(
         space: VNSpace,
@@ -219,6 +181,14 @@ class FileRepositoryImpl @Inject constructor(
             return@withContext folder
         }
     }
+
+    override suspend fun updateFile(file: VNFile, uri: Uri): Boolean = pushFile(
+        FilePushMode.Update(file), FilePushDataSource.LocalFileSystem(uri)
+    ) != null
+
+    override suspend fun updateFile(file: VNFile, data: ByteArray) = pushFile(
+        FilePushMode.Update(file), FilePushDataSource.InMemory(data, file.name)
+    ) != null
 
     override suspend fun downloadFile(file: VNFile) {
         withContext(Dispatchers.IO) {
@@ -304,80 +274,122 @@ class FileRepositoryImpl @Inject constructor(
         }
     }
 
-    private suspend fun uploadFile(
-        uri: Uri,
-        name: String,
-        parent: VNFile,
-        localFileId: Long,
-        isAlreadyEncrypted: Boolean
+    override suspend fun clearLocalFiles(userId: Long) {
+        localFileDao.deleteAllFilesOfUser(userId)
+    }
+
+    private suspend fun pushFile(
+        filePushMode: FilePushMode,
+        filePushDataSource: FilePushDataSource
     ): VNFile? {
         return withContext(Dispatchers.IO) {
-            @Suppress("NAME_SHADOWING") val name = resolveFileNameConflicts(parent, name)
-
-            // Add temporary file to parent
-            val vnFile = VNFile(
-                name,
-                parent.space,
-                parent,
-                localFileId
-            )
-            vnFile.state = VNFile.State.UPLOADING
-
-            fileCaches[parent.space.id]?.addFile(vnFile)
-            parent.content?.add(vnFile)
-
-            // Create upload request
-            val uploadRequest =
-                syncRequestService.createUploadRequest(
-                    vnFile,
-                    uri
-                )
-            if (isAlreadyEncrypted) {
-                uploadRequest.cryptographicOperationDone = true
-                syncRequestService.updateRequest(uploadRequest)
+            if (!filePushMode.affectedFile.space.isKeyAvailable) {
+                return@withContext null
             }
 
-            val uploadWorkData = workDataOf(
-                Constants.WORKER_SYNC_REQUEST_ID to uploadRequest.requestId,
-            )
-            val uploadWorker =
-                prepareFileWorkerBuilder<FileUploadWorker>(vnFile, uploadWorkData)
-                    .addTag(Constants.WORKER_TAG_FILE)
-                    .build()
+            // Determine final file name.
+            val name: String = when (filePushDataSource) {
+                is FilePushDataSource.LocalFileSystem -> {
+                    applicationContext.contentResolver.getFileName(filePushDataSource.uri)
+                        ?: "Unknown"
+                }
+                is FilePushDataSource.InMemory -> {
+                    filePushDataSource.fileName
+                }
+            }
 
-            val encryptionWorkData = workDataOf(
-                Constants.WORKER_SYNC_REQUEST_ID to uploadRequest.requestId,
-            )
-            val encryptionWorker =
-                prepareFileWorkerBuilder<DataEncryptionWorker>(vnFile, encryptionWorkData)
-                    .addTag(Constants.WORKER_TAG_FILE)
-                    .addTag(Constants.WORKER_TAG_ENCRYPTION)
-                    .build()
+            // Construct domain model of file.
+            val vnFile: VNFile = when (filePushMode) {
+                is FilePushMode.Upload -> {
+                    val file = createUnsynchronizedLocalFile(
+                        resolveFileNameConflicts(
+                            filePushMode.affectedFile,
+                            name
+                        ),
+                        filePushMode.affectedFile
+                    )
+
+                    fileCaches[filePushMode.parent.space.id]?.addFile(file)
+                    filePushMode.parent.content!!.add(file)
+                    file
+                }
+
+                is FilePushMode.Update -> {
+                    val file = filePushMode.file
+                    file.lastUpdated = System.currentTimeMillis()
+                    file
+                }
+            }
+
+            // Get URI of file and encrypt if necessary.
+            val uri: Uri = when (filePushDataSource) {
+                is FilePushDataSource.InMemory -> {
+                    try {
+                        val encryptedData =
+                            tryEncryptData(filePushMode.affectedFile.space, filePushDataSource.data)
+                                ?: return@withContext null
+                        writeFileToInternal(
+                            applicationContext,
+                            buildVaultionizerFilePath(vnFile.localId),
+                            encryptedData
+                        )
+                    } catch (ex: Exception) {
+                        return@withContext null
+                    }
+
+                    applicationContext.getFileStreamPath(buildVaultionizerFilePath(vnFile.localId))
+                        .toUri()
+                }
+
+                is FilePushDataSource.LocalFileSystem -> {
+                    filePushDataSource.uri
+                }
+            }
+
+            val syncRequest = syncRequestService.createUploadRequest(vnFile, uri)
+            if (filePushDataSource is FilePushDataSource.InMemory) {
+                syncRequest.cryptographicOperationDone = true
+                syncRequestService.updateRequest(syncRequest)
+            }
 
             enqueueUniqueFileWork(
-                vnFile,
-                encryptionWorker,
-                uploadWorker,
+                vnFile, buildEncryptionWorker(vnFile, syncRequest.requestId),
+                buildUploadWorker(vnFile, syncRequest.requestId),
                 buildReferenceFileWorker(vnFile)
             )
-
             return@withContext vnFile
         }
     }
 
-    private suspend fun createUnsynchronizedLocalFile(name: String, parent: VNFile): Long {
-        return localFileDao.createFile(
-            LocalFile(
-                0,
-                parent.space.id,
-                null,
-                parent.localId,
-                name,
-                LocalFile.Type.FILE,
-                System.currentTimeMillis(),
-                System.currentTimeMillis(),
-                System.currentTimeMillis()
-            )
+    private suspend fun tryEncryptData(space: VNSpace, data: ByteArray): ByteArray? {
+        return withContext(Dispatchers.IO) {
+            var encryptedBytes: ByteArray?
+
+            try {
+                encryptedBytes = CryptoUtils.encryptData(space.id, data)
+            } catch (ex: Exception) {
+                return@withContext null
+            }
+
+            return@withContext encryptedBytes
+        }
+    }
+
+    private suspend fun createUnsynchronizedLocalFile(name: String, parent: VNFile): VNFile {
+        val localFile = LocalFile(
+            0,
+            parent.space.id,
+            null,
+            parent.localId,
+            name,
+            LocalFile.Type.FILE,
+            System.currentTimeMillis(),
+            System.currentTimeMillis(),
+            System.currentTimeMillis()
+        )
+        val localFileId = localFileDao.createFile(localFile)
+        return VNFile(
+            name, parent.space, parent, localFileId, null, null
         )
     }
 
@@ -506,6 +518,15 @@ class FileRepositoryImpl @Inject constructor(
 
     private fun buildDuplicateFileName(name: String, index: Int) = "($index) $name"
 
+    private fun buildEncryptionWorker(file: VNFile, syncRequestId: Long) =
+        prepareFileWorkerBuilder<DataEncryptionWorker>(file, buildSyncWorkData(syncRequestId))
+            .addTag(Constants.WORKER_TAG_ENCRYPTION)
+            .build()
+
+    private fun buildUploadWorker(file: VNFile, syncRequestId: Long) =
+        prepareFileWorkerBuilder<FileUploadWorker>(file, buildSyncWorkData(syncRequestId))
+            .build()
+
     private fun buildReferenceFileWorker(file: VNFile) =
         prepareFileWorkerBuilder<ReferenceFileSyncWorker>(
             file,
@@ -537,9 +558,10 @@ class FileRepositoryImpl @Inject constructor(
     ): OneTimeWorkRequest.Builder = OneTimeWorkRequestBuilder<W>()
         .setInputData(inputData)
         .setConstraints(buildDefaultNetworkConstraints())
+        .addTag(Constants.WORKER_TAG_FILE)
         .addTag(String.format(Constants.WORKER_TAG_FILE_ID_TEMPLATE, file.localId))
 
-    override suspend fun clearLocalFiles(userId: Long) {
-        localFileDao.deleteAllFilesOfUser(userId)
-    }
+    private fun buildSyncWorkData(syncRequestId: Long) = workDataOf(
+        Constants.WORKER_SYNC_REQUEST_ID to syncRequestId
+    )
 }
