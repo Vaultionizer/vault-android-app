@@ -119,8 +119,8 @@ class FileFragment : Fragment(), View.OnClickListener {
         }
 
         val efabLayout = view.findViewById<ExpandableFabLayout>(R.id.file_efab_layout)
-        efabLayout.portraitConfiguration.fabOptions.forEach {
-            it.setOnClickListener(this)
+        for (option in efabLayout.portraitConfiguration.fabOptions) {
+            option.setOnClickListener(this)
         }
 
         val fileProcessingStatusButton = view.findViewById<Button>(R.id.file_processing_button)

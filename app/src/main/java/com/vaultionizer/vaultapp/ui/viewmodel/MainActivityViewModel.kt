@@ -131,8 +131,8 @@ class MainActivityViewModel @Inject constructor(
                 val folder = currentDirectory.value!!
                 val name = context.contentResolver.getFileName(uri)
 
-                folder.content?.forEach {
-                    if (it.name.equals(name)) {
+                for (file in folder.content ?: emptyList()) {
+                    if (it.name == name) {
                         _fileEvent.postValue(
                             FileEvent.UploadFileNameConflict(
                                 it,
@@ -252,7 +252,7 @@ class MainActivityViewModel @Inject constructor(
         }
         if (_currentDirectory.value != null) {
             val list = mutableListOf<VNFile>()
-            buildSearchList(query.toLowerCase(), _currentDirectory.value!!, list)
+            buildSearchList(query.lowercase(Locale.getDefault()), _currentDirectory.value!!, list)
 
             _shownElements.value = list
         }
@@ -260,14 +260,12 @@ class MainActivityViewModel @Inject constructor(
 
     private fun buildSearchList(query: String, file: VNFile, list: MutableList<VNFile>) {
         if (file.isFolder) {
-            file.content?.forEach {
-                Log.e("Vault", it.name)
-
-                if (it.name.toLowerCase().contains(query)) {
-                    list.add(it)
+            for (child in file.content ?: emptyList()) {
+                if (child.name.lowercase(Locale.getDefault()).contains(query)) {
+                    list.add(child)
                 }
 
-                if (it.isFolder) buildSearchList(query, it, list)
+                if (child.isFolder) buildSearchList(query, child, list)
             }
         }
     }

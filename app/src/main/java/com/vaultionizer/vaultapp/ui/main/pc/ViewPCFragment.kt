@@ -99,13 +99,13 @@ class ViewPCFragment : Fragment(), ViewPCItemClickListener {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         val fabLayout = view.findViewById<ExpandableFabLayout>(R.id.fab_view_pc_layout)
-        fabLayout.portraitConfiguration.fabOptions.forEach {
-            when (it.id) {
+        for (option in fabLayout.portraitConfiguration.fabOptions) {
+            when (option.id) {
                 R.id.fab_view_pc_create_category ->
-                    it.setOnClickListener { transitionToEditCategory() }
+                    option.setOnClickListener { transitionToEditCategory() }
 
                 R.id.fab_view_pc_create_pair ->
-                    it.setOnClickListener { transitionToEditPair() }
+                    option.setOnClickListener { transitionToEditPair() }
             }
         }
         backPressedCallback = object : OnBackPressedCallback(true) {
