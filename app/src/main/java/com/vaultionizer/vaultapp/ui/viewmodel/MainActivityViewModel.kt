@@ -196,7 +196,7 @@ class MainActivityViewModel @Inject constructor(
                 when (it) {
                     is Resource.Success -> {
                         val spaces = _userSpaces.value!!.toMutableList()
-                        spaces.remove(it)
+                        spaces.remove(it.data)
 
                         _selectedSpace.value = spaces[0]
                         _currentDirectory.value = null
