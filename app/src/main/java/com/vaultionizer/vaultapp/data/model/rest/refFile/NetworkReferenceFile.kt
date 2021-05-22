@@ -35,7 +35,13 @@ data class NetworkReferenceFile(
         fun generateRandom(): NetworkReferenceFile {
             val depth = Random.nextInt(1..5)
 
-            val root = NetworkFolder(Type.FOLDER, "", GLOBAL_FOLDER_ID_COUNTER--, System.currentTimeMillis(), null)
+            val root = NetworkFolder(
+                Type.FOLDER,
+                "",
+                GLOBAL_FOLDER_ID_COUNTER--,
+                System.currentTimeMillis(),
+                null
+            )
             fillFolder(root, depth)
 
             return NetworkReferenceFile(1, root.content!!)

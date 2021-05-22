@@ -2,7 +2,6 @@ package com.vaultionizer.vaultapp.repository.impl
 
 import android.content.Context
 import android.net.Uri
-import androidx.core.net.toUri
 import androidx.work.*
 import com.google.gson.Gson
 import com.vaultionizer.vaultapp.cryptography.CryptoUtils
@@ -22,11 +21,8 @@ import com.vaultionizer.vaultapp.repository.ReferenceFileRepository
 import com.vaultionizer.vaultapp.repository.SpaceRepository
 import com.vaultionizer.vaultapp.repository.SyncRequestRepository
 import com.vaultionizer.vaultapp.service.FileService
-import com.vaultionizer.vaultapp.util.Constants
-import com.vaultionizer.vaultapp.util.buildVaultionizerFilePath
+import com.vaultionizer.vaultapp.util.*
 import com.vaultionizer.vaultapp.util.extension.collectSuccess
-import com.vaultionizer.vaultapp.util.getFileName
-import com.vaultionizer.vaultapp.util.writeFileToInternal
 import com.vaultionizer.vaultapp.worker.*
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -176,7 +172,7 @@ class FileRepositoryImpl @Inject constructor(
             fileCaches[space.id]?.addFile(folder)
             parent.content?.add(folder)
 
-            enqueueUniqueFileWork(folder, buildReferenceFileWorker(folder))
+            enqueueUniqueFileWork(applicationContext, folder, buildReferenceFileWorker(folder))
 
             return@withContext folder
         }
@@ -206,7 +202,7 @@ class FileRepositoryImpl @Inject constructor(
                     .addTag(Constants.WORKER_TAG_DOWNLOAD)
                     .build()
 
-            enqueueUniqueFileWork(file, downloadWorker)
+            enqueueUniqueFileWork(applicationContext, file, downloadWorker)
         }
     }
 
@@ -220,7 +216,7 @@ class FileRepositoryImpl @Inject constructor(
                 .addTag(Constants.WORKER_TAG_DECRYPTION)
                 .build()
 
-        enqueueUniqueFileWork(file, decryptionWorker)
+        enqueueUniqueFileWork(applicationContext, file, decryptionWorker)
     }
 
     override suspend fun getFile(fileId: Long): VNFile? {
@@ -264,7 +260,7 @@ class FileRepositoryImpl @Inject constructor(
             file.parent.content?.remove(file)
         }
 
-        enqueueUniqueFileWork(file, buildReferenceFileWorker(file))
+        enqueueUniqueFileWork(applicationContext, file, buildReferenceFileWorker(file))
     }
 
     override suspend fun updateFileRemoteId(fileId: Long, remoteId: Long) {
@@ -301,7 +297,7 @@ class FileRepositoryImpl @Inject constructor(
             // Construct domain model of file.
             val vnFile: VNFile = when (filePushMode) {
                 is FilePushMode.Upload -> {
-                    val file = createUnsynchronizedLocalFile(
+                    val file = createUnsynchronizedFile(
                         resolveFileNameConflicts(
                             filePushMode.affectedFile,
                             name
@@ -328,17 +324,15 @@ class FileRepositoryImpl @Inject constructor(
                         val encryptedData =
                             tryEncryptData(filePushMode.affectedFile.space, filePushDataSource.data)
                                 ?: return@withContext null
-                        writeFileToInternal(
-                            applicationContext,
-                            buildVaultionizerFilePath(vnFile.localId),
+                        applicationContext.writeFile(
+                            vnFile.localId,
                             encryptedData
                         )
                     } catch (ex: Exception) {
                         return@withContext null
                     }
 
-                    applicationContext.getFileStreamPath(buildVaultionizerFilePath(vnFile.localId))
-                        .toUri()
+                    applicationContext.getAbsoluteFilePath(vnFile.localId)
                 }
 
                 is FilePushDataSource.LocalFileSystem -> {
@@ -353,7 +347,9 @@ class FileRepositoryImpl @Inject constructor(
             }
 
             enqueueUniqueFileWork(
-                vnFile, buildEncryptionWorker(vnFile, syncRequest.requestId),
+                applicationContext,
+                vnFile,
+                buildEncryptionWorker(vnFile, syncRequest.requestId),
                 buildUploadWorker(vnFile, syncRequest.requestId),
                 buildReferenceFileWorker(vnFile)
             )
@@ -375,7 +371,7 @@ class FileRepositoryImpl @Inject constructor(
         }
     }
 
-    private suspend fun createUnsynchronizedLocalFile(name: String, parent: VNFile): VNFile {
+    private suspend fun createUnsynchronizedFile(name: String, parent: VNFile): VNFile {
         val localFile = LocalFile(
             0,
             parent.space.id,
@@ -499,69 +495,4 @@ class FileRepositoryImpl @Inject constructor(
 
         return files[-1]!!
     }
-
-    private fun resolveFileNameConflicts(parent: VNFile, name: String): String {
-        val nameSet = parent.content?.map { it.name }?.toSet() ?: return name
-
-        nameSet.forEach {
-            if (it == name) {
-                var currentIndex = 1
-                while (nameSet.contains(buildDuplicateFileName(name, currentIndex)))
-                    ++currentIndex
-
-                return buildDuplicateFileName(name, currentIndex)
-            }
-        }
-
-        return name
-    }
-
-    private fun buildDuplicateFileName(name: String, index: Int) = "($index) $name"
-
-    private fun buildEncryptionWorker(file: VNFile, syncRequestId: Long) =
-        prepareFileWorkerBuilder<DataEncryptionWorker>(file, buildSyncWorkData(syncRequestId))
-            .addTag(Constants.WORKER_TAG_ENCRYPTION)
-            .build()
-
-    private fun buildUploadWorker(file: VNFile, syncRequestId: Long) =
-        prepareFileWorkerBuilder<FileUploadWorker>(file, buildSyncWorkData(syncRequestId))
-            .build()
-
-    private fun buildReferenceFileWorker(file: VNFile) =
-        prepareFileWorkerBuilder<ReferenceFileSyncWorker>(
-            file,
-            workDataOf(
-                Constants.WORKER_SPACE_ID to file.space.id
-            )
-        ).addTag(Constants.WORKER_TAG_REFERENCE_FILE).build()
-
-    private fun buildDefaultNetworkConstraints() =
-        Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()
-
-    private fun enqueueUniqueFileWork(file: VNFile, vararg workers: OneTimeWorkRequest) {
-        var chain = WorkManager.getInstance(applicationContext).beginUniqueWork(
-            String.format(Constants.WORKER_FILE_UNIQUE_NAME_TEMPLATE, file.localId),
-            ExistingWorkPolicy.KEEP,
-            workers[0]
-        )
-
-        for (i in 1 until workers.size) {
-            chain = chain.then(workers[i])
-        }
-
-        chain.enqueue()
-    }
-
-    private inline fun <reified W : ListenableWorker> prepareFileWorkerBuilder(
-        file: VNFile,
-        inputData: Data
-    ): OneTimeWorkRequest.Builder = OneTimeWorkRequestBuilder<W>()
-        .setInputData(inputData)
-        .setConstraints(buildDefaultNetworkConstraints())
-        .addTag(Constants.WORKER_TAG_FILE)
-        .addTag(String.format(Constants.WORKER_TAG_FILE_ID_TEMPLATE, file.localId))
-
-    private fun buildSyncWorkData(syncRequestId: Long) = workDataOf(
-        Constants.WORKER_SYNC_REQUEST_ID to syncRequestId
-    )
 }

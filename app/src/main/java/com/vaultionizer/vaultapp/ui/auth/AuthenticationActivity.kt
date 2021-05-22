@@ -2,8 +2,6 @@ package com.vaultionizer.vaultapp.ui.auth
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import androidx.navigation.fragment.navArgs
-import androidx.navigation.navArgs
 import com.vaultionizer.vaultapp.R
 import dagger.hilt.android.AndroidEntryPoint
 

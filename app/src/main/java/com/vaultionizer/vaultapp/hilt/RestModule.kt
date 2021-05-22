@@ -80,11 +80,12 @@ object RestModule {
                 )
             }
             .addInterceptor(ReferenceFileCryptoInterceptor(spaceDao, authCache))
-        .addInterceptor(HttpLoggingInterceptor().apply {
-            level = HttpLoggingInterceptor.Level.BODY
-        }).connectTimeout(20000, TimeUnit.MILLISECONDS).build()
+            .addInterceptor(HttpLoggingInterceptor().apply {
+                level = HttpLoggingInterceptor.Level.BODY
+            }).connectTimeout(20000, TimeUnit.MILLISECONDS).build()
 
     private fun injectHostUrl(request: Request): HttpUrl =
-        request.url.newBuilder().host(host).port(port).scheme(Constants.DEFAULT_PROTOCOL).addPathSegments(relativePath).build()
+        request.url.newBuilder().host(host).port(port).scheme(Constants.DEFAULT_PROTOCOL)
+            .addPathSegments(relativePath).build()
 
 }

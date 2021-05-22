@@ -1,7 +1,7 @@
 package com.vaultionizer.vaultapp.cryptography.model
 
 data class Password(
-    val pwd : ByteArray
+    val pwd: ByteArray
 ) {
     override fun toString(): String = pwd.toString(Charsets.UTF_8)
     fun toByteArray(): ByteArray = pwd

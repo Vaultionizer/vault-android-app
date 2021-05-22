@@ -182,7 +182,7 @@ class SpaceRepositoryImpl @Inject constructor(
         if (userId == null || remoteUserId == null) return false
 
         val spaces = localSpaceDao.getAllSpacesWithUser(userId)
-        for (spaceId in spaces){
+        for (spaceId in spaces) {
             spaceService.quitSpace(remoteUserId)
         }
         deleteAllSpaces()

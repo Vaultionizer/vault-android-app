@@ -75,13 +75,17 @@ class QRCodeScanFragment : Fragment() {
 
     }
 
-    private fun evaluateQRCode(content: String){
-        if(!CRC32Handler.checkValid(content)) return
+    private fun evaluateQRCode(content: String) {
+        if (!CRC32Handler.checkValid(content)) return
         val payload = CRC32Handler.parsePayload(content) ?: return
 
-        if (args.scanType == 0){
+        if (args.scanType == 0) {
             // authentication code parsing
-            findNavController().navigate(QRCodeScanFragmentDirections.actionQRCodeScanFragmentToJoinSpaceFragment(payload))
+            findNavController().navigate(
+                QRCodeScanFragmentDirections.actionQRCodeScanFragmentToJoinSpaceFragment(
+                    payload
+                )
+            )
         }
     }
 

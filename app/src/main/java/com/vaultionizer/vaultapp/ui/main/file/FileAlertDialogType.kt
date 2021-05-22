@@ -89,7 +89,7 @@ enum class FileAlertDialogType(
         R.string.quit_all_spaces_body,
         R.string.quit_all_spaces_button_text,
     ),
-  
+
     REQUEST_KEY_GENERATION(
         R.string.file_viewer_request_key_title,
         R.string.file_viewer_request_key_message,

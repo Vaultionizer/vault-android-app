@@ -71,10 +71,10 @@ class AuthViewModel @Inject constructor(
     }
 
     private fun formatHost(host: String): String {
-        var formattedHost: String = host;
+        var formattedHost: String = host
         // remove protocol if existing and remove potential last "/"
-        if (formattedHost[host.length-1] == '/') {
-            formattedHost = formattedHost.dropLast(1);
+        if (formattedHost[host.length - 1] == '/') {
+            formattedHost = formattedHost.dropLast(1)
         }
         if (host.contains("://")) {
             formattedHost = formattedHost.split("://")[1]
@@ -172,11 +172,14 @@ class AuthViewModel @Inject constructor(
             authenticationFormData.password = password
         }
 
-        Log.e("Vault", "Password valid? "+PasswordValidator().validatePassword(authenticationFormData.password).text)
+        Log.e(
+            "Vault",
+            "Password valid? " + PasswordValidator().validatePassword(authenticationFormData.password).text
+        )
         var usernameError: Int? = null
         var passwordError: Int? = null
 
-        if (authenticationFormData.username?.length?.compareTo(5) == -1 && !authenticationFormData.username?.isEmpty()) {
+        if (authenticationFormData.username.length.compareTo(5) == -1 && !authenticationFormData.username.isEmpty()) {
             usernameError = R.string.username_error_length
             Log.e("Vault", "Username too short!")
         }

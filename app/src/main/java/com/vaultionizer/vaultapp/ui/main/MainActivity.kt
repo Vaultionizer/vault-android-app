@@ -103,31 +103,35 @@ class MainActivity : AppCompatActivity() {
             rebuildGeneralUi(navView)
 
             navView.apply {
-                addItems(NavigationDrawerItem(R.id.createSpaceFragment, PrimaryDrawerItem().apply {
-                    identifier = nextIdentifier()
-                    nameText = getString(R.string.create_space_navigation)
-                    iconicsIcon = FontAwesome.Icon.faw_plus_circle
-                    isSelectable = false
-                }),
+                addItems(
+                    NavigationDrawerItem(R.id.createSpaceFragment, PrimaryDrawerItem().apply {
+                        identifier = nextIdentifier()
+                        nameText = getString(R.string.create_space_navigation)
+                        iconicsIcon = FontAwesome.Icon.faw_plus_circle
+                        isSelectable = false
+                    }),
                     NavigationDrawerItem(R.id.joinSpaceFragment, PrimaryDrawerItem().apply {
-                    identifier = nextIdentifier()
-                    nameText = getString(R.string.join_space_navigation)
-                    iconDrawable = getDrawable(R.drawable.ic_baseline_qr_code_scanner_24)
-                    isSelectable = false
-                }))
+                        identifier = nextIdentifier()
+                        nameText = getString(R.string.join_space_navigation)
+                        iconDrawable = getDrawable(R.drawable.ic_baseline_qr_code_scanner_24)
+                        isSelectable = false
+                    })
+                )
                 for (space in it) {
-                    addItems(NavigationDrawerItem(R.id.fileFragment,
-                        PrimaryDrawerItem().apply {
-                            iconicsIcon = if (space.owner) {
-                                FontAwesome.Icon.faw_user
-                            } else {
-                                FontAwesome.Icon.faw_users
-                            }
+                    addItems(
+                        NavigationDrawerItem(
+                            R.id.fileFragment,
+                            PrimaryDrawerItem().apply {
+                                iconicsIcon = if (space.owner) {
+                                    FontAwesome.Icon.faw_user
+                                } else {
+                                    FontAwesome.Icon.faw_users
+                                }
 
-                            identifier = nextIdentifier()
-                            nameText = if (space.name != null) {
-                                "Space \"${space.name}\""
-                            } else {
+                                identifier = nextIdentifier()
+                                nameText = if (space.name != null) {
+                                    "Space \"${space.name}\""
+                                } else {
                                 "Space #${space.id}"
                             }
                             isSelectable = false
@@ -159,7 +163,7 @@ class MainActivity : AppCompatActivity() {
                         positiveClick = generateKeyCallback,
                         negativeClick = importKeyCallback
                     )
-                dialog.setCancelable(false)
+                dialog.cancelable(false)
                 dialog.show()
             }
         }
@@ -219,8 +223,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        val mapFragment = (supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment).navController.currentDestination?.id
-        if (mapFragment == R.id.viewPC && item.itemId == android.R.id.home){
+        val mapFragment =
+            (supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment).navController.currentDestination?.id
+        if (mapFragment == R.id.viewPC && item.itemId == android.R.id.home) {
             onBackPressed()
             return true
         }

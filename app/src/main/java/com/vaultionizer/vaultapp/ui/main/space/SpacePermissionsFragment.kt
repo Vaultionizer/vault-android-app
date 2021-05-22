@@ -17,7 +17,7 @@ import dagger.hilt.android.AndroidEntryPoint
 import java.util.*
 
 @AndroidEntryPoint
-class SpacePermissionsFragment : PreferenceFragmentCompat(){
+class SpacePermissionsFragment : PreferenceFragmentCompat() {
     private val mainActivityViewModel: MainActivityViewModel by activityViewModels()
     private val viewModel: ManageSpaceViewModel by viewModels()
 
@@ -30,7 +30,7 @@ class SpacePermissionsFragment : PreferenceFragmentCompat(){
         else setPreferencesFromResource(R.xml.space_management_user, rootKey)
     }
 
-    fun setupViewModel(){
+    fun setupViewModel() {
         viewModel.spaceID = mainActivityViewModel.selectedSpace.value?.id ?: 0
     }
 
@@ -39,7 +39,7 @@ class SpacePermissionsFragment : PreferenceFragmentCompat(){
 
         setupBtn(showAuthKeyBtn, null) { showAuthKey() }
 
-        val writeAccessSwitch : SwitchPreference? = findPreference("writeAccessSwitch")
+        val writeAccessSwitch: SwitchPreference? = findPreference("writeAccessSwitch")
         if (writeAccessSwitch != null) writeAccessSwitch.isChecked = true // TODO
 
         if (!owner) {
@@ -48,8 +48,7 @@ class SpacePermissionsFragment : PreferenceFragmentCompat(){
                 quitSpaceBtn,
                 FileAlertDialogType.QUIT_SPACE
             ) { mainActivityViewModel.requestQuitSpace() }
-        }
-        else {
+        } else {
             val sharedSpaceSwitch: SwitchPreference? = findPreference("sharedSpaceSwitch")
             val usersInviteAuthSwitch: SwitchPreference? = findPreference("authKeySwitch")
             val deleteSpaceBtn: Preference? = findPreference("deleteSpaceBtn")
@@ -58,7 +57,10 @@ class SpacePermissionsFragment : PreferenceFragmentCompat(){
 
             // setup button listeners
             setupBtn(kickUsersBtn, FileAlertDialogType.KICK_ALL_USERS) { viewModel.kickAllUsers() }
-            setupBtn(deleteSpaceBtn, FileAlertDialogType.DELETE_SPACE) { mainActivityViewModel.requestSpaceDeletion() }
+            setupBtn(
+                deleteSpaceBtn,
+                FileAlertDialogType.DELETE_SPACE
+            ) { mainActivityViewModel.requestSpaceDeletion() }
             setupBtn(
                 genAuthKeyBtn,
                 FileAlertDialogType.REGENERATE_AUTH_KEY
@@ -72,12 +74,12 @@ class SpacePermissionsFragment : PreferenceFragmentCompat(){
                 sharedSpaceSwitch,
                 FileAlertDialogType.MAKE_SPACE_PRIVATE,
                 { viewModel.toggleSharedSpace(sharedSpaceSwitch?.isChecked) },
-                { switch -> return@setupSwitch switch.isChecked() })
+                { switch -> return@setupSwitch switch.isChecked })
             setupSwitch(usersInviteAuthSwitch, null,
                 { viewModel.toggleUsersInvite(usersInviteAuthSwitch?.isChecked) },
                 { _ -> return@setupSwitch false })
 
-            viewModel.spaceConfig.observe(viewLifecycleOwner){ viewModel.configureSpace() }
+            viewModel.spaceConfig.observe(viewLifecycleOwner) { viewModel.configureSpace() }
         }
         super.onViewCreated(view, savedInstanceState)
     }
@@ -113,7 +115,7 @@ class SpacePermissionsFragment : PreferenceFragmentCompat(){
     }
 
 
-    private fun showAuthKey(){
+    private fun showAuthKey() {
         findNavController().navigate(
             SpacePermissionsFragmentDirections.actionSpacePermissionsFragmentToAuthKeyFragment(
                 "Test", "symmetric", 69

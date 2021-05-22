@@ -93,8 +93,8 @@ class VNFile(
                 name = name,
                 id = remoteId!!,
                 crc = "",
-                createdAt = createdAt!!,
-                updatedAt = lastUpdated!!,
+                createdAt = createdAt,
+                updatedAt = lastUpdated,
                 size = 0
             )
         }

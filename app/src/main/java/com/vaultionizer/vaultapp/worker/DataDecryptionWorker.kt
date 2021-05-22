@@ -8,7 +8,7 @@ import com.vaultionizer.vaultapp.cryptography.CryptoUtils
 import com.vaultionizer.vaultapp.data.cache.DecryptionResultCache
 import com.vaultionizer.vaultapp.repository.FileRepository
 import com.vaultionizer.vaultapp.util.Constants
-import com.vaultionizer.vaultapp.util.readFileFromInternal
+import com.vaultionizer.vaultapp.util.readFile
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers
@@ -32,8 +32,7 @@ class DataDecryptionWorker @AssistedInject constructor(
 
             try {
                 val file = fileRepository.getFile(fileId) ?: return@withContext Result.failure()
-                val bytes =
-                    readFileFromInternal(applicationContext, "$fileId.${Constants.VN_FILE_SUFFIX}")
+                val bytes = applicationContext.readFile(fileId)
 
                 decryptionResultCache.addDecryptionResult(
                     file,
