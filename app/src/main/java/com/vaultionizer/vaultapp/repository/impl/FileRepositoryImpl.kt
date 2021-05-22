@@ -274,6 +274,10 @@ class FileRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun clearLocalFiles(userId: Long) {
+        localFileDao.deleteAllFilesOfUser(userId)
+    }
+
     private suspend fun pushFile(
         filePushMode: FilePushMode,
         filePushDataSource: FilePushDataSource
@@ -560,8 +564,4 @@ class FileRepositoryImpl @Inject constructor(
     private fun buildSyncWorkData(syncRequestId: Long) = workDataOf(
         Constants.WORKER_SYNC_REQUEST_ID to syncRequestId
     )
-
-    override suspend fun clearLocalFiles(userId: Long) {
-        localFileDao.deleteAllFilesOfUser(userId)
-    }
 }
