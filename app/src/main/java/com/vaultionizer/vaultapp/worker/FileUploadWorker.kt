@@ -60,6 +60,7 @@ class FileUploadWorker @AssistedInject constructor(
                     request.remoteFileId!!,
                     bytes
                 )
+                file.lastUpdated = System.currentTimeMillis()
             } catch (exception: Exception) {
                 return@withContext Result.failure()
             }
