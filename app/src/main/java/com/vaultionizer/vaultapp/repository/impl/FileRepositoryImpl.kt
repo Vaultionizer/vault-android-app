@@ -2,7 +2,6 @@ package com.vaultionizer.vaultapp.repository.impl
 
 import android.content.Context
 import android.net.Uri
-import androidx.core.net.toUri
 import androidx.work.*
 import com.google.gson.Gson
 import com.vaultionizer.vaultapp.cryptography.CryptoUtils
@@ -22,11 +21,8 @@ import com.vaultionizer.vaultapp.repository.ReferenceFileRepository
 import com.vaultionizer.vaultapp.repository.SpaceRepository
 import com.vaultionizer.vaultapp.repository.SyncRequestRepository
 import com.vaultionizer.vaultapp.service.FileService
-import com.vaultionizer.vaultapp.util.Constants
-import com.vaultionizer.vaultapp.util.buildVaultionizerFilePath
+import com.vaultionizer.vaultapp.util.*
 import com.vaultionizer.vaultapp.util.extension.collectSuccess
-import com.vaultionizer.vaultapp.util.getFileName
-import com.vaultionizer.vaultapp.util.writeFileToInternal
 import com.vaultionizer.vaultapp.worker.*
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -328,17 +324,15 @@ class FileRepositoryImpl @Inject constructor(
                         val encryptedData =
                             tryEncryptData(filePushMode.affectedFile.space, filePushDataSource.data)
                                 ?: return@withContext null
-                        writeFileToInternal(
-                            applicationContext,
-                            buildVaultionizerFilePath(vnFile.localId),
+                        applicationContext.writeFile(
+                            vnFile.localId,
                             encryptedData
                         )
                     } catch (ex: Exception) {
                         return@withContext null
                     }
 
-                    applicationContext.getFileStreamPath(buildVaultionizerFilePath(vnFile.localId))
-                        .toUri()
+                    applicationContext.getAbsoluteFilePath(vnFile.localId)
                 }
 
                 is FilePushDataSource.LocalFileSystem -> {
@@ -499,24 +493,6 @@ class FileRepositoryImpl @Inject constructor(
 
         return files[-1]!!
     }
-
-    private fun resolveFileNameConflicts(parent: VNFile, name: String): String {
-        val nameSet = parent.content?.map { it.name }?.toSet() ?: return name
-
-        nameSet.forEach {
-            if (it == name) {
-                var currentIndex = 1
-                while (nameSet.contains(buildDuplicateFileName(name, currentIndex)))
-                    ++currentIndex
-
-                return buildDuplicateFileName(name, currentIndex)
-            }
-        }
-
-        return name
-    }
-
-    private fun buildDuplicateFileName(name: String, index: Int) = "($index) $name"
 
     private fun buildEncryptionWorker(file: VNFile, syncRequestId: Long) =
         prepareFileWorkerBuilder<DataEncryptionWorker>(file, buildSyncWorkData(syncRequestId))

@@ -2,7 +2,6 @@ package com.vaultionizer.vaultapp.worker
 
 import android.content.Context
 import android.net.Uri
-import androidx.core.net.toUri
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
@@ -10,8 +9,8 @@ import com.vaultionizer.vaultapp.cryptography.CryptoUtils
 import com.vaultionizer.vaultapp.repository.FileRepository
 import com.vaultionizer.vaultapp.repository.SyncRequestRepository
 import com.vaultionizer.vaultapp.util.Constants
-import com.vaultionizer.vaultapp.util.buildVaultionizerFilePath
-import com.vaultionizer.vaultapp.util.writeFileToInternal
+import com.vaultionizer.vaultapp.util.getAbsoluteFilePath
+import com.vaultionizer.vaultapp.util.writeFile
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers
@@ -48,16 +47,10 @@ class DataEncryptionWorker @AssistedInject constructor(
                     file.space.id, bytes
                 )
 
-                writeFileToInternal(
-                    applicationContext,
-                    buildVaultionizerFilePath(file.localId),
-                    encryptedBytes
-                )
+                applicationContext.writeFile(file.localId, encryptedBytes)
 
                 request.cryptographicOperationDone = true
-                request.uri =
-                    applicationContext.getFileStreamPath(buildVaultionizerFilePath(file.localId))
-                        .toUri().toString()
+                request.uri = applicationContext.getAbsoluteFilePath(file.localId).toString()
                 syncRequestService.updateRequest(request)
             } catch (e : RuntimeException) {
                 return@withContext Result.failure()
