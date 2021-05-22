@@ -186,6 +186,17 @@ class FileFragment : Fragment(), View.OnClickListener {
         viewModel.networkStatus.observe(viewLifecycleOwner) {
             offlineHint.visibility = boolToVisibility(!it, View.GONE)
         }
+
+        viewModel.fileEvent.observe(viewLifecycleOwner) {
+            if (it is FileEvent.UploadFileNameConflict) {
+                showDialog(FileAlertDialogType.UPLOAD_OR_REPLACE, positiveClick = { _ ->
+                    viewModel.requestUpload(it.fsSource, true)
+                },
+                    negativeClick = { _ ->
+                        viewModel.requestUpdate(it.file, it.fsSource)
+                    })
+            }
+        }
     }
 
     override fun onResume() {
