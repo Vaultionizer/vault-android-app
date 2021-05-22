@@ -172,7 +172,7 @@ class FileRepositoryImpl @Inject constructor(
             fileCaches[space.id]?.addFile(folder)
             parent.content?.add(folder)
 
-            enqueueUniqueFileWork(folder, buildReferenceFileWorker(folder))
+            enqueueUniqueFileWork(applicationContext, folder, buildReferenceFileWorker(folder))
 
             return@withContext folder
         }
@@ -202,7 +202,7 @@ class FileRepositoryImpl @Inject constructor(
                     .addTag(Constants.WORKER_TAG_DOWNLOAD)
                     .build()
 
-            enqueueUniqueFileWork(file, downloadWorker)
+            enqueueUniqueFileWork(applicationContext, file, downloadWorker)
         }
     }
 
@@ -216,7 +216,7 @@ class FileRepositoryImpl @Inject constructor(
                 .addTag(Constants.WORKER_TAG_DECRYPTION)
                 .build()
 
-        enqueueUniqueFileWork(file, decryptionWorker)
+        enqueueUniqueFileWork(applicationContext, file, decryptionWorker)
     }
 
     override suspend fun getFile(fileId: Long): VNFile? {
@@ -260,7 +260,7 @@ class FileRepositoryImpl @Inject constructor(
             file.parent.content?.remove(file)
         }
 
-        enqueueUniqueFileWork(file, buildReferenceFileWorker(file))
+        enqueueUniqueFileWork(applicationContext, file, buildReferenceFileWorker(file))
     }
 
     override suspend fun updateFileRemoteId(fileId: Long, remoteId: Long) {
@@ -347,7 +347,9 @@ class FileRepositoryImpl @Inject constructor(
             }
 
             enqueueUniqueFileWork(
-                vnFile, buildEncryptionWorker(vnFile, syncRequest.requestId),
+                applicationContext,
+                vnFile,
+                buildEncryptionWorker(vnFile, syncRequest.requestId),
                 buildUploadWorker(vnFile, syncRequest.requestId),
                 buildReferenceFileWorker(vnFile)
             )
@@ -493,51 +495,4 @@ class FileRepositoryImpl @Inject constructor(
 
         return files[-1]!!
     }
-
-    private fun buildEncryptionWorker(file: VNFile, syncRequestId: Long) =
-        prepareFileWorkerBuilder<DataEncryptionWorker>(file, buildSyncWorkData(syncRequestId))
-            .addTag(Constants.WORKER_TAG_ENCRYPTION)
-            .build()
-
-    private fun buildUploadWorker(file: VNFile, syncRequestId: Long) =
-        prepareFileWorkerBuilder<FileUploadWorker>(file, buildSyncWorkData(syncRequestId))
-            .build()
-
-    private fun buildReferenceFileWorker(file: VNFile) =
-        prepareFileWorkerBuilder<ReferenceFileSyncWorker>(
-            file,
-            workDataOf(
-                Constants.WORKER_SPACE_ID to file.space.id
-            )
-        ).addTag(Constants.WORKER_TAG_REFERENCE_FILE).build()
-
-    private fun buildDefaultNetworkConstraints() =
-        Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build()
-
-    private fun enqueueUniqueFileWork(file: VNFile, vararg workers: OneTimeWorkRequest) {
-        var chain = WorkManager.getInstance(applicationContext).beginUniqueWork(
-            String.format(Constants.WORKER_FILE_UNIQUE_NAME_TEMPLATE, file.localId),
-            ExistingWorkPolicy.KEEP,
-            workers[0]
-        )
-
-        for (i in 1 until workers.size) {
-            chain = chain.then(workers[i])
-        }
-
-        chain.enqueue()
-    }
-
-    private inline fun <reified W : ListenableWorker> prepareFileWorkerBuilder(
-        file: VNFile,
-        inputData: Data
-    ): OneTimeWorkRequest.Builder = OneTimeWorkRequestBuilder<W>()
-        .setInputData(inputData)
-        .setConstraints(buildDefaultNetworkConstraints())
-        .addTag(Constants.WORKER_TAG_FILE)
-        .addTag(String.format(Constants.WORKER_TAG_FILE_ID_TEMPLATE, file.localId))
-
-    private fun buildSyncWorkData(syncRequestId: Long) = workDataOf(
-        Constants.WORKER_SYNC_REQUEST_ID to syncRequestId
-    )
 }
