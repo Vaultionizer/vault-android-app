@@ -173,7 +173,7 @@ dependencies {
     implementation 'com.budiyev.android:code-scanner:2.1.0'
 
     // for BCrypt hashing
-    implementation "org.mindrot:jbcrypt:0.4"
+    implementation "org.mindrot:jbcrypt:0.4-atlassian-1"
 
     // CameraKit
     implementation 'com.otaliastudios:cameraview:2.7.0'
