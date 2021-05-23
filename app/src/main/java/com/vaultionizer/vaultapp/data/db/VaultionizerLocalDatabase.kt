@@ -14,12 +14,8 @@ import com.vaultionizer.vaultapp.data.db.entity.LocalUser
 import com.vaultionizer.vaultapp.data.db.entity.converters.EnumConverters
 
 @Database(
-    entities = arrayOf(
-        LocalUser::class,
-        LocalSpace::class,
-        LocalFile::class,
-        LocalFileSyncRequest::class
-    ), version = 1
+    entities = [LocalUser::class, LocalSpace::class, LocalFile::class, LocalFileSyncRequest::class],
+    version = 1
 )
 @TypeConverters(EnumConverters::class)
 abstract class VaultionizerLocalDatabase : RoomDatabase() {

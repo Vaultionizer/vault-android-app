@@ -23,11 +23,25 @@ object CryptoUtils {
         cryptoPadding: CryptoPadding,
         password: String
     ): ByteArray {
-        return Cryptography.createSharedKey(spaceID, cryptoType, cryptoMode, cryptoPadding, Password(password.toByteArray(Charsets.UTF_8)))
+        return Cryptography.createSharedKey(
+            spaceID,
+            cryptoType,
+            cryptoMode,
+            cryptoPadding,
+            Password(password.toByteArray(Charsets.UTF_8))
+        )
     }
 
-    fun importKeyForSharedSpace(spaceID: Long, transferBytes: ByteArray, password: String): Boolean {
-        return Cryptography.importKey(spaceID, transferBytes, Password(password.toByteArray(Charsets.UTF_8)))
+    fun importKeyForSharedSpace(
+        spaceID: Long,
+        transferBytes: ByteArray,
+        password: String
+    ): Boolean {
+        return Cryptography.importKey(
+            spaceID,
+            transferBytes,
+            Password(password.toByteArray(Charsets.UTF_8))
+        )
     }
 
     fun deleteKey(spaceID: Long): Boolean {
@@ -49,7 +63,6 @@ object CryptoUtils {
     fun decryptData(spaceID: Long, bytes: ByteArray): ByteArray {
         return Cryptography.decrytor(spaceID, bytes)
     }
-
 
 
 }

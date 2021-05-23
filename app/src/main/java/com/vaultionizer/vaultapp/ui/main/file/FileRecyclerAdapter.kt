@@ -58,7 +58,7 @@ class FileRecyclerAdapter(
 
         holder.fileNameView.text = "${elem.name}"
         holder.fileDate.text = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT)
-            .format(elem.lastUpdated ?: elem.createdAt!!)
+            .format(elem.lastUpdated)
 
         if (elem.isFolder) {
             holder.fileNameView.setTypeface(null, Typeface.BOLD)

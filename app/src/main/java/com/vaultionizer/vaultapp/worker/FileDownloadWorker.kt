@@ -10,7 +10,7 @@ import com.vaultionizer.vaultapp.repository.SpaceRepository
 import com.vaultionizer.vaultapp.repository.SyncRequestRepository
 import com.vaultionizer.vaultapp.service.FileExchangeService
 import com.vaultionizer.vaultapp.util.Constants
-import com.vaultionizer.vaultapp.util.writeFileToInternal
+import com.vaultionizer.vaultapp.util.writeFile
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers
@@ -42,11 +42,7 @@ class FileDownloadWorker @AssistedInject constructor(
             ) ?: return@withContext Result.failure()
 
             file.state = VNFile.State.AVAILABLE_OFFLINE
-            writeFileToInternal(
-                applicationContext,
-                "${file.localId}.${Constants.VN_FILE_SUFFIX}",
-                bytes
-            )
+            applicationContext.writeFile(file.localId, bytes)
             return@withContext Result.success()
         }
     }

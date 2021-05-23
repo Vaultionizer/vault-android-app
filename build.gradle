@@ -1,7 +1,7 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 buildscript {
-    ext.kotlin_version = "1.4.10"
-    ext.hilt_version = '2.33-beta'
+    ext.kotlin_version = "1.5.0"
+    ext.hilt_version = '2.35'
     repositories {
         google()
         jcenter()
@@ -12,9 +12,9 @@ buildscript {
         classpath 'com.android.tools.build:gradle:4.1.3'
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "com.google.dagger:hilt-android-gradle-plugin:$hilt_version"
-        classpath 'org.jacoco:org.jacoco.core:0.8.6'
+        classpath 'org.jacoco:org.jacoco.core:0.8.7'
 
-        def nav_version = "2.3.1"
+        def nav_version = "2.3.5"
         classpath "androidx.navigation:navigation-safe-args-gradle-plugin:$nav_version"
 
         // NOTE: Do not place your application dependencies here; they belong
@@ -23,7 +23,7 @@ buildscript {
 }
 
 plugins {
-    id "org.sonarqube" version "3.0"
+    id "org.sonarqube" version "3.2.0"
 }
 
 allprojects {

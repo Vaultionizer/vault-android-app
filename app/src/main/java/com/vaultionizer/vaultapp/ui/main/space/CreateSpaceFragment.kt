@@ -106,7 +106,7 @@ class CreateSpaceFragment : Fragment() {
         spaceShared.setOnCheckedChangeListener { _, isChecked ->
             writeAccess.isEnabled = isChecked
             authKeyAccess.isEnabled = isChecked
-            if (!isChecked){
+            if (!isChecked) {
                 writeAccess.isChecked = false
                 authKeyAccess.isChecked = false
             }

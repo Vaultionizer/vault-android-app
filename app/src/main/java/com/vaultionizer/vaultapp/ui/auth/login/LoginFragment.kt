@@ -89,7 +89,7 @@ class LoginFragment : Fragment() {
                         }
                         else -> {
                             if (requireContext() != null) {
-                                Toast.makeText(requireContext(), it.error!!, Toast.LENGTH_LONG)
+                                Toast.makeText(requireContext(), it.error, Toast.LENGTH_LONG)
                                     .show()
                             }
                             loginButton.isClickable = true
