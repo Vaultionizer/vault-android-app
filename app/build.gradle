@@ -100,7 +100,7 @@ dependencies {
     implementation "com.mikepenz:materialdrawer:8.4.0"
 
     // Required support lib modules
-    implementation "androidx.recyclerview:recyclerview:1.2.0-alpha06"
+    implementation "androidx.recyclerview:recyclerview:1.2.0"
 
     // Add for NavController support
     implementation "com.mikepenz:materialdrawer-nav:8.4.0"
