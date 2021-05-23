@@ -5,7 +5,7 @@ import java.security.MessageDigest
 import org.mindrot.jbcrypt.BCrypt
 
 
-class Hashing {
+object Hashing {
     fun sha256(input: String): String {
         val bytes = input.toByteArray()
         val md = MessageDigest.getInstance("SHA-256")
