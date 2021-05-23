@@ -57,7 +57,7 @@ object Cryptography {
             if (cryptoMode == CryptoMode.GCM) {
                 if (cryptoPadding == CryptoPadding.NoPadding) {
 
-                    val sharedKeyOutput = AesGcmNopadding().generateSharedKey(
+                    val sharedKeyOutput = AesGcmNopadding.generateSharedKey(
                         "${Constants.VN_KEY_PREFIX}$spaceID",
                         password
                     )
@@ -95,14 +95,14 @@ object Cryptography {
         if (cryptoMode == CryptoMode.GCM) {
             if (cryptoPadding == CryptoPadding.NoPadding) {
 
-                AesGcmNopadding().generateSingleUserKey("${Constants.VN_KEY_PREFIX}$spaceID")
+                AesGcmNopadding.generateSingleUserKey("${Constants.VN_KEY_PREFIX}$spaceID")
                 return
             }
         }
         if (cryptoMode == CryptoMode.CBC) {
             if (cryptoPadding == CryptoPadding.NoPadding) {
 
-                AesCbcNopadding().generateSingleUserKey("${Constants.VN_KEY_PREFIX}$spaceID")
+                AesCbcNopadding.generateSingleUserKey("${Constants.VN_KEY_PREFIX}$spaceID")
                 return
             }
         }
@@ -112,8 +112,8 @@ object Cryptography {
         val saltIvcipher = desalter(bytes)
         val salt = Salt(saltIvcipher.salt)
         val importKey =
-            SecretKeySpec(Hashing().bCryptHash(pwd, salt).hash.toByteArray(), "AES")
-        val keyPlainUnchecked = AesGcmNopadding().decrypt(
+            SecretKeySpec(Hashing.bCryptHash(pwd, salt).hash.toByteArray(), "AES")
+        val keyPlainUnchecked = AesGcmNopadding.decrypt(
             importKey,
             saltIvcipher.ivcipher.iv,
             saltIvcipher.ivcipher.cipher
@@ -121,7 +121,7 @@ object Cryptography {
         if (validate(keyPlainUnchecked)) {
             val keyPlain = keyPlainUnchecked.sliceArray(16 until keyPlainUnchecked.size)
             val secretKey = SecretKeySpec(keyPlain, "AES")
-            AesGcmNopadding().addKeyToKeyStore(secretKey, "${Constants.VN_KEY_PREFIX}$spaceID")
+            AesGcmNopadding.addKeyToKeyStore(secretKey, "${Constants.VN_KEY_PREFIX}$spaceID")
 
             return true
         }
@@ -167,7 +167,7 @@ object Cryptography {
 
 
     fun generateImportExportKeyAndSalt(pwd: Password): KeySalt {
-        val hashSalt = Hashing().bCryptHash(pwd)
+        val hashSalt = Hashing.bCryptHash(pwd)
         return KeySalt(SecretKeySpec(hashSalt.hash.hash, "AES"), hashSalt.salt.salt)
     }
 
@@ -196,7 +196,7 @@ object Cryptography {
     fun desalter(bytes: ByteArray): SaltIvcipher {
         val salt = bytes.sliceArray(0 until 29)
         val bytesivCipher = bytes.sliceArray(29 until bytes.size)
-        val ivCipher = AesGcmNopadding().dewrapper(bytesivCipher)
+        val ivCipher = AesGcmNopadding.dewrapper(bytesivCipher)
 
         return SaltIvcipher(salt, ivCipher)
     }
@@ -218,12 +218,12 @@ object Cryptography {
         if (secretKey.algorithm == CryptoType.AES.name) {
             if (keyInfo.blockModes[0] == CryptoMode.GCM.name) {
                 if (keyInfo.encryptionPaddings[0] == CryptoPadding.NoPadding.name) {
-                    return AesGcmNopadding()
+                    return AesGcmNopadding
                 }
             }
             if (keyInfo.blockModes[0] == CryptoMode.CBC.name) {
                 if (keyInfo.encryptionPaddings[0] == CryptoPadding.NoPadding.name) {
-                    return AesCbcNopadding()
+                    return AesCbcNopadding
                 }
             }
         }
