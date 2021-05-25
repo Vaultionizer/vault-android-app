@@ -32,8 +32,8 @@ class AesGcmNopaddingTest{
 
         val message = generatedString.toByteArray()
         val secretKey = SecretKeySpec(array, "AES")
-        val encrypt =  AesGcmNopadding().encrypt(secretKey, message)
-        val result = AesGcmNopadding().decrypt(secretKey, encrypt.iv, encrypt.cipher)
+        val encrypt =  AesGcmNopadding.encrypt(secretKey, message)
+        val result = AesGcmNopadding.decrypt(secretKey, encrypt.iv, encrypt.cipher)
 
         assertThat(result).isEqualTo(message)
     }
@@ -55,8 +55,8 @@ class AesGcmNopaddingTest{
 
         val message = generatedString.toByteArray()
         val secretKey = Cryptography.getKey(testingSpaceID)
-        val encrypt =  AesGcmNopadding().encrypt(secretKey, message)
-        val result = AesGcmNopadding().decrypt(secretKey, encrypt.iv, encrypt.cipher)
+        val encrypt =  AesGcmNopadding.encrypt(secretKey, message)
+        val result = AesGcmNopadding.decrypt(secretKey, encrypt.iv, encrypt.cipher)
 
         assertThat(result).isEqualTo(message)
     }
