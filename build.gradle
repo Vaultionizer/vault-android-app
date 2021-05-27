@@ -26,6 +26,24 @@ plugins {
     id "org.sonarqube" version "3.2.0"
 }
 
+sonarqube {
+    properties {
+        property "sonar.projectKey", "Vaultionizer_vault-android-app"
+        property "sonar.organization", "vaultionizer"
+        property "sonar.host.url", "https://sonarcloud.io"
+        property "sonar.sources", "src"
+        property "sonar.binaries", ["build/intermediates/javac/debug/classes"]
+        property "sonar.java.binaries", ["build/intermediates/javac/debug/classes"]
+        property "sonar.tests", ["src/test/java", "src/androidTest/java"]
+        property "sonar.java.test.binaries", ["build/intermediates/javac/debug/classes"]
+        property "sonar.exclusions", '**/*Test*/**,' +
+                '*.json,' +
+                '**/*test*/**,' +
+                '**/.gradle/**,' +
+                '**/R.class'
+    }
+}
+
 allprojects {
     repositories {
         google()
