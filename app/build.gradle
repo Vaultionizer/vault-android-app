@@ -167,8 +167,7 @@ def getInstrumentation() {
 }
 
 
-task jacocoTestReport(type: JacocoReport, dependsOn: ['testDebugUnitTest']) {
-
+task jacocoTestReport(type: JacocoReport, dependsOn: ['testDebugUnitTest', 'createDebugCoverageReport']) {
     reports {
         xml.enabled = true
         html.enabled = true
