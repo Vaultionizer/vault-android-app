@@ -25,8 +25,8 @@ class AesCbcNopaddingTest{
         Random().nextBytes(message)
 
         val secretKey = SecretKeySpec(message, "AES")
-        val encrypt =  AesCbcNopadding().encrypt(secretKey, message)
-        val result = AesCbcNopadding().decrypt(secretKey, encrypt.iv, encrypt.cipher)
+        val encrypt =  AesCbcNopadding.encrypt(secretKey, message)
+        val result = AesCbcNopadding.decrypt(secretKey, encrypt.iv, encrypt.cipher)
 
         Truth.assertThat(result).isEqualTo(message)
     }
@@ -45,8 +45,8 @@ class AesCbcNopaddingTest{
         Random().nextBytes(message)
 
         val secretKey = Cryptography.getKey(testingSpaceID)
-        val encrypt =  AesCbcNopadding().encrypt(secretKey, message)
-        val result = AesCbcNopadding().decrypt(secretKey, encrypt.iv, encrypt.cipher)
+        val encrypt =  AesCbcNopadding.encrypt(secretKey, message)
+        val result = AesCbcNopadding.decrypt(secretKey, encrypt.iv, encrypt.cipher)
 
         Truth.assertThat(result).isEqualTo(message)
     }
