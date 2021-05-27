@@ -5,23 +5,6 @@ apply plugin: "androidx.navigation.safeargs.kotlin"
 apply plugin: 'kotlin-kapt'
 apply plugin: 'dagger.hilt.android.plugin'
 
-sonarqube {
-    properties {
-        property "sonar.projectKey", "vault-android-app"
-        property "sonar.projectName", "vault-android-app"
-        property "sonar.sources", "src"
-        property "sonar.binaries", ["build/intermediates/javac/debug/classes"]
-        property "sonar.java.binaries", ["build/intermediates/javac/debug/classes"]
-        property "sonar.tests", ["src/test/java", "src/androidTest/java"]
-        property "sonar.java.test.binaries", ["build/intermediates/javac/debug/classes"]
-        property "sonar.exclusions", '**/*Test*/**,' +
-                '*.json,' +
-                '**/*test*/**,' +
-                '**/.gradle/**,' +
-                '**/R.class'
-    }
-}
-
 android {
     compileSdkVersion 30
     buildToolsVersion "30.0.2"
@@ -181,4 +164,23 @@ dependencies {
 
 def getInstrumentation() {
     project.hasProperty("cucumber") ? "com.vaultionizer.vaultapp.cucumber.runner.CucumberTestRunner" : "androidx.test.runner.AndroidJUnitRunner"
+}
+
+
+task jacocoTestReport(type: JacocoReport, dependsOn: ['testDebugUnitTest', 'createDebugCoverageReport']) {
+    reports {
+        xml.enabled = true
+        html.enabled = true
+    }
+
+    def fileFilter = ['**/R.class', '**/R$*.class', '**/BuildConfig.*', '**/Manifest*.*', '**/*Test*.*', 'android/**/*.*']
+    def debugTree = fileTree(dir: "${buildDir}/intermediates/classes/debug", excludes: fileFilter)
+    def mainSrc = "${project.projectDir}/src/main/java"
+
+    sourceDirectories.setFrom(files([mainSrc]))
+    classDirectories.setFrom(files([debugTree]))
+    executionData.setFrom(fileTree(dir: "$buildDir", includes: [
+            "jacoco/testDebugUnitTest.exec",
+            "outputs/code-coverage/connected/*coverage.ec"
+    ]))
 }
