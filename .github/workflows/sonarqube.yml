@@ -28,14 +28,11 @@ jobs:
           path: ~/.gradle/caches
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
           restore-keys: ${{ runner.os }}-gradle
-      - name: Start Emulator
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: 23
-          script: ./gradlew connectedCheck
       - name: Build and analyze
+        uses: reactivecircus/android-emulator-runner@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: ./gradlew build jacocoTestReport sonarqube --info
-      
+        with:
+          api-level: 23
+          script: ./gradlew build jacocoTestReport sonarqube --info
