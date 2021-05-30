@@ -24,6 +24,7 @@ buildscript {
 
 plugins {
     id "org.sonarqube" version "3.2.0"
+    id 'jacoco'
 }
 
 sonarqube {
@@ -31,6 +32,7 @@ sonarqube {
         property "sonar.projectKey", "Vaultionizer_vault-android-app"
         property "sonar.organization", "vaultionizer"
         property "sonar.host.url", "https://sonarcloud.io"
+        property "sonar.coverage.jacoco.xmlReportPaths", "build/reports/coverage/debug/report.xml"
     }
 }
 
@@ -45,4 +47,8 @@ allprojects {
 
 task clean(type: Delete) {
     delete rootProject.buildDir
+}
+
+tasks.withType(Test) {
+    jacoco.includeNoLocationClasses = true
 }
