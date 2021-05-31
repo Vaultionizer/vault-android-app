@@ -98,7 +98,7 @@ dependencies {
     implementation 'com.github.razir.progressbutton:progressbutton:2.1.0'
 
     // Material drawer
-    implementation "com.mikepenz:materialdrawer:8.4.0"
+    implementation "com.mikepenz:materialdrawer:8.4.1"
 
     // Required support lib modules
     implementation "androidx.recyclerview:recyclerview:1.2.0"
