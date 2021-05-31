@@ -35,4 +35,4 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           api-level: 23
-          script: ./gradlew build jacocoTestReport sonarqube --info
+          script: ./gradlew jacocoTestReport sonarqube --info
