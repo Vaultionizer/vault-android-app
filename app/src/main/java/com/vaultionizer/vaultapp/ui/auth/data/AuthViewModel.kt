@@ -9,6 +9,7 @@ import androidx.lifecycle.viewModelScope
 import com.hadilq.liveevent.LiveEvent
 import com.vaultionizer.vaultapp.R
 import com.vaultionizer.vaultapp.cryptography.PasswordValidator
+import com.vaultionizer.vaultapp.data.model.rest.misc.NetworkVersion
 import com.vaultionizer.vaultapp.data.model.rest.result.Resource
 import com.vaultionizer.vaultapp.repository.AuthRepository
 import com.vaultionizer.vaultapp.repository.MiscRepository
@@ -30,12 +31,15 @@ class AuthViewModel @Inject constructor(
 
     private var authenticationFormData = AuthFormData()
 
+    var serverVersion : NetworkVersion? = null
+
     fun resetState() {
         _authenticationEvent.value = null
         authenticationFormData = AuthFormData()
     }
 
     fun validateHost(host: String) {
+        serverVersion = null
         if (host.isEmpty()) {
             _authenticationEvent.value =
                 AuthEvent.HostValidation(error = getString(R.string.host_error_syntax))
@@ -50,10 +54,12 @@ class AuthViewModel @Inject constructor(
                             isLoading = true
                         )
 
-                    is Resource.Success ->
+                    is Resource.Success -> {
+                        serverVersion = it.data
                         AuthEvent.HostValidation(
                             version = it.data
                         )
+                    }
 
                     is Resource.MiscError.HostServerError ->
                         AuthEvent.HostValidation(
@@ -114,6 +120,28 @@ class AuthViewModel @Inject constructor(
                 }
 
                 _authenticationEvent.value = event
+            }
+        }
+    }
+
+    fun validateAuthKey() {
+        viewModelScope.launch {
+            val result = miscRepository.checkAuthenticated(
+                authenticationFormData.authKey
+            )
+            result.collect {
+                when (it) {
+                    is Resource.Success ->
+                        registerWithFormData()
+                    is Resource.MiscError.MalformedAuthString ->
+                        AuthEvent.AuthKeyValidation(
+                            error = "Malformed Auth String"
+                        )
+                    is Resource.MiscError.InvalidAuthKey ->
+                        AuthEvent.AuthKeyValidation(
+                            error = "Invalid AuthKey"
+                        )
+                }
             }
         }
     }

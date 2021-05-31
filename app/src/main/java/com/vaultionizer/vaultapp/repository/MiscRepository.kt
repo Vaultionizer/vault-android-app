@@ -16,4 +16,8 @@ interface MiscRepository {
      * @return      A flow as described for [com.vaultionizer.vaultapp.data.model.rest.result.NetworkBoundResource].
      */
     suspend fun pingHost(host: String): Flow<Resource<NetworkVersion>>
+
+    suspend fun checkAuthenticated(
+        authKeyString: String
+    ): Flow<Resource<Boolean>>
 }

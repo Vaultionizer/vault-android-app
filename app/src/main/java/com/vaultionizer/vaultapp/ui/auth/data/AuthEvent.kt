@@ -20,4 +20,7 @@ sealed class AuthEvent {
         val error: String? = null
     ) : AuthEvent()
 
+    data class AuthKeyValidation(
+        val error: String? = null
+    ) : AuthEvent()
 }
