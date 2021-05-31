@@ -25,8 +25,8 @@ class AuthViewModel @Inject constructor(
     @ApplicationContext private val applicationContext: Context
 ) : ViewModel() {
 
-    private val _authenticationEvent = LiveEvent<AuthEvent>()
-    val authenticationEvent: LiveData<AuthEvent> = _authenticationEvent
+    private val _authenticationEvent = LiveEvent<AuthEvent?>()
+    val authenticationEvent: LiveData<AuthEvent?> = _authenticationEvent
 
     private var authenticationFormData = AuthFormData()
 
