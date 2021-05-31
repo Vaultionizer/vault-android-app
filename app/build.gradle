@@ -110,7 +110,7 @@ dependencies {
     implementation "com.mikepenz:materialdrawer-iconics:8.4.0"
 
     // WebSocket
-    implementation 'org.hildan.krossbow:krossbow-stomp-core:1.4.0'
+    implementation 'org.hildan.krossbow:krossbow-stomp-core:2.0.0'
     implementation 'org.hildan.krossbow:krossbow-websocket-okhttp:2.0.0'
 
     // Expandable FAB
