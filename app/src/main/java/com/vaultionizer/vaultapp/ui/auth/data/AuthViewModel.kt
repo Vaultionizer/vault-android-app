@@ -4,9 +4,9 @@ import android.content.Context
 import android.util.Log
 import android.util.Patterns
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.hadilq.liveevent.LiveEvent
 import com.vaultionizer.vaultapp.R
 import com.vaultionizer.vaultapp.cryptography.PasswordValidator
 import com.vaultionizer.vaultapp.data.model.rest.result.Resource
@@ -25,7 +25,7 @@ class AuthViewModel @Inject constructor(
     @ApplicationContext private val applicationContext: Context
 ) : ViewModel() {
 
-    private val _authenticationEvent = MutableLiveData<AuthEvent>()
+    private val _authenticationEvent = LiveEvent<AuthEvent>()
     val authenticationEvent: LiveData<AuthEvent> = _authenticationEvent
 
     private var authenticationFormData = AuthFormData()
@@ -37,7 +37,8 @@ class AuthViewModel @Inject constructor(
 
     fun validateHost(host: String) {
         if (host.isEmpty()) {
-            _authenticationEvent.postValue(AuthEvent.HostValidation(error = getString(R.string.host_error_syntax)))
+            _authenticationEvent.value =
+                AuthEvent.HostValidation(error = getString(R.string.host_error_syntax))
             return
         }
 
@@ -65,7 +66,7 @@ class AuthViewModel @Inject constructor(
                         )
                 }
 
-                _authenticationEvent.postValue(event)
+                _authenticationEvent.value = event
             }
         }
     }
@@ -112,7 +113,7 @@ class AuthViewModel @Inject constructor(
                         )
                 }
 
-                _authenticationEvent.postValue(event)
+                _authenticationEvent.value = event
             }
         }
     }
@@ -143,7 +144,7 @@ class AuthViewModel @Inject constructor(
                         )
                 }
 
-                _authenticationEvent.postValue(event)
+                _authenticationEvent.value = event
             }
         }
     }
@@ -151,15 +152,14 @@ class AuthViewModel @Inject constructor(
     fun hostDataChanged(host: String) {
         if (!isHostSyntaxValid(host)) {
             Log.e("Vault", "Invalid host")
-            _authenticationEvent.postValue(
+            _authenticationEvent.value =
                 AuthEvent.HostValidation(
                     error = getString(R.string.host_error_syntax)
                 )
-            )
         } else {
             Log.e("Vault", "Change host to $host")
             authenticationFormData.host = host
-            _authenticationEvent.postValue(AuthEvent.HostValidation())
+            _authenticationEvent.value = AuthEvent.HostValidation()
         }
     }
 
@@ -195,13 +195,12 @@ class AuthViewModel @Inject constructor(
             Log.e("Vault", "Password ${password?.length}")
         }
 
-        _authenticationEvent.postValue(
+        _authenticationEvent.value =
             AuthEvent.UserDataValidation(
                 usernameError = getString(usernameError),
                 passwordError = getString(passwordError),
                 isDataValid = usernameError == null && passwordError == null
             )
-        )
     }
 
     fun authKeyDataChanged(authKey: String) {

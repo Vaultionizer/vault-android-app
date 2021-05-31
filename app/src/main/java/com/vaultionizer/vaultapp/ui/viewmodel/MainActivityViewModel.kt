@@ -103,11 +103,10 @@ class MainActivityViewModel @Inject constructor(
                             updateCurrentFiles()
                         }
                         is Resource.CryptographicalError -> {
-                            _fileEvent.postValue(
+                            _fileEvent.value =
                                 FileEvent.EncryptionKeyRequired(
                                     selectedSpace.value!!
                                 )
-                            )
                         }
                     }
                 }
@@ -124,7 +123,6 @@ class MainActivityViewModel @Inject constructor(
                         _currentDirectory.value!!,
                     )
 
-                    _fileEvent.postValue(null)
                     return@launch
                 }
 
@@ -133,12 +131,11 @@ class MainActivityViewModel @Inject constructor(
 
                 for (file in folder.content ?: emptyList()) {
                     if (it.name == name) {
-                        _fileEvent.postValue(
+                        _fileEvent.value =
                             FileEvent.UploadFileNameConflict(
                                 it,
                                 uri
                             )
-                        )
                         return@launch
                     }
                 }
@@ -149,7 +146,6 @@ class MainActivityViewModel @Inject constructor(
     fun requestUpdate(file: VNFile, uri: Uri) {
         viewModelScope.launch {
             fileRepository.updateFile(file, uri)
-            _fileEvent.postValue(null)
         }
     }
 
@@ -215,7 +211,7 @@ class MainActivityViewModel @Inject constructor(
     fun selectedSpaceChanged(space: VNSpace): Boolean {
         Log.e("Vault", "Change space...")
         if (!space.isKeyAvailable) {
-            _fileEvent.postValue(FileEvent.EncryptionKeyRequired(space))
+            _fileEvent.value = FileEvent.EncryptionKeyRequired(space)
             return false
         }
 
