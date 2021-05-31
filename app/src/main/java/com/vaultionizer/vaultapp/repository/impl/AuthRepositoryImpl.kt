@@ -2,6 +2,10 @@ package com.vaultionizer.vaultapp.repository.impl
 
 import android.util.Log
 import com.google.gson.Gson
+import com.vaultionizer.vaultapp.cryptography.CryptoUtils
+import com.vaultionizer.vaultapp.cryptography.crypto.CryptoMode
+import com.vaultionizer.vaultapp.cryptography.crypto.CryptoPadding
+import com.vaultionizer.vaultapp.cryptography.crypto.CryptoType
 import com.vaultionizer.vaultapp.data.cache.AuthCache
 import com.vaultionizer.vaultapp.data.db.dao.LocalUserDao
 import com.vaultionizer.vaultapp.data.db.entity.LocalUser
@@ -62,6 +66,17 @@ class AuthRepositoryImpl @Inject constructor(
         authKey: String
     ): Flow<Resource<LoggedInUser>> {
         RestModule.host = "${Constants.DEFAULT_PROTOCOL}://$host"
+
+        val nextId = spaceRepository.peekNextSpaceId()
+        if (CryptoUtils.existsKey(nextId)) {
+            CryptoUtils.deleteKey(nextId)
+        }
+        CryptoUtils.generateKeyForSingleUserSpace(
+            nextId,
+            CryptoType.AES,
+            CryptoMode.GCM,
+            CryptoPadding.NoPadding
+        )
 
         return object : NetworkBoundResource<LoggedInUser, NetworkUserAuthPair>() {
             override fun shouldFetch(): Boolean = true
@@ -124,7 +139,7 @@ class AuthRepositoryImpl @Inject constructor(
     }
 
     override suspend fun logout(): Boolean {
-        if (authCache.loggedInUser != null){
+        if (authCache.loggedInUser != null) {
             authCache.loggedInUser = null
             userService.logoutUser()
             //if(response is ApiResult.Success ) {
@@ -135,7 +150,7 @@ class AuthRepositoryImpl @Inject constructor(
     }
 
     override suspend fun deleteUser(): Boolean {
-        if (authCache.loggedInUser?.localUser?.remoteUserId != null){
+        if (authCache.loggedInUser?.localUser?.remoteUserId != null) {
             spaceRepository.deleteAllSpaces()
             userService.deleteUser()
             //if (response is ApiResult.Success){

@@ -11,13 +11,11 @@ import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 import javax.crypto.spec.GCMParameterSpec
 
-class AesGcmNopadding : CryptoClass() {
+object AesGcmNopadding : CryptoClass() {
 
-    companion object {
-        const val TAG_LENGTH = 16
-        const val TRANSFORMATION = "AES/GCM/NoPadding"
-        const val BLOCK_MODE_IV_SIZE = 12
-    }
+    const val TAG_LENGTH = 16
+    const val TRANSFORMATION = "AES/GCM/NoPadding"
+    const val BLOCK_MODE_IV_SIZE = 12
 
     override fun generateSingleUserKey(keystoreAlias: String) {
         val keyGenerator = KeyGenerator.getInstance(

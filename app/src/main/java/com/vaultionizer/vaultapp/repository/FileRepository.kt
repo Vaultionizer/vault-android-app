@@ -79,7 +79,11 @@ interface FileRepository {
      */
     suspend fun uploadFolder(name: String, parent: VNFile): VNFile?
 
-    /**
+    suspend fun updateFile(file: VNFile, uri: Uri): Boolean
+
+    suspend fun updateFile(file: VNFile, data: ByteArray): Boolean
+  
+     /**
      * Downloads a file to the remote server and writes it to the local file system.
      * The file itself is NOT decrypted during the process.
      *

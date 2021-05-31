@@ -19,6 +19,8 @@ import com.vaultionizer.vaultapp.data.model.rest.result.Resource
 import com.vaultionizer.vaultapp.repository.FileRepository
 import com.vaultionizer.vaultapp.repository.SpaceRepository
 import com.vaultionizer.vaultapp.ui.main.file.FileEvent
+import com.vaultionizer.vaultapp.util.deleteFile
+import com.vaultionizer.vaultapp.util.getFileName
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.collect
@@ -113,12 +115,41 @@ class MainActivityViewModel @Inject constructor(
         }
     }
 
-    fun requestUpload(uri: Uri) {
+    fun requestUpload(uri: Uri, forceUpload: Boolean = false) {
         viewModelScope.launch {
-            fileRepository.uploadFile(
-                uri,
-                _currentDirectory.value!!,
-            )
+            currentDirectory.value?.let {
+                if (forceUpload) {
+                    fileRepository.uploadFile(
+                        uri,
+                        _currentDirectory.value!!,
+                    )
+
+                    _fileEvent.postValue(null)
+                    return@launch
+                }
+
+                val folder = currentDirectory.value!!
+                val name = context.contentResolver.getFileName(uri)
+
+                for (file in folder.content ?: emptyList()) {
+                    if (it.name == name) {
+                        _fileEvent.postValue(
+                            FileEvent.UploadFileNameConflict(
+                                it,
+                                uri
+                            )
+                        )
+                        return@launch
+                    }
+                }
+            }
+        }
+    }
+
+    fun requestUpdate(file: VNFile, uri: Uri) {
+        viewModelScope.launch {
+            fileRepository.updateFile(file, uri)
+            _fileEvent.postValue(null)
         }
     }
 
@@ -143,9 +174,17 @@ class MainActivityViewModel @Inject constructor(
         }
     }
 
-    fun requestDeletion(file: VNFile) {
+    fun requestPermanentDeletion(file: VNFile) {
         viewModelScope.launch {
             fileRepository.deleteFile(file)
+            updateCurrentFiles()
+        }
+    }
+
+    fun requestLocalDeletion(file: VNFile) {
+        viewModelScope.launch {
+            file.state = VNFile.State.AVAILABLE_REMOTE
+            context.deleteFile(file.localId)
             updateCurrentFiles()
         }
     }
@@ -157,7 +196,7 @@ class MainActivityViewModel @Inject constructor(
                 when (it) {
                     is Resource.Success -> {
                         val spaces = _userSpaces.value!!.toMutableList()
-                        spaces.remove(it)
+                        spaces.remove(it.data)
 
                         _selectedSpace.value = spaces[0]
                         _currentDirectory.value = null
@@ -213,7 +252,7 @@ class MainActivityViewModel @Inject constructor(
         }
         if (_currentDirectory.value != null) {
             val list = mutableListOf<VNFile>()
-            buildSearchList(query.toLowerCase(), _currentDirectory.value!!, list)
+            buildSearchList(query.lowercase(Locale.getDefault()), _currentDirectory.value!!, list)
 
             _shownElements.value = list
         }
@@ -221,14 +260,12 @@ class MainActivityViewModel @Inject constructor(
 
     private fun buildSearchList(query: String, file: VNFile, list: MutableList<VNFile>) {
         if (file.isFolder) {
-            file.content?.forEach {
-                Log.e("Vault", it.name)
-
-                if (it.name.toLowerCase().contains(query)) {
-                    list.add(it)
+            for (child in file.content ?: emptyList()) {
+                if (child.name.lowercase(Locale.getDefault()).contains(query)) {
+                    list.add(child)
                 }
 
-                if (it.isFolder) buildSearchList(query, it, list)
+                if (child.isFolder) buildSearchList(query, child, list)
             }
         }
     }

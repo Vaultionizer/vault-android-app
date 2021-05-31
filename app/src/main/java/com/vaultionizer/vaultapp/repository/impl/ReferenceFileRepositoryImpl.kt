@@ -59,7 +59,8 @@ class ReferenceFileRepositoryImpl @Inject constructor(
         return flow {
             val uploadResponse = referenceFileService.uploadReferenceFile(
                 UploadReferenceFileRequest(
-                    gson.toJson(referenceFile)), space.remoteId
+                    gson.toJson(referenceFile)
+                ), space.remoteId
             )
 
             emit(uploadResponse.mapToResource(referenceFile))

@@ -1,6 +1,7 @@
 package com.vaultionizer.vaultapp.data.model.domain
 
 import android.content.Context
+import android.webkit.MimeTypeMap
 import com.vaultionizer.vaultapp.data.db.entity.LocalFile
 import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkElement
 import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkFile
@@ -30,13 +31,25 @@ class VNFile(
     val isFolder: Boolean
         get() = content != null
 
-    // ==== Meta ====
+    /**
+     * Metadata and status
+     */
     var lastUpdated: Long = System.currentTimeMillis()
     var createdAt: Long = System.currentTimeMillis()
     var lastSyncTimestamp: Long = System.currentTimeMillis()
     var state: State? = State.AVAILABLE_REMOTE
     val isBusy: Boolean
         get() = state == State.DOWNLOADING || state == State.UPLOADING || state == State.ENCRYPTING || state == State.DECRYPTING
+
+    /**
+     * Extension information
+     */
+    val extension: String?
+        get() = MimeTypeMap.getFileExtensionFromUrl(name)
+    val mimeType: String?
+        get() = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)
+    val isImage: Boolean
+        get() = extension?.toLowerCase() in setOf("png", "jpg", "jpeg")
 
     // TODO(jatsqi) Refactor constructors
     constructor(
@@ -80,8 +93,8 @@ class VNFile(
                 name = name,
                 id = remoteId!!,
                 crc = "",
-                createdAt = createdAt!!,
-                updatedAt = lastUpdated!!,
+                createdAt = createdAt,
+                updatedAt = lastUpdated,
                 size = 0
             )
         }

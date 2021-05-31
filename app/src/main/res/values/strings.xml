@@ -80,6 +80,12 @@
     <string name="file_viewer_request_key_positive">Generate Key</string>
     <string name="file_viewer_request_key_negative">Import Key</string>
     <string name="file_viewer_offline">{gmo-cloud-off} Your device is offline.</string>
+    <string name="file_viewer_replace_or_upload_dialog_title">Ups, this file is already here!</string>
+    <string name="file_viewer_replace_or_upload_dialog_message">There is already a file with the same name in this folder. Do you want to keep both or replace the existing one?</string>
+    <string name="file_viewer_replace_or_upload_dialog_positive">Keep both</string>
+    <string name="file_viewer_replace_or_upload_dialog_negative">Replace</string>
+    <string name="file_viewer_file_options_delete_permanently">Delete permanently</string>
+    <string name="file_viewer_file_options_delete_locally">Delete locally</string>
 
     <string name="delete_file_progress_title">Are you sure?</string>
     <string name="delete_file_progress_content">You won\'t be able to recover these files!</string>

@@ -11,12 +11,10 @@ import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 import javax.crypto.spec.IvParameterSpec
 
-class AesCbcNopadding : CryptoClass() {
+object AesCbcNopadding : CryptoClass() {
 
-    companion object {
-        const val TRANSFORMATION = "AES/CBC/NoPadding"
-        const val BLOCK_MODE_IV_SIZE = 16
-    }
+    const val TRANSFORMATION = "AES/CBC/NoPadding"
+    const val BLOCK_MODE_IV_SIZE = 16
 
     override fun generateSingleUserKey(keystoreAlias: String) {
         val keyGenerator = KeyGenerator.getInstance(

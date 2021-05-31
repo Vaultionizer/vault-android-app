@@ -24,14 +24,12 @@ import dagger.hilt.android.AndroidEntryPoint
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
-import java.lang.Exception
 
 @AndroidEntryPoint
 class AuthKeyFragment : Fragment() {
     private val args: AuthKeyFragmentArgs by navArgs()
     private var payload: String = ""
     private var bitmap: Bitmap? = null
-
 
 
     override fun onCreateView(
@@ -43,7 +41,7 @@ class AuthKeyFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         if (args.authKey != null && args.remoteSpaceId >= 0L && args.symmetricKey != null) {
-            showDialog(FileAlertDialogType.SHOW_AUTH_KEY, {showQRCode()}, {returnToSettings()})
+            showDialog(FileAlertDialogType.SHOW_AUTH_KEY, { showQRCode() }, { returnToSettings() })
         } else returnToSettings()
     }
 
@@ -51,7 +49,7 @@ class AuthKeyFragment : Fragment() {
         findNavController().navigate(AuthKeyFragmentDirections.actionAuthKeyFragmentToSpacePermissionsFragment())
     }
 
-    private fun showQRCode(){
+    private fun showQRCode() {
         // create QR code
         val payloadCRC = CRC32Handler.createQRPayload(
             args.authKey!!, args.remoteSpaceId,
@@ -68,16 +66,19 @@ class AuthKeyFragment : Fragment() {
         val copyBtn = view?.findViewById<Button>(R.id.copy_auth_key_btn)
         val saveBtn = view?.findViewById<Button>(R.id.save_auth_key_btn)
 
-        copyBtn?.setOnClickListener{
+        copyBtn?.setOnClickListener {
             showDialog(FileAlertDialogType.COPY_AUTH_KEY, { copyAuthKey() }, { cancelToast() })
         }
 
         saveBtn?.setOnClickListener {
-            showDialog(FileAlertDialogType.SAVE_AUTH_KEY, { saveAuthKey(args.remoteSpaceId) }, { cancelToast() })
+            showDialog(
+                FileAlertDialogType.SAVE_AUTH_KEY,
+                { saveAuthKey(args.remoteSpaceId) },
+                { cancelToast() })
         }
     }
 
-    private fun copyAuthKey(){
+    private fun copyAuthKey() {
         val clipboardManager: ClipboardManager =
             requireContext().getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         val clip = ClipData.newPlainText("AuthKey", payload)
@@ -85,17 +86,17 @@ class AuthKeyFragment : Fragment() {
         Toast.makeText(context, R.string.copied_auth_key_success, Toast.LENGTH_LONG).show()
     }
 
-    private fun saveAuthKey(remoteSpaceId: Long){
+    private fun saveAuthKey(remoteSpaceId: Long) {
         if (bitmap == null || remoteSpaceId < 0) return failedSaveAuthKey("bitmap or remoteSpaceId")
         var filename: String = requireContext().getExternalFilesDir(null)?.absolutePath
             ?: return failedSaveAuthKey("externalFilesDir")
         filename += "/vaultionizer/qrcode_space$remoteSpaceId.png"
         val file = File(filename)
-        if (!file.exists()){
-            try{
+        if (!file.exists()) {
+            try {
                 file.parentFile?.mkdirs()
                 file.createNewFile()
-            }catch (e: Exception){
+            } catch (e: Exception) {
                 return failedSaveAuthKey("Mkdirs")
             }
         }
@@ -110,12 +111,12 @@ class AuthKeyFragment : Fragment() {
         Toast.makeText(context, R.string.success_saving_auth_key, Toast.LENGTH_SHORT).show()
     }
 
-    private fun failedSaveAuthKey(t : String? = null){
+    private fun failedSaveAuthKey(t: String? = null) {
         Toast.makeText(context, R.string.failed_saving_auth_key, Toast.LENGTH_SHORT).show()
-        if(t != null) Log.e("Vault", t)
+        if (t != null) Log.e("Vault", t)
     }
 
-    private fun cancelToast(){
+    private fun cancelToast() {
         Toast.makeText(context, R.string.wise_decision_not_copy_save, Toast.LENGTH_SHORT).show()
     }
 

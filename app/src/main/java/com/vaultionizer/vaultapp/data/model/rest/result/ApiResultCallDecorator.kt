@@ -8,10 +8,14 @@ import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
 
-class ApiResultCallDecorator<T : Any>(val proxy: Call<T>, val typeClass: Class<*>) :
+class ApiResultCallDecorator<T : Any>(
+    val proxy: Call<T>,
+    val typeClass: Class<*>
+) :
     Call<ApiResult<T>> {
 
-    override fun clone(): Call<ApiResult<T>> = ApiResultCallDecorator(proxy.clone(), typeClass)
+    override fun clone(): Call<ApiResult<T>> =
+        ApiResultCallDecorator(proxy.clone(), typeClass)
 
     override fun execute(): Response<ApiResult<T>> = TODO()
 

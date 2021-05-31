@@ -36,7 +36,10 @@
           "type": "integer"
         }
       },
-      "required": ["key", "value"]
+      "required": [
+        "key",
+        "value"
+      ]
     },
     "category": {
       "type": "object",
@@ -49,7 +52,10 @@
           "minLength": 0
         }
       },
-      "required": ["id", "name"]
+      "required": [
+        "id",
+        "name"
+      ]
     }
   }
 }

@@ -8,16 +8,16 @@ class HashingTest {
 
     @Test
     fun sha256() {
-        val result = Hashing().sha256("Hallo1234567890")
+        val result = Hashing.sha256("Hallo1234567890")
         assertThat(result).isEqualTo("5f979c8e8f6f879420e932174546ca7ac47c50df9f15c7a3178fef08c256d61d")
     }
 
     @Test
     fun bCryptValid() {
         val pwd = Password("TransferPassword".toByteArray(Charsets.UTF_8))
-        val hashSalt = Hashing().bCryptHash(pwd)
+        val hashSalt = Hashing.bCryptHash(pwd)
 
-        val result = Hashing().bCryptValidate(pwd, hashSalt)
+        val result = Hashing.bCryptValidate(pwd, hashSalt)
 
         assertThat(result).isTrue()
     }
@@ -25,10 +25,10 @@ class HashingTest {
     @Test
     fun bCryptInvalid() {
         val pwd = Password("TransferPassword".toByteArray(Charsets.UTF_8))
-        val hashSalt = Hashing().bCryptHash(pwd)
+        val hashSalt = Hashing.bCryptHash(pwd)
 
         val pwdFalse = Password("InvalidPassword".toByteArray(Charsets.UTF_8))
-        val result = Hashing().bCryptValidate(pwdFalse, hashSalt)
+        val result = Hashing.bCryptValidate(pwdFalse, hashSalt)
 
         assertThat(result).isFalse()
     }

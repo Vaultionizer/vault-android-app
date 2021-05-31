@@ -1,6 +1,5 @@
 package com.vaultionizer.vaultapp.repository
 
-import com.vaultionizer.vaultapp.data.db.entity.LocalUser
 import com.vaultionizer.vaultapp.data.model.rest.result.Resource
 import com.vaultionizer.vaultapp.data.model.rest.user.LoggedInUser
 import kotlinx.coroutines.flow.Flow

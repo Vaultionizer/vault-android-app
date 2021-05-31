@@ -77,7 +77,7 @@ class CryptographyTest {
             password
         )
         val secretKey = Cryptography.getKey(testingSpaceID)
-        val ivCipher = AesGcmNopadding().encrypt(secretKey, message.toByteArray())
+        val ivCipher = AesGcmNopadding.encrypt(secretKey, message.toByteArray())
         Cryptography.deleteKey(testingSpaceID)
 
         Cryptography.importKey(testingSpaceID, transferBytes, password)
