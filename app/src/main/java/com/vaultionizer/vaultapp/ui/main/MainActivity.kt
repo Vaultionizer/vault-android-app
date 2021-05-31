@@ -17,10 +17,7 @@ import com.afollestad.materialdialogs.MaterialDialog
 import com.mikepenz.iconics.typeface.library.fontawesome.FontAwesome
 import com.mikepenz.iconics.typeface.library.googlematerial.OutlinedGoogleMaterial
 import com.mikepenz.materialdrawer.iconics.iconicsIcon
-import com.mikepenz.materialdrawer.model.NavigationDrawerItem
-import com.mikepenz.materialdrawer.model.PrimaryDrawerItem
-import com.mikepenz.materialdrawer.model.ProfileDrawerItem
-import com.mikepenz.materialdrawer.model.SectionDrawerItem
+import com.mikepenz.materialdrawer.model.*
 import com.mikepenz.materialdrawer.model.interfaces.*
 import com.mikepenz.materialdrawer.util.addItems
 import com.mikepenz.materialdrawer.util.removeAllItems
@@ -103,44 +100,8 @@ class MainActivity : AppCompatActivity() {
             rebuildGeneralUi(navView)
 
             navView.apply {
-                addItems(
-                    NavigationDrawerItem(R.id.createSpaceFragment, PrimaryDrawerItem().apply {
-                        identifier = nextIdentifier()
-                        nameText = getString(R.string.create_space_navigation)
-                        iconicsIcon = FontAwesome.Icon.faw_plus_circle
-                        isSelectable = false
-                    }),
-                    NavigationDrawerItem(R.id.joinSpaceFragment, PrimaryDrawerItem().apply {
-                        identifier = nextIdentifier()
-                        nameText = getString(R.string.join_space_navigation)
-                        iconDrawable = getDrawable(R.drawable.ic_baseline_qr_code_scanner_24)
-                        isSelectable = false
-                    })
-                )
                 for (space in it) {
-                    addItems(
-                        NavigationDrawerItem(
-                            R.id.fileFragment,
-                            PrimaryDrawerItem().apply {
-                                iconicsIcon = if (space.owner) {
-                                    FontAwesome.Icon.faw_user
-                                } else {
-                                    FontAwesome.Icon.faw_users
-                                }
-
-                                identifier = nextIdentifier()
-                                nameText = if (space.name != null) {
-                                    "Space \"${space.name}\""
-                                } else {
-                                "Space #${space.id}"
-                            }
-                            isSelectable = false
-                        }.apply {
-                            identifier = nextIdentifier()
-                            tag = space
-                            isSelectable = false
-                        })
-                    )
+                    addItems(buildSpaceDrawerItem(space))
                 }
             }
         }
@@ -184,6 +145,16 @@ class MainActivity : AppCompatActivity() {
         return navController.navigateUp(appBarConfiguration) || super.onSupportNavigateUp()
     }
 
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        val mapFragment =
+            (supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment).navController.currentDestination?.id
+        if (mapFragment == R.id.viewPC && item.itemId == android.R.id.home) {
+            onBackPressed()
+            return true
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
     private fun trySwitchSpace(space: VNSpace) {
         if (viewModel.selectedSpaceChanged(space)) {
             actionBar?.title = "Space ${space.remoteId}"
@@ -196,6 +167,30 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun rebuildGeneralUi(navigationView: MaterialDrawerSliderView) {
+        rebuildGeneralSpaceUi(navigationView)
+        rebuildGeneralSpaceUi(navigationView)
+    }
+
+    private fun rebuildGeneralSpaceUi(navigationView: MaterialDrawerSliderView) {
+        navigationView.apply {
+            addItems(
+                NavigationDrawerItem(R.id.createSpaceFragment, PrimaryDrawerItem().apply {
+                    identifier = nextIdentifier()
+                    nameText = getString(R.string.create_space_navigation)
+                    iconicsIcon = FontAwesome.Icon.faw_plus_circle
+                    isSelectable = false
+                }),
+                NavigationDrawerItem(R.id.joinSpaceFragment, PrimaryDrawerItem().apply {
+                    identifier = nextIdentifier()
+                    nameText = getString(R.string.join_space_navigation)
+                    iconDrawable = getDrawable(R.drawable.ic_baseline_qr_code_scanner_24)
+                    isSelectable = false
+                })
+            )
+        }
+    }
+
+    private fun rebuildGeneralManagementUi(navigationView: MaterialDrawerSliderView) {
         navigationView.apply {
             addItems(
                 SectionDrawerItem().apply {
@@ -222,13 +217,27 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        val mapFragment =
-            (supportFragmentManager.findFragmentById(R.id.nav_host_fragment) as NavHostFragment).navController.currentDestination?.id
-        if (mapFragment == R.id.viewPC && item.itemId == android.R.id.home) {
-            onBackPressed()
-            return true
+    private fun buildSpaceDrawerItem(space: VNSpace): NavigationDrawerItem<AbstractBadgeableDrawerItem.ViewHolder> {
+        val primary = PrimaryDrawerItem().apply {
+            iconicsIcon = if (space.owner) {
+                FontAwesome.Icon.faw_user
+            } else {
+                FontAwesome.Icon.faw_users
+            }
+
+            identifier = nextIdentifier()
+            nameText = if (space.name != null) {
+                "Space \"${space.name}\""
+            } else {
+                "Space #${space.id}"
+            }
+            isSelectable = false
+        }.apply {
+            identifier = nextIdentifier()
+            tag = space
+            isSelectable = false
         }
-        return super.onOptionsItemSelected(item)
+
+        return NavigationDrawerItem(R.id.fileFragment, primary)
     }
 }
