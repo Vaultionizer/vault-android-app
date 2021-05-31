@@ -8,6 +8,8 @@ import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 
 abstract class CryptoClass {
+    abstract val BLOCK_MODE_IV_SIZE : Int
+
     abstract fun generateSingleUserKey(keystoreAlias: String)
 
     fun generateSharedKey(keystoreAlias: String, pwd: Password): SharedKeyOutput {
@@ -31,6 +33,5 @@ abstract class CryptoClass {
 
     abstract fun encrypt(key: SecretKey, message: ByteArray): IvCipher
     abstract fun decrypt(key: SecretKey, iv: ByteArray, message: ByteArray): ByteArray
-    abstract fun dewrapper(warp: ByteArray): IvCipher
     abstract fun addKeyToKeyStore(secretKey: SecretKey, keystoreAlias: String)
 }

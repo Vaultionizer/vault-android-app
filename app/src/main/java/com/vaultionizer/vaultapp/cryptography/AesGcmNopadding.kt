@@ -15,7 +15,7 @@ object AesGcmNopadding : CryptoClass() {
 
     const val TAG_LENGTH = 16
     const val TRANSFORMATION = "AES/GCM/NoPadding"
-    const val BLOCK_MODE_IV_SIZE = 12
+    override val BLOCK_MODE_IV_SIZE = 12
 
     override fun generateSingleUserKey(keystoreAlias: String) {
         val keyGenerator = KeyGenerator.getInstance(
@@ -48,13 +48,6 @@ object AesGcmNopadding : CryptoClass() {
         val spec = GCMParameterSpec(TAG_LENGTH * 8, iv)
         cipher.init(Cipher.DECRYPT_MODE, key, spec)
         return cipher.doFinal(message)
-    }
-
-    override fun dewrapper(warp: ByteArray): IvCipher {
-        val iv: ByteArray = warp.sliceArray(0 until BLOCK_MODE_IV_SIZE)
-        val cipherText: ByteArray = warp.sliceArray(BLOCK_MODE_IV_SIZE until warp.size)
-
-        return IvCipher(iv, cipherText)
     }
 
     override fun addKeyToKeyStore(secretKey: SecretKey, keystoreAlias: String) {
