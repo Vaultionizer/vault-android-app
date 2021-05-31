@@ -107,7 +107,7 @@ dependencies {
     implementation "com.mikepenz:materialdrawer-nav:8.4.0"
 
     // Add for Android-Iconics support
-    implementation "com.mikepenz:materialdrawer-iconics:8.4.0"
+    implementation "com.mikepenz:materialdrawer-iconics:8.4.1"
 
     // WebSocket
     implementation 'org.hildan.krossbow:krossbow-stomp-core:2.0.0'
