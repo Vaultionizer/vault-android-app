@@ -44,8 +44,8 @@ class MainActivityViewModel @Inject constructor(
     private val _shownElements = MutableLiveData<List<VNFile>>()
     val shownElements: LiveData<List<VNFile>> = _shownElements
 
-    private val _currentDirectory = MutableLiveData<VNFile>()
-    val currentDirectory: LiveData<VNFile> = _currentDirectory
+    private val _currentDirectory = MutableLiveData<VNFile?>()
+    val currentDirectory: LiveData<VNFile?> = _currentDirectory
 
     private val _fileEvent = MutableLiveData<FileEvent>()
     val fileEvent: LiveData<FileEvent> = _fileEvent
