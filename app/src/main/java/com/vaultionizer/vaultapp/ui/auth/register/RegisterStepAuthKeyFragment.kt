@@ -43,7 +43,6 @@ class RegisterStepAuthKeyFragment : Fragment() {
         finishButton.attachTextChangeAnimator()
 
         /*
-            TODO delete QR code symbol
             TODO check if authentication key is valid
             TODO allow registration only if auth was successful
          */
