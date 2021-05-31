@@ -167,7 +167,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun rebuildGeneralUi(navigationView: MaterialDrawerSliderView) {
-        rebuildGeneralSpaceUi(navigationView)
+        rebuildGeneralManagementUi(navigationView)
         rebuildGeneralSpaceUi(navigationView)
     }
 
