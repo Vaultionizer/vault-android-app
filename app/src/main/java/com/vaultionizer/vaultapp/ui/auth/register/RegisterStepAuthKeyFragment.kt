@@ -41,11 +41,23 @@ class RegisterStepAuthKeyFragment : Fragment() {
 
         val finishButton = view.findViewById<Button>(R.id.button_finish)
         finishButton.attachTextChangeAnimator()
+
+        /*
+            TODO delete QR code symbol
+            TODO check if authentication key is valid
+            TODO allow registration only if auth was successful
+         */
+        if(authViewModel.serverVersion?.hasAuthKey == false){
+            authViewModel.registerWithFormData()
+        }
+        authViewModel.validateAuthKey()
+
         finishButton.setOnClickListener {
             finishButton.showProgress {
                 buttonTextRes = R.string.register_step_auth_key_finish_progress
                 progressColor = Color.WHITE
             }
+
             authViewModel.registerWithFormData()
         }
 

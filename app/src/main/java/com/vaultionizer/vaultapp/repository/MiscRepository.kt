@@ -6,4 +6,8 @@ import kotlinx.coroutines.flow.Flow
 
 interface MiscRepository {
     suspend fun pingHost(host: String): Flow<Resource<NetworkVersion>>
+
+    suspend fun checkAuthenticated(
+        authKeyString: String
+    ): Flow<Resource<Boolean>>
 }

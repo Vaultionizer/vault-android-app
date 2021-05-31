@@ -27,6 +27,8 @@ sealed class Resource<out T : Any> {
     sealed class MiscError<out T : Any> : Resource<T>() {
         data class HostServerError(val statusCode: Int) : MiscError<Nothing>()
         data class OutdatedVaultServerError(var foundVersion: String) : MiscError<Nothing>()
+        object MalformedAuthString : MiscError<Nothing>()
+        object InvalidAuthKey : MiscError<Nothing>()
     }
 
     sealed class RefFileError<out T : Any> : Resource<T>() {
