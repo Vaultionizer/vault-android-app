@@ -1,6 +1,6 @@
 package com.vaultionizer.vaultapp.data.cache
 
-import androidx.lifecycle.MutableLiveData
+import com.hadilq.liveevent.LiveEvent
 import com.vaultionizer.vaultapp.data.model.domain.VNFile
 import okhttp3.internal.EMPTY_BYTE_ARRAY
 
@@ -8,7 +8,7 @@ class DecryptionResultCache {
 
     private val fileDataPairs = mutableSetOf<DecryptionFileDataPair>()
 
-    private val decryptionResults_ = MutableLiveData<Set<DecryptionFileDataPair>>()
+    private val decryptionResults_ = LiveEvent<Set<DecryptionFileDataPair>>()
     val decryptionResultsLiveData = decryptionResults_
 
     fun addDecryptionResult(file: VNFile, data: ByteArray) {
@@ -18,7 +18,7 @@ class DecryptionResultCache {
 
     fun invalidateResult(file: VNFile) {
         if (fileDataPairs.remove(DecryptionFileDataPair(file, EMPTY_BYTE_ARRAY))) {
-            decryptionResults_.postValue(fileDataPairs)
+            decryptionResults_.value = fileDataPairs
         }
     }
 

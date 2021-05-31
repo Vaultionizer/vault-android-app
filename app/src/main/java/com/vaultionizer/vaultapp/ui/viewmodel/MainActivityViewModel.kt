@@ -130,7 +130,7 @@ class MainActivityViewModel @Inject constructor(
                 val name = context.contentResolver.getFileName(uri)
 
                 for (file in folder.content ?: emptyList()) {
-                    if (it.name == name) {
+                    if (file.name == name) {
                         _fileEvent.value =
                             FileEvent.UploadFileNameConflict(
                                 it,
@@ -139,6 +139,8 @@ class MainActivityViewModel @Inject constructor(
                         return@launch
                     }
                 }
+
+                requestUpload(uri, true)
             }
         }
     }
