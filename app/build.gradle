@@ -104,7 +104,7 @@ dependencies {
     implementation "androidx.recyclerview:recyclerview:1.2.0"
 
     // Add for NavController support
-    implementation "com.mikepenz:materialdrawer-nav:8.4.0"
+    implementation "com.mikepenz:materialdrawer-nav:8.4.1"
 
     // Add for Android-Iconics support
     implementation "com.mikepenz:materialdrawer-iconics:8.4.0"
