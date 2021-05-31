@@ -14,7 +14,7 @@ import javax.crypto.spec.IvParameterSpec
 object AesCbcNopadding : CryptoClass() {
 
     const val TRANSFORMATION = "AES/CBC/NoPadding"
-    const val BLOCK_MODE_IV_SIZE = 16
+    override val BLOCK_MODE_IV_SIZE = 16
 
     override fun generateSingleUserKey(keystoreAlias: String) {
         val keyGenerator = KeyGenerator.getInstance(
@@ -48,13 +48,6 @@ object AesCbcNopadding : CryptoClass() {
         cipher.init(Cipher.DECRYPT_MODE, key, spec)
 
         return cipher.doFinal(message)
-    }
-
-    override fun dewrapper(warp: ByteArray): IvCipher {
-        val iv: ByteArray = warp.sliceArray(0 until BLOCK_MODE_IV_SIZE)
-        val cipherText: ByteArray = warp.sliceArray(BLOCK_MODE_IV_SIZE until warp.size)
-
-        return IvCipher(iv, cipherText)
     }
 
     override fun addKeyToKeyStore(secretKey: SecretKey, keystoreAlias: String) {

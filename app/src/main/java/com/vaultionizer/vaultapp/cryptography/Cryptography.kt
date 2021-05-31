@@ -113,7 +113,7 @@ object Cryptography {
         val salt = Salt(saltIvcipher.salt)
         val importKey =
             SecretKeySpec(Hashing.bCryptHash(pwd, salt).hash.toByteArray(), "AES")
-        val keyPlainUnchecked = AesGcmNopadding.decrypt(
+        val keyPlainUnchecked = AesGcmNopadding.decrypt(            // TODO generalize when more exchange key types are available
             importKey,
             saltIvcipher.ivcipher.iv,
             saltIvcipher.ivcipher.cipher
@@ -121,7 +121,7 @@ object Cryptography {
         if (validate(keyPlainUnchecked)) {
             val keyPlain = keyPlainUnchecked.sliceArray(16 until keyPlainUnchecked.size)
             val secretKey = SecretKeySpec(keyPlain, "AES")
-            AesGcmNopadding.addKeyToKeyStore(secretKey, "${Constants.VN_KEY_PREFIX}$spaceID")
+            AesGcmNopadding.addKeyToKeyStore(secretKey, "${Constants.VN_KEY_PREFIX}$spaceID") // TODO generalize when more exchange key types are available
 
             return true
         }
@@ -190,13 +190,24 @@ object Cryptography {
     }
 
     fun dewrapper(secretKey: SecretKey, warp: ByteArray): IvCipher {
-        return getCryptoClass(secretKey).dewrapper(warp)
+        val ivLength = getCryptoClass(secretKey).BLOCK_MODE_IV_SIZE
+        val iv: ByteArray = warp.sliceArray(0 until ivLength)
+        val cipherText: ByteArray = warp.sliceArray(ivLength until warp.size)
+
+        return IvCipher(iv, cipherText)
+    }
+
+    fun dewrapper(warp: ByteArray, ivLength : Int): IvCipher{
+        val iv: ByteArray = warp.sliceArray(0 until ivLength)
+        val cipherText: ByteArray = warp.sliceArray(ivLength until warp.size)
+
+        return IvCipher(iv, cipherText)
     }
 
     fun desalter(bytes: ByteArray): SaltIvcipher {
         val salt = bytes.sliceArray(0 until 29)
         val bytesivCipher = bytes.sliceArray(29 until bytes.size)
-        val ivCipher = AesGcmNopadding.dewrapper(bytesivCipher)
+        val ivCipher = dewrapper(bytesivCipher, AesGcmNopadding.BLOCK_MODE_IV_SIZE)             // TODO generalize when more exchange key types are available
 
         return SaltIvcipher(salt, ivCipher)
     }
