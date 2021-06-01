@@ -36,8 +36,3 @@ jobs:
         with:
           api-level: 23
           script: ./gradlew jacocoTestReport sonarqube --info
-      - name: Archive build folder
-        uses: actions/upload-artifact@v2
-        with:
-          name: build-folder
-          path: app
