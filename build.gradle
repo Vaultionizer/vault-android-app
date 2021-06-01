@@ -32,7 +32,7 @@ sonarqube {
         property "sonar.projectKey", "Vaultionizer_vault-android-app"
         property "sonar.organization", "vaultionizer"
         property "sonar.host.url", "https://sonarcloud.io"
-        property "sonar.coverage.jacoco.xmlReportPaths", "${project.rootDir}/app/build/reports/coverage/debug/report.xml"
+        property "sonar.coverage.jacoco.xmlReportPaths", "/Users/runner/work/vault-android-app/build/reports/coverage/debug/report.xml"
     }
 }
 
