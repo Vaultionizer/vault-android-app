@@ -84,6 +84,13 @@
     <string name="file_viewer_replace_or_upload_dialog_message">There is already a file with the same name in this folder. Do you want to keep both or replace the existing one?</string>
     <string name="file_viewer_replace_or_upload_dialog_positive">Keep both</string>
     <string name="file_viewer_replace_or_upload_dialog_negative">Replace</string>
+
+    <!-- File Viewer background errors -->
+    <string name="file_viewer_exchange_error_title">Something went wrong!</string>
+    <string name="file_viewer_exchange_error_message">Error while syncing file %s. We\'ll try again later, no worries.</string>
+    <string name="file_viewer_exchange_error_positive">Understood.</string>
+
+    <!-- File Viewer Bottom Sheets -->
     <string name="file_viewer_file_options_delete_permanently">Delete permanently</string>
     <string name="file_viewer_file_options_delete_locally">Delete locally</string>
     <string name="file_viewer_file_options_open_in_different_app">Open in another app</string>

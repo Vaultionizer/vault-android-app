@@ -123,6 +123,13 @@ enum class AlertDialogType(
         R.string.file_viewer_replace_or_upload_dialog_message,
         R.string.file_viewer_replace_or_upload_dialog_positive,
         R.string.file_viewer_replace_or_upload_dialog_negative
+    ),
+
+    EXCHANGE_ERROR(
+        R.string.file_viewer_exchange_error_title,
+        R.string.file_viewer_exchange_error_message,
+        R.string.file_viewer_exchange_error_positive,
+        null
     );
 
     fun createDialog(
