@@ -179,15 +179,7 @@ class FileFragment : Fragment(), View.OnClickListener {
         decryptionCache.decryptionResultsLiveData.observe(viewLifecycleOwner) {
             for (result in it) {
                 if (!tryNavigateToDefaultViewer(result.file)) {
-                    val intent = Intent()
-                    intent.action = Intent.ACTION_VIEW
-                    intent.setDataAndType(
-                        Uri.parse("content://com.vaultionizer.vaultapp.provider/file/${result.file.localId}"),
-                        result.file.mimeType
-                    )
-
-                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                    startActivity(intent)
+                    openSystemViewerChooser(result.file)
                 }
             }
         }
@@ -291,6 +283,18 @@ class FileFragment : Fragment(), View.OnClickListener {
         return true
     }
 
+    private fun openSystemViewerChooser(file: VNFile) {
+        val intent = Intent()
+        intent.action = Intent.ACTION_VIEW
+        intent.setDataAndType(
+            Uri.parse("content://com.vaultionizer.vaultapp.provider/file/${file.localId}"),
+            file.mimeType
+        )
+
+        intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        startActivity(intent)
+    }
+
     private fun onClickFolderUpload(view: View) {
         val dialog = MaterialDialog(requireContext()).show {
             input { dialog, text ->
@@ -330,6 +334,12 @@ class FileFragment : Fragment(), View.OnClickListener {
                 title = getString(R.string.file_viewer_file_options_delete_locally)
 
             })
+            // Preparation for 3rd party file viewer
+            /*items.add(Option().apply {
+                id = FileBottomSheetOption.OPEN_IN_DIFFERENT_APP.id
+                iconId = R.drawable.ic_outline_share_24
+                title = getString(R.string.file_viewer_file_options_open_in_different_app)
+            })*/
         }
 
         return items
