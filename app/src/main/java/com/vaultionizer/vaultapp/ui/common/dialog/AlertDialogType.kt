@@ -1,11 +1,11 @@
-package com.vaultionizer.vaultapp.ui.main.file
+package com.vaultionizer.vaultapp.ui.common.dialog
 
 import android.content.Context
 import androidx.fragment.app.Fragment
 import com.afollestad.materialdialogs.MaterialDialog
 import com.vaultionizer.vaultapp.R
 
-enum class FileAlertDialogType(
+enum class AlertDialogType(
     val titleTextId: Int,
     val messageTextId: Int?,
     val positiveButtonTextId: Int = R.string.all_confirm,
@@ -155,22 +155,22 @@ enum class FileAlertDialogType(
 }
 
 fun Fragment.createDialog(
-    type: FileAlertDialogType, positiveClick: (MaterialDialog) -> Unit
+    type: AlertDialogType, positiveClick: (MaterialDialog) -> Unit
 ): MaterialDialog = type.createDialog(requireContext(), positiveClick)
 
 fun Fragment.createDialog(
-    type: FileAlertDialogType, positiveClick: (MaterialDialog) -> Unit,
+    type: AlertDialogType, positiveClick: (MaterialDialog) -> Unit,
     negativeClick: (MaterialDialog) -> Unit
 ): MaterialDialog = type.createDialog(requireContext(), positiveClick, negativeClick)
 
 fun Fragment.showDialog(
-    type: FileAlertDialogType, positiveClick: (MaterialDialog) -> Unit
+    type: AlertDialogType, positiveClick: (MaterialDialog) -> Unit
 ) {
     createDialog(type, positiveClick).show()
 }
 
 fun Fragment.showDialog(
-    type: FileAlertDialogType, positiveClick: (MaterialDialog) -> Unit,
+    type: AlertDialogType, positiveClick: (MaterialDialog) -> Unit,
     negativeClick: (MaterialDialog) -> Unit
 ) {
     createDialog(type, positiveClick, negativeClick).show()

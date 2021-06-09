@@ -107,12 +107,14 @@ class FileStatusViewModel @Inject constructor(
 
     private fun adjustFileStatus(file: VNFile, workInfo: WorkInfo) {
         if (workInfo.state == WorkInfo.State.ENQUEUED || workInfo.state == WorkInfo.State.RUNNING) {
-            if (workInfo.tags.contains(Constants.WORKER_TAG_DECRYPTION))
-                file.state = VNFile.State.DECRYPTING
-            else if (workInfo.tags.contains(Constants.WORKER_TAG_ENCRYPTION))
-                file.state = VNFile.State.ENCRYPTING
-            else if (workInfo.tags.contains(Constants.WORKER_TAG_DOWNLOAD)) {
-                file.state = VNFile.State.DOWNLOADING
+            when {
+                workInfo.tags.contains(Constants.WORKER_TAG_DECRYPTION) -> file.state =
+                    VNFile.State.DECRYPTING
+                workInfo.tags.contains(Constants.WORKER_TAG_ENCRYPTION) -> file.state =
+                    VNFile.State.ENCRYPTING
+                workInfo.tags.contains(Constants.WORKER_TAG_DOWNLOAD) -> {
+                    file.state = VNFile.State.DOWNLOADING
+                }
             }
         }
     }

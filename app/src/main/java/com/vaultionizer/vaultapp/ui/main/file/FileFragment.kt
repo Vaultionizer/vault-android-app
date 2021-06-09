@@ -5,7 +5,6 @@ import android.content.Intent
 import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import android.view.*
 import android.view.animation.AnimationUtils
 import android.widget.Button
@@ -33,6 +32,8 @@ import com.nambimobile.widgets.efab.ExpandableFabLayout
 import com.vaultionizer.vaultapp.R
 import com.vaultionizer.vaultapp.data.cache.DecryptionResultCache
 import com.vaultionizer.vaultapp.data.model.domain.VNFile
+import com.vaultionizer.vaultapp.ui.common.dialog.AlertDialogType
+import com.vaultionizer.vaultapp.ui.common.dialog.showDialog
 import com.vaultionizer.vaultapp.ui.main.file.viewer.FileViewerArgs
 import com.vaultionizer.vaultapp.ui.viewmodel.FileStatusViewModel
 import com.vaultionizer.vaultapp.ui.viewmodel.MainActivityViewModel
@@ -72,8 +73,6 @@ class FileFragment : Fragment(), View.OnClickListener {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setHasOptionsMenu(true)
-
-        Log.d("Vault", "FileFragment created!")
 
         val progressBar = view.findViewById<ProgressBar>(R.id.progress_space)
         progressBar.visibility = View.VISIBLE
@@ -193,7 +192,8 @@ class FileFragment : Fragment(), View.OnClickListener {
         viewModel.fileEvent.observe(viewLifecycleOwner)
         {
             if (it is FileEvent.UploadFileNameConflict) {
-                showDialog(FileAlertDialogType.UPLOAD_OR_REPLACE,
+                showDialog(
+                    AlertDialogType.UPLOAD_OR_REPLACE,
                     positiveClick = { _ ->
                         viewModel.requestUpload(it.fsSource, true)
                     },
@@ -350,7 +350,7 @@ class FileFragment : Fragment(), View.OnClickListener {
             options = getActionOptions(file),
             onItemSelectedListener = OnItemSelectedListener {
                 if (it.id == FileBottomSheetOption.DELETE.id) {
-                    showDialog(FileAlertDialogType.DELETE_FILE, positiveClick = { _ ->
+                    showDialog(AlertDialogType.DELETE_FILE, positiveClick = { _ ->
                         viewModel.requestPermanentDeletion(file)
                     })
                 } else if (it.id == FileBottomSheetOption.DELETE_LOCALLY.id) {

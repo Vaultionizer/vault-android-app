@@ -16,8 +16,8 @@ import androidx.fragment.app.Fragment
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.vaultionizer.vaultapp.R
-import com.vaultionizer.vaultapp.ui.main.file.FileAlertDialogType
-import com.vaultionizer.vaultapp.ui.main.file.showDialog
+import com.vaultionizer.vaultapp.ui.common.dialog.AlertDialogType
+import com.vaultionizer.vaultapp.ui.common.dialog.showDialog
 import com.vaultionizer.vaultapp.util.qr.CRC32Handler
 import com.vaultionizer.vaultapp.util.qr.QRCodeGen
 import dagger.hilt.android.AndroidEntryPoint
@@ -41,7 +41,7 @@ class AuthKeyFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         if (args.authKey != null && args.remoteSpaceId >= 0L && args.symmetricKey != null) {
-            showDialog(FileAlertDialogType.SHOW_AUTH_KEY, { showQRCode() }, { returnToSettings() })
+            showDialog(AlertDialogType.SHOW_AUTH_KEY, { showQRCode() }, { returnToSettings() })
         } else returnToSettings()
     }
 
@@ -67,12 +67,12 @@ class AuthKeyFragment : Fragment() {
         val saveBtn = view?.findViewById<Button>(R.id.save_auth_key_btn)
 
         copyBtn?.setOnClickListener {
-            showDialog(FileAlertDialogType.COPY_AUTH_KEY, { copyAuthKey() }, { cancelToast() })
+            showDialog(AlertDialogType.COPY_AUTH_KEY, { copyAuthKey() }, { cancelToast() })
         }
 
         saveBtn?.setOnClickListener {
             showDialog(
-                FileAlertDialogType.SAVE_AUTH_KEY,
+                AlertDialogType.SAVE_AUTH_KEY,
                 { saveAuthKey(args.remoteSpaceId) },
                 { cancelToast() })
         }
