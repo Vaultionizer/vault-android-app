@@ -86,6 +86,7 @@
     <string name="file_viewer_replace_or_upload_dialog_negative">Replace</string>
     <string name="file_viewer_file_options_delete_permanently">Delete permanently</string>
     <string name="file_viewer_file_options_delete_locally">Delete locally</string>
+    <string name="file_viewer_file_options_open_in_different_app">Open in another app</string>
 
     <string name="delete_file_progress_title">Are you sure?</string>
     <string name="delete_file_progress_content">You won\'t be able to recover these files!</string>
