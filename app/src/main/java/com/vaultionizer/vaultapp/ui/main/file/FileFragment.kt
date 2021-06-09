@@ -3,6 +3,7 @@ package com.vaultionizer.vaultapp.ui.main.file
 import android.app.Activity
 import android.content.Intent
 import android.graphics.Color
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.*
@@ -38,6 +39,7 @@ import com.vaultionizer.vaultapp.ui.viewmodel.MainActivityViewModel
 import com.vaultionizer.vaultapp.util.boolToVisibility
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
+
 
 private const val OPEN_FILE_INTENT_RC = 0
 
@@ -177,17 +179,27 @@ class FileFragment : Fragment(), View.OnClickListener {
         decryptionCache.decryptionResultsLiveData.observe(viewLifecycleOwner) {
             for (result in it) {
                 if (!tryNavigateToDefaultViewer(result.file)) {
-                    // TODO(jatsqi): Implement content provider call.
+                    val intent = Intent()
+                    intent.action = Intent.ACTION_VIEW
+                    intent.setDataAndType(
+                        Uri.parse("content://com.vaultionizer.vaultapp.provider/file/${result.file.localId}"),
+                        result.file.mimeType
+                    )
+
+                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    startActivity(intent)
                 }
             }
         }
 
         val offlineHint = view.findViewById<IconicsTextView>(R.id.offline_indicator)
-        viewModel.networkStatus.observe(viewLifecycleOwner) {
+        viewModel.networkStatus.observe(viewLifecycleOwner)
+        {
             offlineHint.visibility = boolToVisibility(!it, View.GONE)
         }
 
-        viewModel.fileEvent.observe(viewLifecycleOwner) {
+        viewModel.fileEvent.observe(viewLifecycleOwner)
+        {
             if (it is FileEvent.UploadFileNameConflict) {
                 showDialog(FileAlertDialogType.UPLOAD_OR_REPLACE,
                     positiveClick = { _ ->
