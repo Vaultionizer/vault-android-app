@@ -5,6 +5,14 @@ import android.content.ContentValues
 import android.content.UriMatcher
 import android.database.Cursor
 import android.net.Uri
+import android.os.ParcelFileDescriptor
+import com.vaultionizer.vaultapp.data.cache.DecryptionResultCache
+import dagger.hilt.EntryPoint
+import dagger.hilt.InstallIn
+import dagger.hilt.android.EntryPointAccessors
+import dagger.hilt.components.SingletonComponent
+import java.io.OutputStream
+import kotlin.concurrent.thread
 
 class VaultionizerContentProvider : ContentProvider() {
 
@@ -14,8 +22,14 @@ class VaultionizerContentProvider : ContentProvider() {
         }
     }
 
+    @EntryPoint
+    @InstallIn(SingletonComponent::class)
+    interface VaultionizerContentProviderEntryPoint {
+        fun decryptionResultCache(): DecryptionResultCache
+    }
+
     override fun onCreate(): Boolean {
-        TODO("Not yet implemented")
+        return true
     }
 
     override fun query(
@@ -25,11 +39,11 @@ class VaultionizerContentProvider : ContentProvider() {
         selectionArgs: Array<out String>?,
         sortOrder: String?
     ): Cursor? {
-        TODO("Not yet implemented")
+        return null
     }
 
     override fun getType(uri: Uri): String? {
-        TODO("Not yet implemented")
+        return null
     }
 
     override fun insert(uri: Uri, values: ContentValues?): Uri? {
@@ -40,6 +54,26 @@ class VaultionizerContentProvider : ContentProvider() {
         TODO("Not yet implemented")
     }
 
+    override fun openFile(uri: Uri, mode: String): ParcelFileDescriptor? {
+        val appContext = context?.applicationContext ?: throw IllegalStateException()
+        val hiltEntryPoint =
+            EntryPointAccessors.fromApplication(
+                appContext,
+                VaultionizerContentProviderEntryPoint::class.java
+            )
+
+        val decryptionCache = hiltEntryPoint.decryptionResultCache()
+        val pipe = ParcelFileDescriptor.createPipe()
+        thread(start = true) {
+            sendDecryptedData(
+                decryptionCache.getResultByFileId(uri.lastPathSegment!!.toLong())!!,
+                ParcelFileDescriptor.AutoCloseOutputStream(pipe[1])
+            )
+        }
+
+        return pipe[0]
+    }
+
     override fun update(
         uri: Uri,
         values: ContentValues?,
@@ -47,5 +81,11 @@ class VaultionizerContentProvider : ContentProvider() {
         selectionArgs: Array<out String>?
     ): Int {
         TODO("Not yet implemented")
+    }
+
+    private fun sendDecryptedData(data: ByteArray, stream: OutputStream) {
+        stream.write(data)
+        stream.flush()
+        stream.close()
     }
 }

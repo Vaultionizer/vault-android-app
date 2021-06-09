@@ -6,6 +6,7 @@ import okhttp3.internal.EMPTY_BYTE_ARRAY
 
 class DecryptionResultCache {
 
+    // TODO(jatsqi): Refactor to SoftReference/WeakReference.
     private val fileDataPairs = mutableSetOf<DecryptionFileDataPair>()
 
     private val decryptionResults_ = LiveEvent<Set<DecryptionFileDataPair>>()

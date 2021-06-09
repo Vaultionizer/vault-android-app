@@ -22,6 +22,12 @@
             android:name="androidx.startup.InitializationProvider"
             android:authorities="${applicationId}.androidx-startup"
             tools:node="remove" />
+        <provider
+            android:name=".data.provider.VaultionizerContentProvider"
+            android:authorities="com.vaultionizer.vaultapp.provider"
+            android:grantUriPermissions="true"
+            android:exported="true" />
+
         <activity
             android:name=".ui.main.MainActivity"
             android:label="@string/title_activity_main"
