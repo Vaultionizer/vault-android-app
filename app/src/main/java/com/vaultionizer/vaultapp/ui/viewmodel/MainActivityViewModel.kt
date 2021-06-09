@@ -9,6 +9,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.work.WorkInfo
+import com.hadilq.liveevent.LiveEvent
 import com.vaultionizer.vaultapp.cryptography.CryptoUtils
 import com.vaultionizer.vaultapp.cryptography.crypto.CryptoMode
 import com.vaultionizer.vaultapp.cryptography.crypto.CryptoPadding
@@ -49,8 +50,8 @@ class MainActivityViewModel @Inject constructor(
     private val _currentDirectory = MutableLiveData<VNFile?>()
     val currentDirectory: LiveData<VNFile?> = _currentDirectory
 
-    private val _fileEvent = MutableLiveData<FileEvent>()
-    val fileEvent: LiveData<FileEvent> = _fileEvent
+    private val _fileEvent = LiveEvent<FileEvent>()
+    val fileEvent: LiveEvent<FileEvent> = _fileEvent
 
     val networkStatus =
         NetworkLiveData(context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager)
