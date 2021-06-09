@@ -184,13 +184,11 @@ class FileFragment : Fragment(), View.OnClickListener {
         }
 
         val offlineHint = view.findViewById<IconicsTextView>(R.id.offline_indicator)
-        viewModel.networkStatus.observe(viewLifecycleOwner)
-        {
+        viewModel.networkStatus.observe(viewLifecycleOwner) {
             offlineHint.visibility = boolToVisibility(!it, View.GONE)
         }
 
-        viewModel.fileEvent.observe(viewLifecycleOwner)
-        {
+        viewModel.fileEvent.observe(viewLifecycleOwner) {
             if (it is FileEvent.UploadFileNameConflict) {
                 showDialog(
                     AlertDialogType.UPLOAD_OR_REPLACE,
