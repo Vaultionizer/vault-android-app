@@ -14,6 +14,7 @@ fun buildEncryptionWorker(file: VNFile, syncRequestId: Long) =
 
 fun buildUploadWorker(file: VNFile, syncRequestId: Long) =
     prepareFileWorkerBuilder<FileUploadWorker>(file, buildSyncWorkData(syncRequestId))
+        .addTag(Constants.WORKER_TAG_UPLOAD)
         .build()
 
 fun buildReferenceFileWorker(file: VNFile) =

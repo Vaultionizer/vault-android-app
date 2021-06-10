@@ -130,6 +130,13 @@ enum class AlertDialogType(
         R.string.file_viewer_exchange_error_message,
         R.string.file_viewer_exchange_error_positive,
         null
+    ),
+
+    NO_APP_AVAILABLE_TO_OPEN_FILE(
+        R.string.file_viewer_open_file_no_app_available_title,
+        R.string.file_viewer_open_file_no_app_available_message,
+        R.string.file_viewer_open_file_no_app_available_positive,
+        null
     );
 
     fun createDialog(
@@ -137,7 +144,7 @@ enum class AlertDialogType(
         positiveClick: (MaterialDialog) -> Unit,
         negativeClick: ((MaterialDialog) -> Unit)? = null
     ): MaterialDialog {
-        val dialog = MaterialDialog(activity)
+        val resultDialog = MaterialDialog(activity)
             .title(titleTextId)
             .positiveButton(positiveButtonTextId, click = { dialog ->
                 positiveClick(dialog)
@@ -145,7 +152,7 @@ enum class AlertDialogType(
             })
 
         if (negativeButtonTextId != null) {
-            dialog.negativeButton(negativeButtonTextId, click = { dialog ->
+            resultDialog.negativeButton(negativeButtonTextId, click = { dialog ->
                 if (negativeClick != null) {
                     negativeClick(dialog)
                 }
@@ -154,10 +161,10 @@ enum class AlertDialogType(
         }
 
         messageTextId?.let {
-            dialog.message(messageTextId)
+            resultDialog.message(messageTextId)
         }
 
-        return dialog
+        return resultDialog
     }
 }
 

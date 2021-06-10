@@ -195,25 +195,31 @@ class FileFragment : Fragment(), View.OnClickListener {
         }
 
         viewModel.fileEvent.observe(viewLifecycleOwner) {
-            if (it is FileEvent.UploadFileNameConflict) {
-                showDialog(
-                    AlertDialogType.UPLOAD_OR_REPLACE,
-                    positiveClick = { _ ->
-                        viewModel.requestUpload(it.fsSource, true)
-                    },
-                    negativeClick = { _ ->
-                        viewModel.requestUpdate(it.file, it.fsSource)
-                    })
-            } else if (it is FileEvent.FileExchangeError) {
-                val dialog = createDialog(AlertDialogType.EXCHANGE_ERROR, { }, {})
-                dialog.message(
-                    text = getString(
-                        R.string.file_viewer_exchange_error_message,
-                        it.file.name
+            when (it) {
+                is FileEvent.UploadFileNameConflict -> {
+                    showDialog(
+                        AlertDialogType.UPLOAD_OR_REPLACE,
+                        positiveClick = { _ ->
+                            viewModel.requestUpload(it.fsSource, true)
+                        },
+                        negativeClick = { _ ->
+                            viewModel.requestUpdate(it.file, it.fsSource)
+                        })
+                }
+                is FileEvent.FileExchangeError -> {
+                    val dialog = createDialog(AlertDialogType.EXCHANGE_ERROR, { }, {})
+                    dialog.message(
+                        text = getString(
+                            R.string.file_viewer_exchange_error_message,
+                            it.file.name
+                        )
                     )
-                )
 
-                dialog.show()
+                    dialog.show()
+                }
+                is FileEvent.NoAppFoundToOpenFile -> {
+                    showDialog(AlertDialogType.NO_APP_AVAILABLE_TO_OPEN_FILE, {}, {})
+                }
             }
         }
     }
@@ -270,9 +276,9 @@ class FileFragment : Fragment(), View.OnClickListener {
 
     override fun onClick(v: View?) {
         when (v?.id) {
-            R.id.fab_option_upload_file -> onClickFileUpload(v)
-            R.id.fab_option_upload_folder -> onClickFolderUpload(v)
-            R.id.fab_option_create_pc -> onClickCreatePC(v)
+            R.id.fab_option_upload_file -> onClickFileUpload()
+            R.id.fab_option_upload_folder -> onClickFolderUpload()
+            R.id.fab_option_create_pc -> onClickCreatePC()
         }
     }
 
@@ -306,12 +312,17 @@ class FileFragment : Fragment(), View.OnClickListener {
         )
 
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-        startActivity(intent)
+
+        try {
+            startActivity(intent)
+        } catch (ex: Exception) {
+            viewModel.onOpenFileActivityFailure()
+        }
     }
 
-    private fun onClickFolderUpload(view: View) {
+    private fun onClickFolderUpload() {
         val dialog = MaterialDialog(requireContext()).show {
-            input { dialog, text ->
+            input { _, text ->
                 viewModel.requestFolder(text.toString())
             }
             title(R.string.file_viewer_create_folder_title)
@@ -321,13 +332,13 @@ class FileFragment : Fragment(), View.OnClickListener {
         dialog.show()
     }
 
-    private fun onClickFileUpload(view: View) {
+    private fun onClickFileUpload() {
         val intent = Intent(Intent.ACTION_GET_CONTENT)
         intent.type = "*/*"
         startActivityForResult(intent, OPEN_FILE_INTENT_RC)
     }
 
-    private fun onClickCreatePC(view: View) {
+    private fun onClickCreatePC() {
         val action = FileFragmentDirections.actionFileFragmentToCreatePersonalContainerFragment()
         findNavController().navigate(action)
     }

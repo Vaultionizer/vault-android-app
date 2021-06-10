@@ -93,7 +93,7 @@ class FileRecyclerAdapter(
         }
     }
 
-    private fun chooseFolderIcon(name: String): IIcon {
+    private fun chooseFolderIcon(@Suppress("UNUSED_PARAMETER") name: String): IIcon {
         return FontAwesome.Icon.faw_folder_open
     }
 

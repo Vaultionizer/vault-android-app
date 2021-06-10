@@ -72,7 +72,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
             )
             return
         }
-        var goToLogin = false
+        @Suppress("ASSIGNED_BUT_NEVER_ACCESSED_VARIABLE") var goToLogin = false
         progressDialog?.dismiss()
         var toastTextId: Int?
         toastTextId = R.string.toast_success_quit_spaces

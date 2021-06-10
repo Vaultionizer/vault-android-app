@@ -46,7 +46,7 @@ class VNFile(
      */
     val extension: String?
         get() = MimeTypeMap.getFileExtensionFromUrl(name)
-    val mimeType: String?
+    val mimeType: String
         get() = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)
             ?: "application/octet-stream"
     val isImage: Boolean
@@ -67,8 +67,6 @@ class VNFile(
 
     fun isDownloaded(ctx: Context): Boolean {
         if (isFolder) return false
-        if (localId == null) return false
-        if (state == State.DOWNLOADING || state == State.UPLOADING) return false
 
         val path = File(ctx.filesDir, "$localId.${Constants.VN_FILE_SUFFIX}")
         return path.exists()

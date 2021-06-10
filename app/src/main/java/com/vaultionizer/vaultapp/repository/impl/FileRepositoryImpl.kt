@@ -144,7 +144,7 @@ class FileRepositoryImpl @Inject constructor(
                 minimumIdCache[space.id] = minimumIdCache[space.id]!! - 1
             }
 
-            val name = resolveFileNameConflicts(parent, name)
+            @Suppress("NAME_SHADOWING") val name = resolveFileNameConflicts(parent, name)
 
             val localFileId = localFileDao.createFile(
                 LocalFile(
@@ -198,7 +198,6 @@ class FileRepositoryImpl @Inject constructor(
 
             val downloadWorker =
                 prepareFileWorkerBuilder<FileDownloadWorker>(file, downloadWorkData)
-                    .addTag(Constants.WORKER_TAG_FILE)
                     .addTag(Constants.WORKER_TAG_DOWNLOAD)
                     .build()
 
@@ -212,7 +211,6 @@ class FileRepositoryImpl @Inject constructor(
         )
         val decryptionWorker =
             prepareFileWorkerBuilder<DataDecryptionWorker>(file, decryptionWorkData)
-                .addTag(Constants.WORKER_TAG_FILE)
                 .addTag(Constants.WORKER_TAG_DECRYPTION)
                 .build()
 
