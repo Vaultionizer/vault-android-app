@@ -17,6 +17,7 @@ import com.mikepenz.iconics.view.IconicsImageView
 import com.vaultionizer.vaultapp.R
 import com.vaultionizer.vaultapp.data.model.domain.VNFile
 import java.text.DateFormat
+import java.util.*
 
 class FileRecyclerAdapter(
     private val clickListener: (VNFile) -> Unit,
@@ -82,7 +83,7 @@ class FileRecyclerAdapter(
 
     private fun chooseFileIcon(name: String): IIcon {
         val type = name.split(".").run {
-            get(size - 1).toLowerCase()
+            get(size - 1).lowercase(Locale.getDefault())
         }
 
         return when (type) {

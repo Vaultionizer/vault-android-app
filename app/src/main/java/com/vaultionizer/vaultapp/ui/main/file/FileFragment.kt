@@ -5,7 +5,6 @@ import android.content.Intent
 import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
-import android.util.Log
 import android.view.*
 import android.view.animation.AnimationUtils
 import android.widget.Button
@@ -33,11 +32,15 @@ import com.nambimobile.widgets.efab.ExpandableFabLayout
 import com.vaultionizer.vaultapp.R
 import com.vaultionizer.vaultapp.data.cache.DecryptionResultCache
 import com.vaultionizer.vaultapp.data.model.domain.VNFile
+import com.vaultionizer.vaultapp.ui.common.dialog.AlertDialogType
+import com.vaultionizer.vaultapp.ui.common.dialog.createDialog
+import com.vaultionizer.vaultapp.ui.common.dialog.showDialog
 import com.vaultionizer.vaultapp.ui.main.file.viewer.FileViewerArgs
 import com.vaultionizer.vaultapp.ui.viewmodel.FileStatusViewModel
 import com.vaultionizer.vaultapp.ui.viewmodel.MainActivityViewModel
 import com.vaultionizer.vaultapp.util.boolToVisibility
 import dagger.hilt.android.AndroidEntryPoint
+import java.util.*
 import javax.inject.Inject
 
 
@@ -72,8 +75,6 @@ class FileFragment : Fragment(), View.OnClickListener {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setHasOptionsMenu(true)
-
-        Log.d("Vault", "FileFragment created!")
 
         val progressBar = view.findViewById<ProgressBar>(R.id.progress_space)
         progressBar.visibility = View.VISIBLE
@@ -133,12 +134,16 @@ class FileFragment : Fragment(), View.OnClickListener {
 
         statusViewModel.fileStatus.observe(viewLifecycleOwner) {
             val size: Int = it.size // Necessary because the gradle linter has a bug atm.
-            fileProcessingStatusButton.text = if (it.isEmpty()) {
-                getString(R.string.file_status_no_task)
-            } else if (it.size == 1) {
-                getString(R.string.file_status_single_text_template)
-            } else {
-                getString(R.string.file_status_text_template, size)
+            fileProcessingStatusButton.text = when {
+                it.isEmpty() -> {
+                    getString(R.string.file_status_no_task)
+                }
+                it.size == 1 -> {
+                    getString(R.string.file_status_single_text_template)
+                }
+                else -> {
+                    getString(R.string.file_status_text_template, size)
+                }
             }
 
             fileProcessingStatusButton.isEnabled = it.isNotEmpty()
@@ -173,7 +178,7 @@ class FileFragment : Fragment(), View.OnClickListener {
         }
 
         statusViewModel.fileStatus.observe(viewLifecycleOwner) {
-            viewModel.onWorkerInfoChange()
+            viewModel.onWorkerInfoChange(it)
         }
 
         decryptionCache.decryptionResultsLiveData.observe(viewLifecycleOwner) {
@@ -185,21 +190,30 @@ class FileFragment : Fragment(), View.OnClickListener {
         }
 
         val offlineHint = view.findViewById<IconicsTextView>(R.id.offline_indicator)
-        viewModel.networkStatus.observe(viewLifecycleOwner)
-        {
+        viewModel.networkStatus.observe(viewLifecycleOwner) {
             offlineHint.visibility = boolToVisibility(!it, View.GONE)
         }
 
-        viewModel.fileEvent.observe(viewLifecycleOwner)
-        {
+        viewModel.fileEvent.observe(viewLifecycleOwner) {
             if (it is FileEvent.UploadFileNameConflict) {
-                showDialog(FileAlertDialogType.UPLOAD_OR_REPLACE,
+                showDialog(
+                    AlertDialogType.UPLOAD_OR_REPLACE,
                     positiveClick = { _ ->
                         viewModel.requestUpload(it.fsSource, true)
                     },
                     negativeClick = { _ ->
                         viewModel.requestUpdate(it.file, it.fsSource)
                     })
+            } else if (it is FileEvent.FileExchangeError) {
+                val dialog = createDialog(AlertDialogType.EXCHANGE_ERROR, { }, {})
+                dialog.message(
+                    text = getString(
+                        R.string.file_viewer_exchange_error_message,
+                        it.file.name
+                    )
+                )
+
+                dialog.show()
             }
         }
     }
@@ -266,12 +280,12 @@ class FileFragment : Fragment(), View.OnClickListener {
         val action = when {
             file.isImage -> {
                 FileFragmentDirections.actionFileFragmentToImageFileViewerFragment(
-                    FileViewerArgs(file.localId)
+                        FileViewerArgs(file.localId)
                 )
             }
-            file.extension?.toLowerCase() == "txt" -> {
+            file.extension?.lowercase(Locale.getDefault()) == "txt" -> {
                 FileFragmentDirections.actionFileFragmentToTextFileViewerFragment(
-                    FileViewerArgs(file.localId)
+                        FileViewerArgs(file.localId)
                 )
             }
             else -> {
@@ -350,7 +364,7 @@ class FileFragment : Fragment(), View.OnClickListener {
             options = getActionOptions(file),
             onItemSelectedListener = OnItemSelectedListener {
                 if (it.id == FileBottomSheetOption.DELETE.id) {
-                    showDialog(FileAlertDialogType.DELETE_FILE, positiveClick = { _ ->
+                    showDialog(AlertDialogType.DELETE_FILE, positiveClick = { _ ->
                         viewModel.requestPermanentDeletion(file)
                     })
                 } else if (it.id == FileBottomSheetOption.DELETE_LOCALLY.id) {

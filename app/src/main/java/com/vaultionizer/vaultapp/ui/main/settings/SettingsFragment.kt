@@ -10,8 +10,8 @@ import androidx.preference.ListPreference
 import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import com.vaultionizer.vaultapp.R
-import com.vaultionizer.vaultapp.ui.main.file.FileAlertDialogType
-import com.vaultionizer.vaultapp.ui.main.file.showDialog
+import com.vaultionizer.vaultapp.ui.common.dialog.AlertDialogType
+import com.vaultionizer.vaultapp.ui.common.dialog.showDialog
 import com.vaultionizer.vaultapp.ui.viewmodel.SettingsAction
 import com.vaultionizer.vaultapp.ui.viewmodel.SettingsActionEnum
 import com.vaultionizer.vaultapp.ui.viewmodel.SettingsViewModel
@@ -36,12 +36,12 @@ class SettingsFragment : PreferenceFragmentCompat() {
         setupBtn(logoutBtn, null) { viewModel.logout() }
         setupBtn(
             deleteLocalFilesBtn,
-            FileAlertDialogType.DELETE_LOCAL_FILES
+            AlertDialogType.DELETE_LOCAL_FILES
         ) { viewModel.deleteLocalFiles() }
-        setupBtn(deleteUserBtn, FileAlertDialogType.DELETE_USER) { viewModel.deleteUser() }
+        setupBtn(deleteUserBtn, AlertDialogType.DELETE_USER) { viewModel.deleteUser() }
         setupBtn(
             quitAllSpacesBtn,
-            FileAlertDialogType.QUIT_ALL_SPACES
+            AlertDialogType.QUIT_ALL_SPACES
         ) { viewModel.quitAllSpaces() }
 
         val themePreference = findPreference<ListPreference>("theme_list")
@@ -54,7 +54,7 @@ class SettingsFragment : PreferenceFragmentCompat() {
 
     private fun setupBtn(
         preference: Preference?,
-        dialogType: FileAlertDialogType?,
+        dialogType: AlertDialogType?,
         posCallback: () -> Unit
     ) {
         preference?.setOnPreferenceClickListener { _ ->

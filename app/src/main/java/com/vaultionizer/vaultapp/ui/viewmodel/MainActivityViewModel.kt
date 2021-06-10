@@ -8,6 +8,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.work.WorkInfo
+import com.hadilq.liveevent.LiveEvent
 import com.vaultionizer.vaultapp.cryptography.CryptoUtils
 import com.vaultionizer.vaultapp.cryptography.crypto.CryptoMode
 import com.vaultionizer.vaultapp.cryptography.crypto.CryptoPadding
@@ -19,6 +21,7 @@ import com.vaultionizer.vaultapp.data.model.rest.result.Resource
 import com.vaultionizer.vaultapp.repository.FileRepository
 import com.vaultionizer.vaultapp.repository.SpaceRepository
 import com.vaultionizer.vaultapp.ui.main.file.FileEvent
+import com.vaultionizer.vaultapp.ui.main.status.FileWorkerStatusPair
 import com.vaultionizer.vaultapp.util.deleteFile
 import com.vaultionizer.vaultapp.util.getFileName
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -47,8 +50,8 @@ class MainActivityViewModel @Inject constructor(
     private val _currentDirectory = MutableLiveData<VNFile?>()
     val currentDirectory: LiveData<VNFile?> = _currentDirectory
 
-    private val _fileEvent = MutableLiveData<FileEvent>()
-    val fileEvent: LiveData<FileEvent> = _fileEvent
+    private val _fileEvent = LiveEvent<FileEvent>()
+    val fileEvent: LiveEvent<FileEvent> = _fileEvent
 
     val networkStatus =
         NetworkLiveData(context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager)
@@ -268,9 +271,17 @@ class MainActivityViewModel @Inject constructor(
         }
     }
 
-    fun onWorkerInfoChange() {
+    fun onWorkerInfoChange(status: List<FileWorkerStatusPair>) {
         viewModelScope.launch {
             updateCurrentFiles()
+
+            for (workerPair in status) {
+                if (workerPair.status == WorkInfo.State.FAILED || workerPair.status == WorkInfo.State.CANCELLED) {
+                    _fileEvent.value = FileEvent.FileExchangeError(
+                        workerPair.file,
+                    )
+                }
+            }
         }
     }
 }

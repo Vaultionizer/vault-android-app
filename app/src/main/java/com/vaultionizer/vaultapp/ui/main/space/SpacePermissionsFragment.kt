@@ -9,8 +9,8 @@ import androidx.preference.Preference
 import androidx.preference.PreferenceFragmentCompat
 import androidx.preference.SwitchPreference
 import com.vaultionizer.vaultapp.R
-import com.vaultionizer.vaultapp.ui.main.file.FileAlertDialogType
-import com.vaultionizer.vaultapp.ui.main.file.showDialog
+import com.vaultionizer.vaultapp.ui.common.dialog.AlertDialogType
+import com.vaultionizer.vaultapp.ui.common.dialog.showDialog
 import com.vaultionizer.vaultapp.ui.viewmodel.MainActivityViewModel
 import com.vaultionizer.vaultapp.ui.viewmodel.ManageSpaceViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -46,7 +46,7 @@ class SpacePermissionsFragment : PreferenceFragmentCompat() {
             val quitSpaceBtn: Preference? = findPreference("quitSpaceBtn")
             setupBtn(
                 quitSpaceBtn,
-                FileAlertDialogType.QUIT_SPACE
+                AlertDialogType.QUIT_SPACE
             ) { mainActivityViewModel.requestQuitSpace() }
         } else {
             val sharedSpaceSwitch: SwitchPreference? = findPreference("sharedSpaceSwitch")
@@ -56,14 +56,14 @@ class SpacePermissionsFragment : PreferenceFragmentCompat() {
             val kickUsersBtn: Preference? = findPreference("kickUsersBtn")
 
             // setup button listeners
-            setupBtn(kickUsersBtn, FileAlertDialogType.KICK_ALL_USERS) { viewModel.kickAllUsers() }
+            setupBtn(kickUsersBtn, AlertDialogType.KICK_ALL_USERS) { viewModel.kickAllUsers() }
             setupBtn(
                 deleteSpaceBtn,
-                FileAlertDialogType.DELETE_SPACE
+                AlertDialogType.DELETE_SPACE
             ) { mainActivityViewModel.requestSpaceDeletion() }
             setupBtn(
                 genAuthKeyBtn,
-                FileAlertDialogType.REGENERATE_AUTH_KEY
+                AlertDialogType.REGENERATE_AUTH_KEY
             ) { viewModel.generateAuthKey() }
 
             // setup switch listeners
@@ -72,7 +72,7 @@ class SpacePermissionsFragment : PreferenceFragmentCompat() {
                 { switch -> return@setupSwitch false })
             setupSwitch(
                 sharedSpaceSwitch,
-                FileAlertDialogType.MAKE_SPACE_PRIVATE,
+                AlertDialogType.MAKE_SPACE_PRIVATE,
                 { viewModel.toggleSharedSpace(sharedSpaceSwitch?.isChecked) },
                 { switch -> return@setupSwitch switch.isChecked })
             setupSwitch(usersInviteAuthSwitch, null,
@@ -86,7 +86,7 @@ class SpacePermissionsFragment : PreferenceFragmentCompat() {
 
     private fun setupBtn(
         preference: Preference?,
-        dialogType: FileAlertDialogType?,
+        dialogType: AlertDialogType?,
         posCallback: () -> Unit
     ) {
         preference?.setOnPreferenceClickListener { _ ->
@@ -98,7 +98,7 @@ class SpacePermissionsFragment : PreferenceFragmentCompat() {
 
     private fun setupSwitch(
         switchPref: SwitchPreference?,
-        dialogType: FileAlertDialogType?,
+        dialogType: AlertDialogType?,
         posCallback: () -> Unit,
         extraCond: (SwitchPreference) -> Boolean
     ) {

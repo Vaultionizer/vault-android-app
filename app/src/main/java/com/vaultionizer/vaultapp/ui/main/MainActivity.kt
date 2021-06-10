@@ -27,7 +27,7 @@ import com.mikepenz.materialdrawer.widget.MaterialDrawerSliderView
 import com.vaultionizer.vaultapp.R
 import com.vaultionizer.vaultapp.data.cache.AuthCache
 import com.vaultionizer.vaultapp.data.model.domain.VNSpace
-import com.vaultionizer.vaultapp.ui.main.file.FileAlertDialogType
+import com.vaultionizer.vaultapp.ui.common.dialog.AlertDialogType
 import com.vaultionizer.vaultapp.ui.main.file.FileEvent
 import com.vaultionizer.vaultapp.ui.viewmodel.FileStatusViewModel
 import com.vaultionizer.vaultapp.ui.viewmodel.MainActivityViewModel
@@ -119,7 +119,7 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 val dialog =
-                    FileAlertDialogType.REQUEST_KEY_GENERATION.createDialog(
+                    AlertDialogType.REQUEST_KEY_GENERATION.createDialog(
                         this,
                         positiveClick = generateKeyCallback,
                         negativeClick = importKeyCallback

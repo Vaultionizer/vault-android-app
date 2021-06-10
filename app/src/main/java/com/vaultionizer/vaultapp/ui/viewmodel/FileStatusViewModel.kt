@@ -1,7 +1,6 @@
 package com.vaultionizer.vaultapp.ui.viewmodel
 
 import android.content.Context
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -34,22 +33,21 @@ class FileStatusViewModel @Inject constructor(
 
         val WORKER_STATUS_WEIGHT_MAP = mapOf(
             WorkInfo.State.RUNNING to 4,
-            WorkInfo.State.ENQUEUED to 3,
-            WorkInfo.State.FAILED to 2,
-            WorkInfo.State.CANCELLED to 2,
-            WorkInfo.State.BLOCKED to 2,
-            WorkInfo.State.SUCCEEDED to 1,
+                WorkInfo.State.ENQUEUED to 3,
+                WorkInfo.State.FAILED to 2,
+                WorkInfo.State.CANCELLED to 2,
+                WorkInfo.State.BLOCKED to 2,
+                WorkInfo.State.SUCCEEDED to 1,
         )
     }
 
     val workInfo =
-        WorkManager.getInstance(applicationContext).getWorkInfosLiveData(WORKER_QUERY)
-    private val fileStatus_ = MutableLiveData<List<FileWorkerStatusPair>>(emptyList())
-    val fileStatus: LiveData<List<FileWorkerStatusPair>> = fileStatus_
+            WorkManager.getInstance(applicationContext).getWorkInfosLiveData(WORKER_QUERY)
+    private val _fileStatus = MutableLiveData<List<FileWorkerStatusPair>>(emptyList())
+    val fileStatus: LiveData<List<FileWorkerStatusPair>> = _fileStatus
 
     fun onWorkerStatusChange(workInfoList: List<WorkInfo>) {
         viewModelScope.launch {
-            // WorkManager.getInstance(applicationContext).pruneWork()
             val newStatus = mutableListOf<FileWorkerStatusPair>()
             val fileMap = mutableMapOf<VNFile, MutableList<WorkInfo>>()
 
@@ -83,36 +81,36 @@ class FileStatusViewModel @Inject constructor(
                     return@maxByOrNull WORKER_STATUS_WEIGHT_MAP[it.state]!!
                 }
 
-                if (allWorkersFinished) {
-                    resetFileStatus(fileStatusPair.key)
-                } else {
+                resetFileStatus(fileStatusPair.key)
+                if (!allWorkersFinished) {
                     mostValuableState?.let {
-                        adjustFileStatus(fileStatusPair.key, it)
+                        adjustRunningFileStatus(fileStatusPair.key, it)
                         newStatus.add(FileWorkerStatusPair(fileStatusPair.key, it.state))
                     }
                 }
             }
 
-            fileStatus_.postValue(newStatus)
+            _fileStatus.value = newStatus
         }
     }
 
     private fun resetFileStatus(file: VNFile) {
-        Log.e("Vault", "Changing state!")
         file.state = if (file.isDownloaded(applicationContext))
             VNFile.State.AVAILABLE_OFFLINE
         else
             VNFile.State.AVAILABLE_REMOTE
     }
 
-    private fun adjustFileStatus(file: VNFile, workInfo: WorkInfo) {
+    private fun adjustRunningFileStatus(file: VNFile, workInfo: WorkInfo) {
         if (workInfo.state == WorkInfo.State.ENQUEUED || workInfo.state == WorkInfo.State.RUNNING) {
-            if (workInfo.tags.contains(Constants.WORKER_TAG_DECRYPTION))
-                file.state = VNFile.State.DECRYPTING
-            else if (workInfo.tags.contains(Constants.WORKER_TAG_ENCRYPTION))
-                file.state = VNFile.State.ENCRYPTING
-            else if (workInfo.tags.contains(Constants.WORKER_TAG_DOWNLOAD)) {
-                file.state = VNFile.State.DOWNLOADING
+            when {
+                workInfo.tags.contains(Constants.WORKER_TAG_DECRYPTION) -> file.state =
+                    VNFile.State.DECRYPTING
+                workInfo.tags.contains(Constants.WORKER_TAG_ENCRYPTION) -> file.state =
+                    VNFile.State.ENCRYPTING
+                workInfo.tags.contains(Constants.WORKER_TAG_DOWNLOAD) -> {
+                    file.state = VNFile.State.DOWNLOADING
+                }
             }
         }
     }

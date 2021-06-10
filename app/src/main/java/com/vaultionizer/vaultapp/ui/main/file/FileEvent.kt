@@ -10,9 +10,13 @@ sealed class FileEvent {
         val space: VNSpace
     ) : FileEvent()
 
-    open class UploadFileNameConflict(
+    data class UploadFileNameConflict(
         val file: VNFile,
         val fsSource: Uri
+    ) : FileEvent()
+
+    data class FileExchangeError(
+        val file: VNFile,
     ) : FileEvent()
 
 }
