@@ -84,6 +84,9 @@
     <string name="file_viewer_replace_or_upload_dialog_message">There is already a file with the same name in this folder. Do you want to keep both or replace the existing one?</string>
     <string name="file_viewer_replace_or_upload_dialog_positive">Keep both</string>
     <string name="file_viewer_replace_or_upload_dialog_negative">Replace</string>
+    <string name="file_viewer_open_file_no_app_available_title">Sorry, we cannot open that</string>
+    <string name="file_viewer_open_file_no_app_available_message">There is no external app available to display that file. Please install an app from the PlayStore to view this file.</string>
+    <string name="file_viewer_open_file_no_app_available_positive">Understood</string>
 
     <!-- File Viewer background errors -->
     <string name="file_viewer_exchange_error_title">Something went wrong!</string>

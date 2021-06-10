@@ -33,16 +33,16 @@ class FileStatusViewModel @Inject constructor(
 
         val WORKER_STATUS_WEIGHT_MAP = mapOf(
             WorkInfo.State.RUNNING to 4,
-                WorkInfo.State.ENQUEUED to 3,
-                WorkInfo.State.FAILED to 2,
-                WorkInfo.State.CANCELLED to 2,
-                WorkInfo.State.BLOCKED to 2,
-                WorkInfo.State.SUCCEEDED to 1,
+            WorkInfo.State.ENQUEUED to 3,
+            WorkInfo.State.FAILED to 2,
+            WorkInfo.State.CANCELLED to 2,
+            WorkInfo.State.BLOCKED to 2,
+            WorkInfo.State.SUCCEEDED to 1,
         )
     }
 
     val workInfo =
-            WorkManager.getInstance(applicationContext).getWorkInfosLiveData(WORKER_QUERY)
+        WorkManager.getInstance(applicationContext).getWorkInfosLiveData(WORKER_QUERY)
     private val _fileStatus = MutableLiveData<List<FileWorkerStatusPair>>(emptyList())
     val fileStatus: LiveData<List<FileWorkerStatusPair>> = _fileStatus
 
@@ -72,6 +72,8 @@ class FileStatusViewModel @Inject constructor(
                 }
             }
 
+            WorkManager.getInstance(applicationContext).pruneWork()
+
             for (fileStatusPair in fileMap) {
                 var allWorkersFinished = fileStatusPair.value[0].state == WorkInfo.State.SUCCEEDED
                 val mostValuableState = fileStatusPair.value.maxByOrNull {
@@ -81,12 +83,13 @@ class FileStatusViewModel @Inject constructor(
                     return@maxByOrNull WORKER_STATUS_WEIGHT_MAP[it.state]!!
                 }
 
-                resetFileStatus(fileStatusPair.key)
                 if (!allWorkersFinished) {
                     mostValuableState?.let {
                         adjustRunningFileStatus(fileStatusPair.key, it)
                         newStatus.add(FileWorkerStatusPair(fileStatusPair.key, it.state))
                     }
+                } else {
+                    resetFileStatus(fileStatusPair.key)
                 }
             }
 

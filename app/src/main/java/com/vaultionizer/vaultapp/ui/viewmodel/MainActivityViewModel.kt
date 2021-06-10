@@ -284,4 +284,8 @@ class MainActivityViewModel @Inject constructor(
             }
         }
     }
+
+    fun onOpenFileActivityFailure() {
+        _fileEvent.value = FileEvent.NoAppFoundToOpenFile
+    }
 }

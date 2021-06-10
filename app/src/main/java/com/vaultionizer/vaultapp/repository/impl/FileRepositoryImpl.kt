@@ -198,7 +198,6 @@ class FileRepositoryImpl @Inject constructor(
 
             val downloadWorker =
                 prepareFileWorkerBuilder<FileDownloadWorker>(file, downloadWorkData)
-                    .addTag(Constants.WORKER_TAG_FILE)
                     .addTag(Constants.WORKER_TAG_DOWNLOAD)
                     .build()
 
@@ -212,7 +211,6 @@ class FileRepositoryImpl @Inject constructor(
         )
         val decryptionWorker =
             prepareFileWorkerBuilder<DataDecryptionWorker>(file, decryptionWorkData)
-                .addTag(Constants.WORKER_TAG_FILE)
                 .addTag(Constants.WORKER_TAG_DECRYPTION)
                 .build()
 

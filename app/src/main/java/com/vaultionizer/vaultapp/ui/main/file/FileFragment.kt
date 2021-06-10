@@ -195,25 +195,31 @@ class FileFragment : Fragment(), View.OnClickListener {
         }
 
         viewModel.fileEvent.observe(viewLifecycleOwner) {
-            if (it is FileEvent.UploadFileNameConflict) {
-                showDialog(
-                    AlertDialogType.UPLOAD_OR_REPLACE,
-                    positiveClick = { _ ->
-                        viewModel.requestUpload(it.fsSource, true)
-                    },
-                    negativeClick = { _ ->
-                        viewModel.requestUpdate(it.file, it.fsSource)
-                    })
-            } else if (it is FileEvent.FileExchangeError) {
-                val dialog = createDialog(AlertDialogType.EXCHANGE_ERROR, { }, {})
-                dialog.message(
-                    text = getString(
-                        R.string.file_viewer_exchange_error_message,
-                        it.file.name
+            when (it) {
+                is FileEvent.UploadFileNameConflict -> {
+                    showDialog(
+                        AlertDialogType.UPLOAD_OR_REPLACE,
+                        positiveClick = { _ ->
+                            viewModel.requestUpload(it.fsSource, true)
+                        },
+                        negativeClick = { _ ->
+                            viewModel.requestUpdate(it.file, it.fsSource)
+                        })
+                }
+                is FileEvent.FileExchangeError -> {
+                    val dialog = createDialog(AlertDialogType.EXCHANGE_ERROR, { }, {})
+                    dialog.message(
+                        text = getString(
+                            R.string.file_viewer_exchange_error_message,
+                            it.file.name
+                        )
                     )
-                )
 
-                dialog.show()
+                    dialog.show()
+                }
+                is FileEvent.NoAppFoundToOpenFile -> {
+                    showDialog(AlertDialogType.NO_APP_AVAILABLE_TO_OPEN_FILE, {}, {})
+                }
             }
         }
     }
@@ -310,7 +316,7 @@ class FileFragment : Fragment(), View.OnClickListener {
         try {
             startActivity(intent)
         } catch (ex: Exception) {
-
+            viewModel.onOpenFileActivityFailure()
         }
     }
 
