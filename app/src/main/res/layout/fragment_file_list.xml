@@ -82,7 +82,12 @@
             android:layout_marginEnd="@dimen/efab_ui_margin_medium"
             android:layout_marginRight="@dimen/efab_ui_margin_medium"
             android:layout_marginBottom="@dimen/efab_ui_margin_medium"
+            app:efab_closingAnimationDurationMs="300"
+            app:efab_closingAnticipateTension="0"
+            app:efab_color="@color/colorPrimaryDark"
             app:efab_icon="@drawable/ic_outline_cloud_upload_24"
+            app:efab_iconAnimationRotationDeg="360"
+            app:efab_openingAnimationDurationMs="300"
             app:efab_orientation="portrait" />
 
         <com.nambimobile.widgets.efab.FabOption
