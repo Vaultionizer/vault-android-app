@@ -40,6 +40,7 @@ import com.vaultionizer.vaultapp.ui.viewmodel.FileStatusViewModel
 import com.vaultionizer.vaultapp.ui.viewmodel.MainActivityViewModel
 import com.vaultionizer.vaultapp.util.boolToVisibility
 import dagger.hilt.android.AndroidEntryPoint
+import java.util.*
 import javax.inject.Inject
 
 
@@ -133,12 +134,16 @@ class FileFragment : Fragment(), View.OnClickListener {
 
         statusViewModel.fileStatus.observe(viewLifecycleOwner) {
             val size: Int = it.size // Necessary because the gradle linter has a bug atm.
-            fileProcessingStatusButton.text = if (it.isEmpty()) {
-                getString(R.string.file_status_no_task)
-            } else if (it.size == 1) {
-                getString(R.string.file_status_single_text_template)
-            } else {
-                getString(R.string.file_status_text_template, size)
+            fileProcessingStatusButton.text = when {
+                it.isEmpty() -> {
+                    getString(R.string.file_status_no_task)
+                }
+                it.size == 1 -> {
+                    getString(R.string.file_status_single_text_template)
+                }
+                else -> {
+                    getString(R.string.file_status_text_template, size)
+                }
             }
 
             fileProcessingStatusButton.isEnabled = it.isNotEmpty()
@@ -275,12 +280,12 @@ class FileFragment : Fragment(), View.OnClickListener {
         val action = when {
             file.isImage -> {
                 FileFragmentDirections.actionFileFragmentToImageFileViewerFragment(
-                    FileViewerArgs(file.localId)
+                        FileViewerArgs(file.localId)
                 )
             }
-            file.extension?.toLowerCase() == "txt" -> {
+            file.extension?.lowercase(Locale.getDefault()) == "txt" -> {
                 FileFragmentDirections.actionFileFragmentToTextFileViewerFragment(
-                    FileViewerArgs(file.localId)
+                        FileViewerArgs(file.localId)
                 )
             }
             else -> {

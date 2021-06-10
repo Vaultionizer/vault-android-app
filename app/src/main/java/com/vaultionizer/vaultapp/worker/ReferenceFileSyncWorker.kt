@@ -28,7 +28,6 @@ class ReferenceFileSyncWorker @AssistedInject constructor(
                 return@withContext Result.failure()
             }
 
-            // TODO(jatsqi): Add encryption.
             referenceFileRepository.syncReferenceFile(
                 fileRepository.getFileByRemote(spaceId, FileRepository.ROOT_FOLDER_ID)!!
             ).collectSuccess() ?: return@withContext Result.failure()

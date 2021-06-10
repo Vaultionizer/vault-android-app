@@ -33,18 +33,18 @@ class FileStatusViewModel @Inject constructor(
 
         val WORKER_STATUS_WEIGHT_MAP = mapOf(
             WorkInfo.State.RUNNING to 4,
-            WorkInfo.State.ENQUEUED to 3,
-            WorkInfo.State.FAILED to 2,
-            WorkInfo.State.CANCELLED to 2,
-            WorkInfo.State.BLOCKED to 2,
-            WorkInfo.State.SUCCEEDED to 1,
+                WorkInfo.State.ENQUEUED to 3,
+                WorkInfo.State.FAILED to 2,
+                WorkInfo.State.CANCELLED to 2,
+                WorkInfo.State.BLOCKED to 2,
+                WorkInfo.State.SUCCEEDED to 1,
         )
     }
 
     val workInfo =
-        WorkManager.getInstance(applicationContext).getWorkInfosLiveData(WORKER_QUERY)
-    private val fileStatus_ = MutableLiveData<List<FileWorkerStatusPair>>(emptyList())
-    val fileStatus: LiveData<List<FileWorkerStatusPair>> = fileStatus_
+            WorkManager.getInstance(applicationContext).getWorkInfosLiveData(WORKER_QUERY)
+    private val _fileStatus = MutableLiveData<List<FileWorkerStatusPair>>(emptyList())
+    val fileStatus: LiveData<List<FileWorkerStatusPair>> = _fileStatus
 
     fun onWorkerStatusChange(workInfoList: List<WorkInfo>) {
         viewModelScope.launch {
@@ -90,7 +90,7 @@ class FileStatusViewModel @Inject constructor(
                 }
             }
 
-            fileStatus_.value = newStatus
+            _fileStatus.value = newStatus
         }
     }
 

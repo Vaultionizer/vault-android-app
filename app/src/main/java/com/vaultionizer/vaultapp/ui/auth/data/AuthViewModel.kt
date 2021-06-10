@@ -166,7 +166,6 @@ class AuthViewModel @Inject constructor(
                         AuthEvent.LoginValidation()
 
                     else ->
-                        // TODO(jatsqi): Refactor error dispatcher
                         AuthEvent.LoginValidation(
                             error = getString(R.string.login_error_invalid_credentials)
                         )

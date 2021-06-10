@@ -8,6 +8,7 @@ import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkFile
 import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkFolder
 import com.vaultionizer.vaultapp.util.Constants
 import java.io.File
+import java.util.*
 
 class VNFile(
     val name: String,
@@ -15,7 +16,6 @@ class VNFile(
     var localId: Long,
     val parent: VNFile? = null
 ) {
-
     enum class State {
         AVAILABLE_REMOTE,
         AVAILABLE_OFFLINE,
@@ -49,9 +49,8 @@ class VNFile(
     val mimeType: String?
         get() = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)
     val isImage: Boolean
-        get() = extension?.toLowerCase() in setOf("png", "jpg", "jpeg")
+        get() = extension?.lowercase(Locale.getDefault()) in setOf("png", "jpg", "jpeg")
 
-    // TODO(jatsqi) Refactor constructors
     constructor(
         name: String,
         space: VNSpace,
