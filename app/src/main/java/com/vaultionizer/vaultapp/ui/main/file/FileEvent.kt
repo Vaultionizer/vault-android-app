@@ -19,6 +19,8 @@ sealed class FileEvent {
         val file: VNFile,
     ) : FileEvent()
 
-    object NoAppFoundToOpenFile : FileEvent()
+    data class NoAppFoundToOpenFile(
+        val file: VNFile
+    ) : FileEvent()
 
 }

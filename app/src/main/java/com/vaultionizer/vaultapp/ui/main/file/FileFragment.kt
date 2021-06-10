@@ -218,6 +218,7 @@ class FileFragment : Fragment(), View.OnClickListener {
                     dialog.show()
                 }
                 is FileEvent.NoAppFoundToOpenFile -> {
+                    decryptionCache.invalidateResultByFileId(it.file.localId)
                     showDialog(AlertDialogType.NO_APP_AVAILABLE_TO_OPEN_FILE, {}, {})
                 }
             }
@@ -316,7 +317,7 @@ class FileFragment : Fragment(), View.OnClickListener {
         try {
             startActivity(intent)
         } catch (ex: Exception) {
-            viewModel.onOpenFileActivityFailure()
+            viewModel.onOpenFileActivityFailure(file)
         }
     }
 

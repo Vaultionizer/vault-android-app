@@ -36,6 +36,8 @@ class ImageFileViewerFragment : Fragment() {
         val bitmap = BitmapFactory.decodeByteArray(data, 0, data!!.size)
         val imageView = view.findViewById<ImageView>(R.id.viewer_image)
         imageView.setImageBitmap(bitmap)
+
+        decryptionResultCache.invalidateResultByFileId(args.fileArgs.fileId)
     }
 
 }

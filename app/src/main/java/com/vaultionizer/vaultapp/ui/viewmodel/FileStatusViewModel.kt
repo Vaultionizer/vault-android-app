@@ -77,7 +77,10 @@ class FileStatusViewModel @Inject constructor(
             for (fileStatusPair in fileMap) {
                 var allWorkersFinished = fileStatusPair.value[0].state == WorkInfo.State.SUCCEEDED
                 val mostValuableState = fileStatusPair.value.maxByOrNull {
-                    if (it.state != WorkInfo.State.SUCCEEDED) {
+                    if (it.state != WorkInfo.State.SUCCEEDED &&
+                        it.state != WorkInfo.State.CANCELLED &&
+                        it.state != WorkInfo.State.FAILED
+                    ) {
                         allWorkersFinished = false
                     }
                     return@maxByOrNull WORKER_STATUS_WEIGHT_MAP[it.state]!!
