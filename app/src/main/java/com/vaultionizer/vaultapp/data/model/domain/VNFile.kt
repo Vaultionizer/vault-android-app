@@ -48,6 +48,7 @@ class VNFile(
         get() = MimeTypeMap.getFileExtensionFromUrl(name)
     val mimeType: String?
         get() = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)
+            ?: "application/octet-stream"
     val isImage: Boolean
         get() = extension?.lowercase(Locale.getDefault()) in setOf("png", "jpg", "jpeg")
 
