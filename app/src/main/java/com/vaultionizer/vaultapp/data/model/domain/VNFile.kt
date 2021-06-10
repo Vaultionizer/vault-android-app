@@ -67,8 +67,7 @@ class VNFile(
 
     fun isDownloaded(ctx: Context): Boolean {
         if (isFolder) return false
-        if (localId == null) return false
-        if (state == State.DOWNLOADING || state == State.UPLOADING) return false
+        if (isBusy) return false
 
         val path = File(ctx.filesDir, "$localId.${Constants.VN_FILE_SUFFIX}")
         return path.exists()
