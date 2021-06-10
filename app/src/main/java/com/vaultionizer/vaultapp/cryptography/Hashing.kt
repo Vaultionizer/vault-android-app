@@ -57,7 +57,7 @@ object Hashing {
         val saltString = salt.toString()
         val hashString = BCrypt.hashpw(pwd.toString(), saltString)
 
-        val salt = Salt(saltString.toByteArray(Charsets.UTF_8))
+        @Suppress("NAME_SHADOWING") val salt = Salt(saltString.toByteArray(Charsets.UTF_8))
         val hash = hashString.toByteArray(Charsets.UTF_8)
 
         val trueHash = Hash(hash.sliceArray(29 until hash.size) + "V".toByteArray(Charsets.UTF_8))

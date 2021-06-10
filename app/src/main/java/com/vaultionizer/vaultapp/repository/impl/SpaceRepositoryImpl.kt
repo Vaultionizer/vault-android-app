@@ -112,8 +112,7 @@ class SpaceRepositoryImpl @Inject constructor(
                     val persisted = persistNetworkSpace(
                         response.data,
                         isPrivate,
-                        name,
-                        null
+                        name
                     ) // TODO(jatsqi) Replace null with actual reference file
 
                     emit(Resource.Success(persisted))
@@ -141,8 +140,7 @@ class SpaceRepositoryImpl @Inject constructor(
     private suspend fun persistNetworkSpace(
         remoteSpaceId: Long,
         isPrivate: Boolean,
-        name: String?,
-        refFile: String?
+        name: String?
     ): VNSpace {
         var space =
             localSpaceDao.getSpaceByRemoteId(
@@ -174,7 +172,7 @@ class SpaceRepositoryImpl @Inject constructor(
     }
 
     private suspend fun persistNetworkSpace(networkSpace: NetworkSpace): VNSpace =
-        persistNetworkSpace(networkSpace.spaceID, networkSpace.private, null, null)
+        persistNetworkSpace(networkSpace.spaceID, networkSpace.private, null)
 
     override suspend fun quitAllSpaces(): Boolean {
         val userId = authCache.loggedInUser?.localUser?.userId

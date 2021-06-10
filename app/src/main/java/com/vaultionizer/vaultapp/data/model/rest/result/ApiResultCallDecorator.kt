@@ -24,6 +24,7 @@ class ApiResultCallDecorator<T : Any>(
             override fun onResponse(call: Call<T>, response: Response<T>) {
                 if (response.code() in (200 until 300)) {
                     if (typeClass.equals(Unit::class.java) || typeClass.equals(Nothing::class.java)) {
+                        @Suppress("UNCHECKED_CAST")
                         callback.onResponse(
                             this@ApiResultCallDecorator,
                             Response.success(ApiResult.Success(Unit) as ApiResult<T>)

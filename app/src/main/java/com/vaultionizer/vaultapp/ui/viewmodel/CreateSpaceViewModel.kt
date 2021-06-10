@@ -33,7 +33,7 @@ class CreateSpaceViewModel @Inject constructor(val spaceRepository: SpaceReposit
     fun createSpace(
         name: String,
         isPrivate: Boolean,
-        algorithm: String,
+        @Suppress("UNUSED_PARAMETER") algorithm: String,
         writeAccess: Boolean,
         authKeyAccess: Boolean
     ) {

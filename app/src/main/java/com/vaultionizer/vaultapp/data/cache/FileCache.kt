@@ -68,7 +68,7 @@ class FileCache(private val strategy: IdCachingStrategy = IdCachingStrategy.LOCA
         }
 
         return when (strategy) {
-            IdCachingStrategy.LOCAL_ID -> file.localId != null
+            IdCachingStrategy.LOCAL_ID -> true
             IdCachingStrategy.REMOTE_ID -> file.remoteId != null
         }
     }

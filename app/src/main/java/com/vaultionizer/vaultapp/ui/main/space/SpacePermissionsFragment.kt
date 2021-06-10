@@ -69,7 +69,7 @@ class SpacePermissionsFragment : PreferenceFragmentCompat() {
             // setup switch listeners
             setupSwitch(writeAccessSwitch, null,
                 { viewModel.changeWriteAccess(writeAccessSwitch?.isChecked) },
-                { switch -> return@setupSwitch false })
+                { _ -> return@setupSwitch false })
             setupSwitch(
                 sharedSpaceSwitch,
                 AlertDialogType.MAKE_SPACE_PRIVATE,

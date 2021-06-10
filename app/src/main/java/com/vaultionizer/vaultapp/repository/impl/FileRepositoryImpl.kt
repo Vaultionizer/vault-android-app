@@ -144,7 +144,7 @@ class FileRepositoryImpl @Inject constructor(
                 minimumIdCache[space.id] = minimumIdCache[space.id]!! - 1
             }
 
-            val name = resolveFileNameConflicts(parent, name)
+            @Suppress("NAME_SHADOWING") val name = resolveFileNameConflicts(parent, name)
 
             val localFileId = localFileDao.createFile(
                 LocalFile(

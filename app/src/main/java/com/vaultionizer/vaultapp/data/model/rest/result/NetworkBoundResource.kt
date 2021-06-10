@@ -14,6 +14,7 @@ abstract class NetworkBoundResource<ResultType : Any, RequestType : Any> {
     open fun dispatchError(result: ApiResult.Error): Resource<ResultType> =
         Resource.Error(result.statusCode)
 
+    @Suppress("UNCHECKED_CAST")
     open fun transformOnSuccess(apiResult: RequestType): ResultType = apiResult as ResultType
 
     fun asFlow(): Flow<Resource<ResultType>> {
