@@ -135,7 +135,8 @@ enum class AlertDialogType(
     NO_APP_AVAILABLE_TO_OPEN_FILE(
         R.string.file_viewer_open_file_no_app_available_title,
         R.string.file_viewer_open_file_no_app_available_message,
-        R.string.file_viewer_open_file_no_app_available_positive
+        R.string.file_viewer_open_file_no_app_available_positive,
+        null
     );
 
     fun createDialog(
