@@ -28,6 +28,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.withContext
+import java.util.concurrent.locks.ReentrantLock
 import javax.inject.Inject
 
 class FileRepositoryImpl @Inject constructor(
@@ -66,58 +67,18 @@ class FileRepositoryImpl @Inject constructor(
      */
     private val minimumIdCache = mutableMapOf<Long, Long>()
 
+    // Lock for files
+    private val fileTreeLock = ReentrantLock()
+
     override suspend fun getFileTree(space: VNSpace): Flow<Resource<VNFile>> {
         return flow {
-            if (!space.isKeyAvailable) {
-                emit(Resource.CryptographicalError)
-                return@flow
+            try {
+                fileTreeLock.lock()
+                emitAll(getFileTreeInternal(space))
+            } finally {
+                fileTreeLock.unlock()
             }
-
-            val cache = fileCaches[space.id] ?: FileCache(FileCache.IdCachingStrategy.LOCAL_ID)
-            fileCaches[space.id] = cache
-            cache.rootFile?.let {
-                emit(Resource.Success(it))
-                return@flow
-            }
-
-            referenceFileRepository.downloadReferenceFile(space).collect {
-                if (it is Resource.Loading) {
-                    return@collect
-                }
-
-                when (it) {
-                    is Resource.Success -> {
-                        val referenceFile = it.data
-                        minimumIdCache[space.id] = -1
-                        val affectedIds = mutableSetOf<Long>()
-                        persistNetworkTree(referenceFile.elements, space, -1, affectedIds)
-
-                        localFileDao.deleteAllFilesOfSpaceExceptWithIds(affectedIds, space.id)
-                        val localFiles =
-                            localSpaceDao.getSpaceWithFiles(space.id).files.filter { it.remoteFileId != null }
-                        val root = buildLocalFileTree(space, localFiles)
-
-                        // TODO(jatsqi):    Add files that are being uploaded to local file tree.
-                        //                  Steps:
-                        //                      1) Query sync requests
-                        //                      2) Add new VNFile to parent folder
-                        cache.addFile(root)
-                        emit(Resource.Success(root))
-
-                        fileCaches[space.id] = cache
-                        return@collect
-                    }
-                    else -> {
-                        @Suppress("UNCHECKED_CAST")
-                        val convertedError = it as? Resource<VNFile>
-
-                        if (convertedError == null) {
-                            emit(Resource.UnknownError)
-                        } else emit(convertedError)
-                    }
-                }
-            }
-        }.flowOn(Dispatchers.IO)
+        }
     }
 
     override suspend fun uploadFile(
@@ -270,6 +231,60 @@ class FileRepositoryImpl @Inject constructor(
 
     override suspend fun clearLocalFiles(userId: Long) {
         localFileDao.deleteAllFilesOfUser(userId)
+    }
+
+    private suspend fun getFileTreeInternal(space: VNSpace): Flow<Resource<VNFile>> {
+        return flow {
+            if (!space.isKeyAvailable) {
+                emit(Resource.CryptographicalError)
+                return@flow
+            }
+
+            val cache = fileCaches[space.id] ?: FileCache(FileCache.IdCachingStrategy.LOCAL_ID)
+            fileCaches[space.id] = cache
+            cache.rootFile?.let {
+                emit(Resource.Success(it))
+                return@flow
+            }
+
+            referenceFileRepository.downloadReferenceFile(space).collect {
+                if (it is Resource.Loading) {
+                    return@collect
+                }
+
+                when (it) {
+                    is Resource.Success -> {
+                        val referenceFile = it.data
+                        minimumIdCache[space.id] = -1
+                        val affectedIds = mutableSetOf<Long>()
+                        persistNetworkTree(referenceFile.elements, space, -1, affectedIds)
+
+                        localFileDao.deleteAllFilesOfSpaceExceptWithIds(affectedIds, space.id)
+                        val localFiles =
+                            localSpaceDao.getSpaceWithFiles(space.id).files.filter { it.remoteFileId != null }
+                        val root = buildLocalFileTree(space, localFiles)
+
+                        // TODO(jatsqi):    Add files that are being uploaded to local file tree.
+                        //                  Steps:
+                        //                      1) Query sync requests
+                        //                      2) Add new VNFile to parent folder
+                        cache.addFile(root)
+                        emit(Resource.Success(root))
+
+                        fileCaches[space.id] = cache
+                        return@collect
+                    }
+                    else -> {
+                        @Suppress("UNCHECKED_CAST")
+                        val convertedError = it as? Resource<VNFile>
+
+                        if (convertedError == null) {
+                            emit(Resource.UnknownError)
+                        } else emit(convertedError)
+                    }
+                }
+            }
+        }.flowOn(Dispatchers.IO)
     }
 
     private suspend fun pushFile(
