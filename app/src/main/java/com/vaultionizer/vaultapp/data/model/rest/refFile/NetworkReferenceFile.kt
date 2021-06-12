@@ -11,7 +11,7 @@ data class NetworkReferenceFile(
 ) {
     companion object {
         private const val CURRENT_VERSION = 1
-        var GLOBAL_FOLDER_ID_COUNTER: Long = -1
+        private var GLOBAL_FOLDER_ID_COUNTER: Long = -1
 
         val EMPTY_FILE = NetworkReferenceFile(
             CURRENT_VERSION, mutableListOf(

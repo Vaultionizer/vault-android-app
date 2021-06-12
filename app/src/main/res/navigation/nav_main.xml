@@ -187,7 +187,7 @@
     <fragment
         android:id="@+id/textFileViewerFragment"
         android:name="com.vaultionizer.vaultapp.ui.main.file.viewer.TextFileViewerFragment"
-        android:label="TextFileViewerFragment">
+        android:label="Text Viewer">
         <argument
             android:name="fileArgs"
             app:argType="com.vaultionizer.vaultapp.ui.main.file.viewer.FileViewerArgs" />
@@ -195,7 +195,7 @@
     <fragment
         android:id="@+id/imageFileViewerFragment"
         android:name="com.vaultionizer.vaultapp.ui.main.file.viewer.ImageFileViewerFragment"
-        android:label="ImageFileViewerFragment">
+        android:label="Image Viewer">
         <argument
             android:name="fileArgs"
             app:argType="com.vaultionizer.vaultapp.ui.main.file.viewer.FileViewerArgs" />

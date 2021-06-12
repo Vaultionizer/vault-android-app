@@ -12,7 +12,6 @@ class NetworkLiveData(private val connectivityManager: ConnectivityManager) : Li
         override fun onAvailable(network: Network) {
             super.onAvailable(network)
             postValue(true)
-
         }
 
         override fun onLost(network: Network) {

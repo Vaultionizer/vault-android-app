@@ -3,6 +3,7 @@ package com.vaultionizer.vaultapp
 import android.app.Application
 import androidx.hilt.work.HiltWorkerFactory
 import androidx.work.Configuration
+import androidx.work.WorkManager
 import com.mikepenz.iconics.Iconics.init
 import com.mikepenz.iconics.Iconics.registerFont
 import com.mikepenz.iconics.typeface.library.fontawesome.FontAwesome
@@ -29,5 +30,7 @@ class VaultionizerApplication : Application(), Configuration.Provider {
         init(applicationContext)
         registerFont(OutlinedGoogleMaterial)
         registerFont(FontAwesome)
+
+        WorkManager.getInstance(applicationContext).pruneWork()
     }
 }

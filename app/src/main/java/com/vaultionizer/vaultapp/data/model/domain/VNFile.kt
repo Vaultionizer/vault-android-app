@@ -127,5 +127,9 @@ class VNFile(
         return localId.hashCode()
     }
 
+    override fun toString(): String {
+        return "VNFile(name='$name', space=$space, localId=$localId, parent=$parent, remoteId=$remoteId, isFolder=$isFolder, lastUpdated=$lastUpdated, createdAt=$createdAt, lastSyncTimestamp=$lastSyncTimestamp, state=$state, isBusy=$isBusy, extension=$extension, mimeType='$mimeType', isImage=$isImage)"
+    }
+
 
 }
