@@ -16,8 +16,7 @@ class FileCacheTest {
             0,
             "Nice Space",
             0,
-            true,
-            System.currentTimeMillis()
+            true
         ),
         null,
         5000,
@@ -29,7 +28,7 @@ class FileCacheTest {
     fun testFileCache_emptyCache() {
         val cache = FileCache()
 
-        assertEquals(null, cache.rootFile)
+        assertEquals(null, cache.getRootFile())
         assertEquals(null, cache.spaceId)
         assertEquals(null, cache.getFile(0))
     }
@@ -39,7 +38,7 @@ class FileCacheTest {
         val cache = FileCache(FileCache.IdCachingStrategy.LOCAL_ID)
         cache.addFile(EXAMPLE_FILE)
 
-        assertEquals(null, cache.rootFile)
+        assertEquals(null, cache.getRootFile())
         assertEquals(null, cache.spaceId)
         assertEquals(EXAMPLE_FILE, cache.getFile(5000))
         assertEquals(
@@ -53,31 +52,13 @@ class FileCacheTest {
         val cache = FileCache(FileCache.IdCachingStrategy.REMOTE_ID)
         cache.addFile(EXAMPLE_FILE)
 
-        assertEquals(null, cache.rootFile)
+        assertEquals(null, cache.getRootFile())
         assertEquals(0L, cache.spaceId)
         assertEquals(EXAMPLE_FILE, cache.getFile(9))
         assertEquals(
             EXAMPLE_FILE,
             cache.getFileByStrategy(9, FileCache.IdCachingStrategy.REMOTE_ID)
         )
-    }
-
-    @Test
-    fun testFileCache_deleteFile_remoteStrategy() {
-        val cache = FileCache(FileCache.IdCachingStrategy.REMOTE_ID)
-        cache.addFile(EXAMPLE_FILE)
-        cache.deleteFile(EXAMPLE_FILE)
-
-        assertEquals(cache.getFile(EXAMPLE_FILE.remoteId!!), null)
-    }
-
-    @Test
-    fun testFileCache_deleteFile_localStrategy() {
-        val cache = FileCache(FileCache.IdCachingStrategy.LOCAL_ID)
-        cache.addFile(EXAMPLE_FILE)
-        cache.deleteFile(EXAMPLE_FILE)
-
-        assertEquals(cache.getFile(EXAMPLE_FILE.localId!!), null)
     }
 
 }

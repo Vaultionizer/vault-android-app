@@ -24,17 +24,11 @@ interface LocalFileDao {
     @Delete
     suspend fun deleteFiles(vararg files: LocalFile)
 
-    @Query("DELETE FROM LocalFile WHERE file_id = :localId")
-    suspend fun deleteFile(localId: Long)
-
     @Query("DELETE FROM LocalFile WHERE space_id = :spaceId")
     suspend fun deleteFilesBySpace(spaceId: Long)
 
     @Query("DELETE FROM LocalFile WHERE space_id = :spaceId AND file_id NOT IN (:ids) AND remote_file_id IS NOT NULL")
     suspend fun deleteAllFilesOfSpaceExceptWithIds(ids: Set<Long>, spaceId: Long)
-
-    @Query("DELETE FROM LocalFile WHERE space_id IN (SELECT space.space_id FROM LocalSpace space WHERE space.user_id = :userId)")
-    suspend fun deleteAllFilesOfUser(userId: Long)
 
     @Query("UPDATE LocalFile SET remote_file_id = :remoteId WHERE file_id = :fileId")
     suspend fun updateFileRemoteId(fileId: Long, remoteId: Long)

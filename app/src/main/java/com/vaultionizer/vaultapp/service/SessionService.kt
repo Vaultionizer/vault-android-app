@@ -6,5 +6,5 @@ import java.util.*
 
 interface SessionService {
     @PUT("api/session/renew")
-    suspend fun renewSession()
+    suspend fun renewSession(@Body objects: Objects)
 }

@@ -13,9 +13,6 @@ fun writeFileToInternal(context: Context, path: String, data: ByteArray) {
     }
 }
 
-fun readFileFromInternal(context: Context, path: String): ByteArray =
-    context.openFileInput(path).readBytes()
-
 /**
  * Modified version of:
  * https://stackoverflow.com/questions/5568874/how-to-extract-the-file-name-from-uri-returned-from-intent-action-get-content

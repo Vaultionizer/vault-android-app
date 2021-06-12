@@ -2,6 +2,7 @@ package com.vaultionizer.vaultapp.ui.main.file
 
 import android.content.Context
 import android.graphics.Typeface
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -51,7 +52,7 @@ class FileRecyclerAdapter(
             }
 
         holder.fileProgress.visibility =
-            if (elem.isBusy)
+            if (elem.state == VNFile.State.UPLOADING || elem.state == VNFile.State.DOWNLOADING)
                 View.VISIBLE
             else
                 View.GONE

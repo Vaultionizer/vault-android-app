@@ -8,9 +8,9 @@ import android.widget.EditText
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Observer
 import com.google.android.material.textfield.TextInputLayout
 import com.vaultionizer.vaultapp.R
-import com.vaultionizer.vaultapp.ui.auth.data.AuthEvent
 import com.vaultionizer.vaultapp.ui.auth.data.AuthViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -48,16 +48,21 @@ class UserDataInputFragment : Fragment() {
             authViewModel.userDataChanged(password = passwordEdit.text.toString())
         }
 
-        authViewModel.authenticationEvent.observe(viewLifecycleOwner) {
-            if (it is AuthEvent.UserDataValidation) {
-                if (!it.isDataValid) {
-                    usernameLayout.error = it.usernameError
-                    passwordLayout.error = it.passwordError
-                } else {
-                    usernameLayout.error = null
-                    passwordLayout.error = null
-                }
+        authViewModel.userDataFormState.observe(viewLifecycleOwner, Observer {
+            if (!it.isDataValid) {
+                usernameLayout.error = getNullableResourceString(it.usernameError)
+                passwordLayout.error = getNullableResourceString(it.passwordError)
+            } else {
+                usernameLayout.error = null
+                passwordLayout.error = null
             }
-        }
+        })
     }
+
+    private fun getNullableResourceString(id: Int?): String? {
+        if (id == null) return null
+
+        return getString(id)
+    }
+
 }

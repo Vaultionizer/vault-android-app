@@ -7,10 +7,10 @@ import androidx.work.WorkerParameters
 import com.vaultionizer.vaultapp.repository.FileRepository
 import com.vaultionizer.vaultapp.repository.ReferenceFileRepository
 import com.vaultionizer.vaultapp.util.Constants
-import com.vaultionizer.vaultapp.util.extension.collectSuccess
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 
 @HiltWorker
@@ -30,8 +30,9 @@ class ReferenceFileSyncWorker @AssistedInject constructor(
 
             // TODO(jatsqi): Add encryption.
             referenceFileRepository.syncReferenceFile(
+                spaceId,
                 fileRepository.getFileByRemote(spaceId, FileRepository.ROOT_FOLDER_ID)!!
-            ).collectSuccess() ?: return@withContext Result.failure()
+            ).first()
             return@withContext Result.success()
         }
     }

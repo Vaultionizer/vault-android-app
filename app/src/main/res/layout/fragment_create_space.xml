@@ -1,38 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
-
-    <com.google.android.material.checkbox.MaterialCheckBox
-        android:id="@+id/input_space_shared"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="24dp"
-        android:text="@string/create_space_shared_vault"
-        android:textSize="18sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/input_space_layout"
-        app:useMaterialThemeColors="false" />
-
-    <com.google.android.material.checkbox.MaterialCheckBox
-        android:id="@+id/input_write_access_checkbox"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="24dp"
-        android:enabled="false"
-        android:text="@string/users_have_write_access_checkbox_text"
-        android:textSize="18sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/input_space_shared"
-        app:useMaterialThemeColors="false" />
 
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/input_space_layout"
@@ -56,19 +28,17 @@
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.checkbox.MaterialCheckBox
-        android:id="@+id/input_auth_access_checkbox"
+        android:id="@+id/input_space_shared"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="24dp"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="24dp"
-        android:enabled="false"
-        android:text="@string/users_can_invite_other_users_checkbox_text"
+        android:text="@string/create_space_shared_vault"
         android:textSize="18sp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/input_write_access_checkbox"
+        app:layout_constraintTop_toBottomOf="@+id/input_space_layout"
         app:useMaterialThemeColors="false" />
 
     <Spinner
@@ -104,7 +74,7 @@
         android:textColor="@android:color/black"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/input_auth_access_checkbox" />
+        app:layout_constraintTop_toBottomOf="@+id/input_space_shared" />
 
     <Button
         android:id="@+id/create_space"

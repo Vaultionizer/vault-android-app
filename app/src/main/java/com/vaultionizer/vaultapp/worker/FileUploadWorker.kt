@@ -5,6 +5,7 @@ import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.vaultionizer.vaultapp.data.model.domain.VNFile
+import com.vaultionizer.vaultapp.data.model.rest.result.ManagedResult
 import com.vaultionizer.vaultapp.repository.FileRepository
 import com.vaultionizer.vaultapp.repository.SpaceRepository
 import com.vaultionizer.vaultapp.repository.SyncRequestRepository
@@ -14,6 +15,7 @@ import com.vaultionizer.vaultapp.util.writeFileToInternal
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 
 @HiltWorker
@@ -40,14 +42,17 @@ class FileUploadWorker @AssistedInject constructor(
                 fileRepository.getFile(request.localFileId) ?: return@withContext Result.failure()
 
             if (request.remoteFileId == null) {
-                val fileRemoteId =
-                    fileRepository.announceUpload(file.space.id)
-                        ?: return@withContext Result.failure()
+                val announceResponse =
+                    fileRepository.announceUpload(file.space.id).first()
 
-                request.remoteFileId = fileRemoteId
+                if (announceResponse !is ManagedResult.Success) {
+                    return@withContext Result.failure()
+                }
+
+                request.remoteFileId = announceResponse.data
                 syncRequestService.updateRequest(request)
 
-                fileRepository.updateFileRemoteId(file.localId, fileRemoteId)
+                fileRepository.updateFileRemoteId(file.localId, announceResponse.data)
             }
 
             try {

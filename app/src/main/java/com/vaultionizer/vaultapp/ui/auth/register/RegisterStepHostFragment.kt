@@ -8,10 +8,13 @@ import android.view.ViewGroup
 import android.widget.Button
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
-import com.github.razir.progressbutton.*
+import com.github.razir.progressbutton.attachTextChangeAnimator
+import com.github.razir.progressbutton.bindProgressButton
+import com.github.razir.progressbutton.hideProgress
+import com.github.razir.progressbutton.showProgress
 import com.vaultionizer.vaultapp.R
-import com.vaultionizer.vaultapp.ui.auth.data.AuthEvent
 import com.vaultionizer.vaultapp.ui.auth.data.AuthViewModel
 import com.vaultionizer.vaultapp.ui.auth.parts.input.HostInputFragment
 import dagger.hilt.android.AndroidEntryPoint
@@ -43,26 +46,23 @@ class RegisterStepHostFragment : Fragment() {
         bindProgressButton(continueButton)
         continueButton.attachTextChangeAnimator()
 
-        authViewModel.authenticationEvent.observe(viewLifecycleOwner, {
-            if (it is AuthEvent.HostValidation) {
-                val continueEnabled = it.error == null
-                if (continueButton.isEnabled != continueEnabled) {
-                    continueButton.isEnabled = continueEnabled
-                }
-
-                if (it.version != null) {
-                    val action =
-                        RegisterStepHostFragmentDirections.actionRegisterStepHostFragmentToRegisterStepUserFragment3()
-                    findNavController().navigate(action)
-                }
-
-                if (!it.isLoading && continueButton.isProgressActive()) {
-                    continueButton.hideProgress(R.string.all_continue)
-                }
+        authViewModel.hostValidationResult.observe(viewLifecycleOwner, {
+            continueButton.hideProgress(R.string.all_continue)
+            if (it == null) return@observe
+            if (it.version != null) {
+                val action =
+                    RegisterStepHostFragmentDirections.actionRegisterStepHostFragmentToRegisterStepUserFragment3()
+                findNavController().navigate(action)
+            } else {
+                continueButton.hideProgress(R.string.all_continue)
             }
         })
 
         continueButton.isEnabled = false
+        authViewModel.hostFormState.observe(viewLifecycleOwner, {
+            continueButton.isEnabled = it.hostValid
+        })
+
         continueButton.setOnClickListener {
             hostInputFragment.triggerHostValidation(false)
 

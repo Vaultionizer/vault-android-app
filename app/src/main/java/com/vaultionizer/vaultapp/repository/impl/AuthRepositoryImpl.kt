@@ -9,50 +9,51 @@ import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkReferenceFile
 import com.vaultionizer.vaultapp.data.model.rest.request.CreateUserRequest
 import com.vaultionizer.vaultapp.data.model.rest.request.LoginUserRequest
 import com.vaultionizer.vaultapp.data.model.rest.result.ApiResult
-import com.vaultionizer.vaultapp.data.model.rest.result.NetworkBoundResource
-import com.vaultionizer.vaultapp.data.model.rest.result.Resource
+import com.vaultionizer.vaultapp.data.model.rest.result.ManagedResult
 import com.vaultionizer.vaultapp.data.model.rest.user.LoggedInUser
 import com.vaultionizer.vaultapp.data.model.rest.user.NetworkUserAuthPair
 import com.vaultionizer.vaultapp.hilt.RestModule
 import com.vaultionizer.vaultapp.repository.AuthRepository
-import com.vaultionizer.vaultapp.repository.SpaceRepository
 import com.vaultionizer.vaultapp.service.UserService
 import com.vaultionizer.vaultapp.util.Constants
 import com.vaultionizer.vaultapp.util.extension.hashSha512
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 import javax.inject.Inject
 
 class AuthRepositoryImpl @Inject constructor(
     val userService: UserService,
     val gson: Gson,
     val localUserDao: LocalUserDao,
-    val authCache: AuthCache,
-    val spaceRepository: SpaceRepository
+    val authCache: AuthCache
 ) : AuthRepository {
 
     override suspend fun login(
         host: String,
         username: String,
         password: String
-    ): Flow<Resource<LoggedInUser>> {
+    ): Flow<ManagedResult<LoggedInUser>> {
         RestModule.host = "${Constants.DEFAULT_PROTOCOL}://$host"
 
-        return object : NetworkBoundResource<LoggedInUser, NetworkUserAuthPair>() {
-            override fun shouldFetch(): Boolean = true
+        return flow {
+            val response = userService.loginUser(LoginUserRequest(username, password.hashSha512()))
 
-            override suspend fun fromDb(): Resource<LoggedInUser> {
-                throw RuntimeException("Not reachable!")
+            when (response) {
+                is ApiResult.Success -> {
+                    updateLocalUser(username, host, response.data)
+
+                    emit(ManagedResult.Success(authCache.loggedInUser!!))
+                }
+                is ApiResult.NetworkError -> {
+                    emit(ManagedResult.NetworkError(response.exception))
+                }
+                is ApiResult.Error -> {
+                    emit(ManagedResult.Error(statusCode = response.statusCode))
+                }
             }
-
-            override suspend fun saveToDb(networkResult: NetworkUserAuthPair) {
-                updateLocalUser(username, host, networkResult)
-            }
-
-            override suspend fun fromNetwork(): ApiResult<NetworkUserAuthPair> {
-                return userService.loginUser(LoginUserRequest(username, password.hashSha512()))
-            }
-
-        }.asFlow()
+        }.flowOn(Dispatchers.IO)
     }
 
     override suspend fun register(
@@ -60,44 +61,38 @@ class AuthRepositoryImpl @Inject constructor(
         username: String,
         password: String,
         authKey: String
-    ): Flow<Resource<LoggedInUser>> {
+    ): Flow<ManagedResult<LoggedInUser>> {
         RestModule.host = "${Constants.DEFAULT_PROTOCOL}://$host"
 
-        return object : NetworkBoundResource<LoggedInUser, NetworkUserAuthPair>() {
-            override fun shouldFetch(): Boolean = true
-
-            override suspend fun fromDb(): Resource<LoggedInUser> {
-                throw RuntimeException("Not reachable.")
-            }
-
-            override suspend fun saveToDb(networkResult: NetworkUserAuthPair) {
-                updateLocalUser(username, host, networkResult)
-            }
-
-            override suspend fun fromNetwork(): ApiResult<NetworkUserAuthPair> {
-                return userService.createUser(
-                    CreateUserRequest(
-                        password.hashSha512(), gson.toJson(
-                            NetworkReferenceFile.EMPTY_FILE
-                        ), username
-                    )
+        return flow {
+            val response = userService.createUser(
+                CreateUserRequest(
+                    password.hashSha512(), gson.toJson(
+                        NetworkReferenceFile.EMPTY_FILE
+                    ), username
                 )
-            }
+            )
 
-            override fun transformOnSuccess(apiResult: NetworkUserAuthPair): LoggedInUser {
-                return authCache.loggedInUser!!
-            }
+            when (response) {
+                is ApiResult.Success -> {
+                    updateLocalUser(username, host, response.data)
 
-            override fun dispatchError(result: ApiResult.Error): Resource<LoggedInUser> {
-                when (result.statusCode) {
-                    409 -> return Resource.UserError.UsernameAlreadyInUseError
-                    408 -> return Resource.UserError.ValueConstraintsError
+                    emit(ManagedResult.Success(authCache.loggedInUser!!))
                 }
-
-                return super.dispatchError(result)
+                is ApiResult.NetworkError -> {
+                    emit(ManagedResult.NetworkError(response.exception))
+                }
+                is ApiResult.Error -> {
+                    if (response.statusCode == 409) {
+                        emit(ManagedResult.UserError.UsernameAlreadyInUseError)
+                    } else if (response.statusCode == 400) {
+                        emit(ManagedResult.UserError.ValueConstraintsError)
+                    } else {
+                        emit(ManagedResult.Error(statusCode = response.statusCode))
+                    }
+                }
             }
-
-        }.asFlow()
+        }.flowOn(Dispatchers.IO)
     }
 
     private fun updateLocalUser(username: String, host: String, authPair: NetworkUserAuthPair) {
@@ -123,25 +118,4 @@ class AuthRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun logout(): Boolean {
-        if (authCache.loggedInUser != null){
-            authCache.loggedInUser = null
-            userService.logoutUser()
-            //if(response is ApiResult.Success ) {
-            return true
-            // }
-        }
-        return false
-    }
-
-    override suspend fun deleteUser(): Boolean {
-        if (authCache.loggedInUser?.localUser?.remoteUserId != null){
-            spaceRepository.deleteAllSpaces()
-            userService.deleteUser()
-            //if (response is ApiResult.Success){
-            return true
-            //}
-        }
-        return false
-    }
 }

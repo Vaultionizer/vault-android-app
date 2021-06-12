@@ -33,10 +33,4 @@ interface LocalSpaceDao {
     @Delete
     fun deleteSpaces(vararg spaces: LocalSpace)
 
-    @Query("DELETE FROM LocalSpace WHERE user_id = :userId")
-    fun quitAllSpaces(userId: Long)
-
-
-    @Query("SELECT remote_space_id FROM LocalSpace WHERE user_id = :userId")
-    fun getAllSpacesWithUser(userId: Long): List<Long>
 }
