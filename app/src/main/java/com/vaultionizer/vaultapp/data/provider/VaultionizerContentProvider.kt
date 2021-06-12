@@ -63,10 +63,13 @@ class VaultionizerContentProvider : ContentProvider() {
             )
 
         val decryptionCache = hiltEntryPoint.decryptionResultCache()
+        val decryptionResult = decryptionCache.getResultByFileId(uri.lastPathSegment!!.toLong())
+            ?: return null
         val pipe = ParcelFileDescriptor.createPipe()
+
         thread(start = true) {
             sendDecryptedData(
-                decryptionCache.getResultByFileId(uri.lastPathSegment!!.toLong())!!,
+                decryptionResult,
                 ParcelFileDescriptor.AutoCloseOutputStream(pipe[1])
             )
         }
