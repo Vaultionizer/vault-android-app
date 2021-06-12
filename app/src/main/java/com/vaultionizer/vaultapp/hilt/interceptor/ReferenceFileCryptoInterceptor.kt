@@ -23,6 +23,7 @@ class ReferenceFileCryptoInterceptor(
         val READ_REF_FILE_PATTERN = ".*/refFile/\\d+/read/".toRegex()
         val UPDATE_REF_FILE_PATTERN = ".*/refFile/\\d+/update/".toRegex()
         val CREATE_USER_PATTERN = ".*/api/user/create/".toRegex()
+        val CREATE_SPACE_PATTERN = ".*api/space/create/".toRegex()
         val CONTENT_MEDIA_TYPE = "application/json; charset=utf-8".toMediaTypeOrNull()
     }
 
@@ -51,6 +52,14 @@ class ReferenceFileCryptoInterceptor(
                 }
 
                 return chain.proceed(handleRequest(request, "refFile", spaceId))
+            }
+            urlString.matches(CREATE_SPACE_PATTERN) -> {
+                var spaceId: Long
+                runBlocking {
+                    spaceId = spaceDao.getNextSpaceId()
+                }
+
+                return chain.proceed(handleRequest(request, "referenceFile", spaceId))
             }
             else -> {
                 return chain.proceed(request)

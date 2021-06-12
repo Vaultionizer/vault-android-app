@@ -1,6 +1,10 @@
 package com.vaultionizer.vaultapp.repository.impl
 
 import com.google.gson.Gson
+import com.vaultionizer.vaultapp.cryptography.CryptoUtils
+import com.vaultionizer.vaultapp.cryptography.crypto.CryptoMode
+import com.vaultionizer.vaultapp.cryptography.crypto.CryptoPadding
+import com.vaultionizer.vaultapp.cryptography.crypto.CryptoType
 import com.vaultionizer.vaultapp.data.cache.AuthCache
 import com.vaultionizer.vaultapp.data.db.dao.LocalFileDao
 import com.vaultionizer.vaultapp.data.db.dao.LocalSpaceDao
@@ -93,10 +97,26 @@ class SpaceRepositoryImpl @Inject constructor(
         name: String,
         isPrivate: Boolean,
         writeAccess: Boolean,
-        authKeyAccess: Boolean
+        authKeyAccess: Boolean,
+        algorithm: String
     ): Flow<Resource<VNSpace>> {
+        if (CryptoUtils.existsKey(peekNextSpaceId())) {
+            CryptoUtils.deleteKey(peekNextSpaceId())
+        }
+
+        val cryptoMode = if (algorithm.contains("GCM")) CryptoMode.GCM else CryptoMode.CBC
+        if (isPrivate) {
+            CryptoUtils.generateKeyForSingleUserSpace(
+                peekNextSpaceId(),
+                CryptoType.AES,
+                cryptoMode,
+                CryptoPadding.NoPadding
+            )
+        } else {
+            TODO()
+        }
+
         return flow {
-            // TODO(jatsqi) Replace LoremIpsum with real authKey
             val response = spaceService.createSpace(
                 CreateSpaceRequest(
                     AuthKeyGen().generateAuthKey(),
@@ -113,7 +133,7 @@ class SpaceRepositoryImpl @Inject constructor(
                         response.data,
                         isPrivate,
                         name
-                    ) // TODO(jatsqi) Replace null with actual reference file
+                    )
 
                     emit(Resource.Success(persisted))
                 }
