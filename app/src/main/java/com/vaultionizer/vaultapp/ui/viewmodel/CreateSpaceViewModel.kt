@@ -5,10 +5,6 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vaultionizer.vaultapp.R
-import com.vaultionizer.vaultapp.cryptography.CryptoUtils
-import com.vaultionizer.vaultapp.cryptography.crypto.CryptoMode
-import com.vaultionizer.vaultapp.cryptography.crypto.CryptoPadding
-import com.vaultionizer.vaultapp.cryptography.crypto.CryptoType
 import com.vaultionizer.vaultapp.data.model.rest.result.Resource
 import com.vaultionizer.vaultapp.repository.SpaceRepository
 import com.vaultionizer.vaultapp.ui.main.space.SpaceCreationResult
@@ -33,28 +29,22 @@ class CreateSpaceViewModel @Inject constructor(val spaceRepository: SpaceReposit
     fun createSpace(
         name: String,
         isPrivate: Boolean,
-        @Suppress("UNUSED_PARAMETER") algorithm: String,
+        algorithm: String,
         writeAccess: Boolean,
         authKeyAccess: Boolean
     ) {
         viewModelScope.launch {
-            spaceRepository.createSpace(name, isPrivate, writeAccess, authKeyAccess).collect {
-                when (it) {
-                    is Resource.Success -> {
-                        CryptoUtils.generateKeyForSingleUserSpace(
-                            it.data.id,
-                            CryptoType.AES,
-                            CryptoMode.GCM,
-                            CryptoPadding.NoPadding
-                        )
-
-                        _spaceCreationResult.value = SpaceCreationResult(it.data, true)
-                    }
-                    else -> {
-                        _spaceCreationResult.value = SpaceCreationResult(null, false)
+            spaceRepository.createSpace(name, isPrivate, writeAccess, authKeyAccess, algorithm)
+                .collect {
+                    when (it) {
+                        is Resource.Success -> {
+                            _spaceCreationResult.value = SpaceCreationResult(it.data, true)
+                        }
+                        else -> {
+                            _spaceCreationResult.value = SpaceCreationResult(null, false)
+                        }
                     }
                 }
-            }
         }
     }
 
