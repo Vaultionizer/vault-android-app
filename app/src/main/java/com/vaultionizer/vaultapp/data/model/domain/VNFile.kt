@@ -19,9 +19,7 @@ class VNFile(
         AVAILABLE_REMOTE,
         AVAILABLE_OFFLINE,
         UPLOADING,
-        DOWNLOADING,
-        ENCRYPTING,
-        DECRYPTING
+        DOWNLOADING
     }
 
     var remoteId: Long? = null
@@ -36,7 +34,7 @@ class VNFile(
     var lastSyncTimestamp: Long = System.currentTimeMillis()
     var state: State? = State.AVAILABLE_REMOTE
     val isBusy: Boolean
-        get() = state == State.DOWNLOADING || state == State.UPLOADING || state == State.ENCRYPTING || state == State.DECRYPTING
+        get() = state == State.DOWNLOADING || state == State.UPLOADING
 
     // TODO(jatsqi) Refactor constructors
     constructor(
@@ -94,27 +92,10 @@ class VNFile(
             remoteId,
             parent?.localId ?: -1,
             name,
-            if (isFolder) LocalFile.Type.FOLDER else LocalFile.Type.FILE,
+            if(isFolder) LocalFile.Type.FOLDER else LocalFile.Type.FILE,
             lastUpdated,
             createdAt,
             lastSyncTimestamp
         )
     }
-
-    override fun equals(other: Any?): Boolean {
-        if (this === other) return true
-        if (javaClass != other?.javaClass) return false
-
-        other as VNFile
-
-        if (localId != other.localId) return false
-
-        return true
-    }
-
-    override fun hashCode(): Int {
-        return localId.hashCode()
-    }
-
-
 }

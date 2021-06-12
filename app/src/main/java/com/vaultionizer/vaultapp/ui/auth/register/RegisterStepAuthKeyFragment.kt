@@ -11,12 +11,12 @@ import android.widget.Toast
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.github.razir.progressbutton.attachTextChangeAnimator
 import com.github.razir.progressbutton.hideProgress
 import com.github.razir.progressbutton.showProgress
 import com.vaultionizer.vaultapp.R
-import com.vaultionizer.vaultapp.ui.auth.data.AuthEvent
 import com.vaultionizer.vaultapp.ui.auth.data.AuthViewModel
 
 class RegisterStepAuthKeyFragment : Fragment() {
@@ -49,19 +49,18 @@ class RegisterStepAuthKeyFragment : Fragment() {
             authViewModel.registerWithFormData()
         }
 
-        authViewModel.authenticationEvent.observe(viewLifecycleOwner) {
-            if (it is AuthEvent.LoginValidation) {
-                finishButton.hideProgress(R.string.register_step_auth_key_finish)
-                if (it.error == null) {
-                    val action =
-                        RegisterStepAuthKeyFragmentDirections.actionRegisterStepAuthKeyFragmentToMainActivity2()
-                    findNavController().navigate(action)
-                } else {
-                    Toast.makeText(requireContext(), it.error, Toast.LENGTH_LONG).show()
-                    finishButton.hideProgress(R.string.register_step_auth_key_finish_progress)
-                }
+        authViewModel.loginResult.observe(viewLifecycleOwner, Observer {
+            finishButton.hideProgress(R.string.register_step_auth_key_finish)
+            if (it == null) return@Observer
+            if (it.error == null) {
+                val action =
+                    RegisterStepAuthKeyFragmentDirections.actionRegisterStepAuthKeyFragmentToMainActivity2()
+                findNavController().navigate(action)
+            } else {
+                Toast.makeText(requireContext(), it.error, Toast.LENGTH_LONG).show()
+                finishButton.hideProgress(R.string.register_step_auth_key_finish_progress)
             }
-        }
+        })
     }
 
 }

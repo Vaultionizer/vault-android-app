@@ -10,9 +10,9 @@ import android.widget.EditText
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.vaultionizer.vaultapp.R
-import com.vaultionizer.vaultapp.ui.auth.data.AuthEvent
 import com.vaultionizer.vaultapp.ui.auth.data.AuthViewModel
 import dagger.hilt.android.AndroidEntryPoint
 import retrofit2.Retrofit
@@ -52,11 +52,9 @@ class RegisterStepUserFragment : Fragment() {
             authViewModel.userDataChanged(username = registerUserEdit.text.toString())
         }
 
-        authViewModel.authenticationEvent.observe(viewLifecycleOwner) {
-            if (it is AuthEvent.UserDataValidation) {
-                continueButton.isEnabled = it.isDataValid
-            }
-        }
+        authViewModel.userDataFormState.observe(viewLifecycleOwner, Observer {
+            continueButton.isEnabled = it.isDataValid
+        })
 
         continueButton.setOnClickListener {
             val action =

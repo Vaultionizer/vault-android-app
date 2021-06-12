@@ -1,9 +1,9 @@
 package com.vaultionizer.vaultapp.repository
 
 import com.vaultionizer.vaultapp.data.model.rest.misc.NetworkVersion
-import com.vaultionizer.vaultapp.data.model.rest.result.Resource
+import com.vaultionizer.vaultapp.data.model.rest.result.ManagedResult
 import kotlinx.coroutines.flow.Flow
 
 interface MiscRepository {
-    suspend fun pingHost(host: String): Flow<Resource<NetworkVersion>>
+    suspend fun pingHost(host: String): Flow<ManagedResult<NetworkVersion>>
 }
