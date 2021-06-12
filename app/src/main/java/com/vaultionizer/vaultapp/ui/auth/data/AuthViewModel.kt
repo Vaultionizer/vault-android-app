@@ -4,19 +4,18 @@ import android.content.Context
 import android.util.Log
 import android.util.Patterns
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.hadilq.liveevent.LiveEvent
 import com.vaultionizer.vaultapp.R
 import com.vaultionizer.vaultapp.cryptography.PasswordValidator
-import com.vaultionizer.vaultapp.data.model.rest.result.ManagedResult
+import com.vaultionizer.vaultapp.data.model.rest.misc.NetworkVersion
+import com.vaultionizer.vaultapp.data.model.rest.result.Resource
 import com.vaultionizer.vaultapp.repository.AuthRepository
 import com.vaultionizer.vaultapp.repository.MiscRepository
-import com.vaultionizer.vaultapp.ui.auth.login.LoginResult
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -27,64 +26,62 @@ class AuthViewModel @Inject constructor(
     @ApplicationContext private val applicationContext: Context
 ) : ViewModel() {
 
-    private val _hostFormState = MutableLiveData<HostFormState>()
-    val hostFormState: LiveData<HostFormState> = _hostFormState
+    private val _authenticationEvent = LiveEvent<AuthEvent?>()
+    val authenticationEvent: LiveData<AuthEvent?> = _authenticationEvent
 
-    private val _userDataFormState = MutableLiveData<UserDataFormState>()
-    val userDataFormState: LiveData<UserDataFormState> = _userDataFormState
+    private var authenticationFormData = AuthFormData()
 
-    private val _hostValidationResult = MutableLiveData<HostValidationResult>()
-    val hostValidationResult: LiveData<HostValidationResult> = _hostValidationResult
-
-    private val _loginResult = MutableLiveData<LoginResult>()
-    val loginResult: LiveData<LoginResult> = _loginResult
-
-    private val authenticationFormData = AuthFormData()
+    var serverVersion : NetworkVersion? = null
 
     fun resetState() {
-        _loginResult.value = null
-        _hostValidationResult.value = null
-        _userDataFormState.value = UserDataFormState()
-        _hostFormState.value = HostFormState()
+        _authenticationEvent.value = null
+        authenticationFormData = AuthFormData()
     }
 
     fun validateHost(host: String) {
+        serverVersion = null
         if (host.isEmpty()) {
-            _hostValidationResult.value = HostValidationResult(null)
-            _hostFormState.value = HostFormState(null, false)
+            _authenticationEvent.value =
+                AuthEvent.HostValidation(error = getString(R.string.host_error_syntax))
             return
         }
+
         viewModelScope.launch {
-            val ping = miscRepository.pingHost(formatHost(host)).first()
+            miscRepository.pingHost(formatHost(host)).collect {
+                val event = when (it) {
+                    is Resource.Loading ->
+                        AuthEvent.HostValidation(
+                            isLoading = true
+                        )
 
-            if (ping is ManagedResult.MiscError.HostServerError) {
-                _hostFormState.value = HostFormState(
-                    hostError = applicationContext.resources.getString(
-                        R.string.host_error_code,
-                        ping.statusCode
-                    )
-                )
-                _hostValidationResult.value = HostValidationResult(null)
-            }
+                    is Resource.Success -> {
+                        serverVersion = it.data
+                        AuthEvent.HostValidation(
+                            version = it.data
+                        )
+                    }
 
-            if (ping is ManagedResult.Success) {
-                _hostFormState.value = HostFormState(hostValid = true)
-                _hostValidationResult.value = HostValidationResult(ping.data)
-            }
+                    is Resource.MiscError.HostServerError ->
+                        AuthEvent.HostValidation(
+                            error = getString(R.string.host_error_code, it.statusCode)
+                        )
 
-            if (ping is ManagedResult.NetworkError) {
-                _hostFormState.value =
-                    HostFormState(hostError = applicationContext.resources.getString(R.string.host_error_network))
-                _hostValidationResult.value = HostValidationResult(null)
+                    else ->
+                        AuthEvent.HostValidation(
+                            error = getString(R.string.all_unexpected_error)
+                        )
+                }
+
+                _authenticationEvent.value = event
             }
         }
     }
 
     private fun formatHost(host: String): String {
-        var formattedHost: String = host;
+        var formattedHost: String = host
         // remove protocol if existing and remove potential last "/"
-        if (formattedHost[host.length-1] == '/') {
-            formattedHost = formattedHost.dropLast(1);
+        if (formattedHost[host.length - 1] == '/') {
+            formattedHost = formattedHost.dropLast(1)
         }
         if (host.contains("://")) {
             formattedHost = formattedHost.split("://")[1]
@@ -102,20 +99,48 @@ class AuthViewModel @Inject constructor(
             )
 
             result.collect {
-                when (it) {
-                    is ManagedResult.Success -> {
-                        Log.e(
-                            "Vault",
-                            "HELLO ${it.data.localUser.userId} with ${it.data.sessionToken}"
+                val event = when (it) {
+                    is Resource.Loading ->
+                        AuthEvent.LoginValidation(
+                            isLoading = true
                         )
-                        _loginResult.value = LoginResult(null)
-                    }
-                    is ManagedResult.UserError.UsernameAlreadyInUseError -> {
-                        _loginResult.value = LoginResult("Username is already in use!")
-                    }
-                    else -> {
-                        _loginResult.value = LoginResult("An unexpected error occurred!")
-                    }
+
+                    is Resource.Success ->
+                        AuthEvent.LoginValidation()
+
+                    is Resource.UserError.UsernameAlreadyInUseError ->
+                        AuthEvent.LoginValidation(
+                            error = getString(R.string.register_error_username_taken)
+                        )
+
+                    else ->
+                        AuthEvent.LoginValidation(
+                            error = getString(R.string.all_unexpected_error)
+                        )
+                }
+
+                _authenticationEvent.value = event
+            }
+        }
+    }
+
+    fun validateAuthKey() {
+        viewModelScope.launch {
+            val result = miscRepository.checkAuthenticated(
+                authenticationFormData.authKey
+            )
+            result.collect {
+                when (it) {
+                    is Resource.Success ->
+                        registerWithFormData()
+                    is Resource.MiscError.MalformedAuthString ->
+                        AuthEvent.AuthKeyValidation(
+                            error = "Malformed Auth String"
+                        )
+                    is Resource.MiscError.InvalidAuthKey ->
+                        AuthEvent.AuthKeyValidation(
+                            error = "Invalid AuthKey"
+                        )
                 }
             }
         }
@@ -131,18 +156,22 @@ class AuthViewModel @Inject constructor(
             )
 
             result.collect {
-                Log.d("Vault", it.javaClass.toString())
-                when (it) {
-                    is ManagedResult.Success -> {
-                        _loginResult.value = LoginResult(null)
-                    }
-                    is ManagedResult.Error -> {
-                        _loginResult.value = LoginResult("Invalid credentials!")
-                    }
-                    is ManagedResult.NetworkError -> {
-                        Log.d("Vault", it.exception.localizedMessage)
-                    }
+                val event = when (it) {
+                    is Resource.Loading ->
+                        AuthEvent.LoginValidation(
+                            isLoading = true
+                        )
+
+                    is Resource.Success ->
+                        AuthEvent.LoginValidation()
+
+                    else ->
+                        AuthEvent.LoginValidation(
+                            error = getString(R.string.login_error_invalid_credentials)
+                        )
                 }
+
+                _authenticationEvent.value = event
             }
         }
     }
@@ -150,12 +179,14 @@ class AuthViewModel @Inject constructor(
     fun hostDataChanged(host: String) {
         if (!isHostSyntaxValid(host)) {
             Log.e("Vault", "Invalid host")
-            _hostFormState.value =
-                HostFormState(hostError = applicationContext.resources.getString(R.string.host_error_syntax))
+            _authenticationEvent.value =
+                AuthEvent.HostValidation(
+                    error = getString(R.string.host_error_syntax)
+                )
         } else {
             Log.e("Vault", "Change host to $host")
             authenticationFormData.host = host
-            _hostFormState.value = HostFormState(hostError = null, hostValid = true)
+            _authenticationEvent.value = AuthEvent.HostValidation()
         }
     }
 
@@ -168,11 +199,14 @@ class AuthViewModel @Inject constructor(
             authenticationFormData.password = password
         }
 
-        Log.e("Vault", "Password valid? "+PasswordValidator().validatePassword(authenticationFormData.password).text)
+        Log.e(
+            "Vault",
+            "Password valid? " + PasswordValidator().validatePassword(authenticationFormData.password).text
+        )
         var usernameError: Int? = null
         var passwordError: Int? = null
 
-        if (authenticationFormData.username?.length?.compareTo(5) == -1 && !authenticationFormData.username?.isEmpty()) {
+        if (authenticationFormData.username.length.compareTo(5) == -1 && !authenticationFormData.username.isEmpty()) {
             usernameError = R.string.username_error_length
             Log.e("Vault", "Username too short!")
         }
@@ -181,18 +215,19 @@ class AuthViewModel @Inject constructor(
         var validPwd = PasswordValidator().validatePassword(authenticationFormData.password)
         if (validPwd.error && usernameError == null) {
             passwordError = validPwd.text
-            Log.e("Vault", "Password invalid: "+validPwd.name)
+            Log.e("Vault", "Password invalid: " + validPwd.name)
         }
 
         password.let {
             Log.e("Vault", "Password ${password?.length}")
         }
 
-        _userDataFormState.value = UserDataFormState(
-            usernameError = usernameError,
-            passwordError = passwordError,
-            isDataValid = usernameError == null && passwordError == null && authenticationFormData.username != null && authenticationFormData.password != null
-        )
+        _authenticationEvent.value =
+            AuthEvent.UserDataValidation(
+                usernameError = getString(usernameError),
+                passwordError = getString(passwordError),
+                isDataValid = usernameError == null && passwordError == null
+            )
     }
 
     fun authKeyDataChanged(authKey: String) {
@@ -203,8 +238,13 @@ class AuthViewModel @Inject constructor(
         return Patterns.WEB_URL.matcher(host).matches()
     }
 
-    companion object {
-        const val MIN_API_VERSION = 0.1
+    private fun getString(res: Int?, vararg arguments: Any): String? {
+        if (res == null) {
+            return null
+        }
+
+        Log.e("Vault", "RES $res")
+        return applicationContext.resources.getString(res, *arguments)
     }
 
 }

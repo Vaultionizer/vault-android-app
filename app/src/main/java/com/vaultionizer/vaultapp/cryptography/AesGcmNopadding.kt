@@ -3,7 +3,7 @@ package com.vaultionizer.vaultapp.cryptography
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import android.security.keystore.KeyProtection
-import com.vaultionizer.vaultapp.cryptography.dataclasses.IvCipher
+import com.vaultionizer.vaultapp.cryptography.model.IvCipher
 import com.vaultionizer.vaultapp.util.Constants
 import java.security.KeyStore
 import javax.crypto.Cipher
@@ -11,13 +11,11 @@ import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 import javax.crypto.spec.GCMParameterSpec
 
-class AesGcmNopadding : CryptoClass() {
+object AesGcmNopadding : CryptoClass() {
 
-    companion object {
-        const val TAG_LENGTH = 16
-        const val TRANSFORMATION = "AES/GCM/NoPadding"
-        const val BLOCK_MODE_IV_SIZE = 12
-    }
+    const val TAG_LENGTH = 16
+    const val TRANSFORMATION = "AES/GCM/NoPadding"
+    override val BLOCK_MODE_IV_SIZE = 12
 
     override fun generateSingleUserKey(keystoreAlias: String) {
         val keyGenerator = KeyGenerator.getInstance(
@@ -50,13 +48,6 @@ class AesGcmNopadding : CryptoClass() {
         val spec = GCMParameterSpec(TAG_LENGTH * 8, iv)
         cipher.init(Cipher.DECRYPT_MODE, key, spec)
         return cipher.doFinal(message)
-    }
-
-    override fun dewrapper(warp: ByteArray): IvCipher {
-        val iv: ByteArray = warp.sliceArray(0 until BLOCK_MODE_IV_SIZE)
-        val cipherText: ByteArray = warp.sliceArray(BLOCK_MODE_IV_SIZE until warp.size)
-
-        return IvCipher(iv, cipherText)
     }
 
     override fun addKeyToKeyStore(secretKey: SecretKey, keystoreAlias: String) {

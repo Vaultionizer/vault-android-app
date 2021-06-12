@@ -1,7 +1,7 @@
 package com.vaultionizer.vaultapp.ui.main.pc
 
-import com.vaultionizer.vaultapp.data.pc.PCCategory
-import com.vaultionizer.vaultapp.data.pc.PCPair
+import com.vaultionizer.vaultapp.data.model.pc.PCCategory
+import com.vaultionizer.vaultapp.data.model.pc.PCPair
 
 interface ViewPCItemClickListener {
     fun openPairOptions(pair: PCPair)

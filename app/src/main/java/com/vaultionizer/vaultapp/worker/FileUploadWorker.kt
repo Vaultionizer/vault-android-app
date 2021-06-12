@@ -1,21 +1,20 @@
 package com.vaultionizer.vaultapp.worker
 
 import android.content.Context
+import android.net.Uri
 import androidx.hilt.work.HiltWorker
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.vaultionizer.vaultapp.data.model.domain.VNFile
-import com.vaultionizer.vaultapp.data.model.rest.result.ManagedResult
 import com.vaultionizer.vaultapp.repository.FileRepository
 import com.vaultionizer.vaultapp.repository.SpaceRepository
 import com.vaultionizer.vaultapp.repository.SyncRequestRepository
 import com.vaultionizer.vaultapp.service.FileExchangeService
 import com.vaultionizer.vaultapp.util.Constants
-import com.vaultionizer.vaultapp.util.writeFileToInternal
+import com.vaultionizer.vaultapp.util.writeFile
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 
 @HiltWorker
@@ -40,37 +39,34 @@ class FileUploadWorker @AssistedInject constructor(
             val request = syncRequestService.getRequest(requestId)
             val file =
                 fileRepository.getFile(request.localFileId) ?: return@withContext Result.failure()
+            val uri = Uri.parse(request.uri ?: return@withContext Result.failure())
 
             if (request.remoteFileId == null) {
-                val announceResponse =
-                    fileRepository.announceUpload(file.space.id).first()
+                val fileRemoteId =
+                    fileRepository.announceUpload(file.space.id)
+                        ?: return@withContext Result.failure()
 
-                if (announceResponse !is ManagedResult.Success) {
-                    return@withContext Result.failure()
-                }
-
-                request.remoteFileId = announceResponse.data
+                request.remoteFileId = fileRemoteId
                 syncRequestService.updateRequest(request)
 
-                fileRepository.updateFileRemoteId(file.localId, announceResponse.data)
+                fileRepository.updateFileRemoteId(file.localId, fileRemoteId)
             }
 
+            val bytes = applicationContext.contentResolver.openInputStream(uri)?.readBytes()
+                ?: return@withContext Result.failure()
             try {
                 fileExchangeService.uploadFile(
                     fileRepository.getFile(request.localFileId)?.space!!.id,
                     request.remoteFileId!!,
-                    request.data ?: ByteArray(0)
+                    bytes
                 )
+                file.lastUpdated = System.currentTimeMillis()
             } catch (exception: Exception) {
                 return@withContext Result.failure()
             }
 
             // Write file to local file system
-            writeFileToInternal(
-                applicationContext,
-                "${request.localFileId.toString()}.${Constants.VN_FILE_SUFFIX}",
-                request.data ?: ByteArray(0)
-            )
+            applicationContext.writeFile(file.localId, bytes)
 
             val vnFile = fileRepository.getFile(request.localFileId)
             vnFile?.remoteId = request.remoteFileId

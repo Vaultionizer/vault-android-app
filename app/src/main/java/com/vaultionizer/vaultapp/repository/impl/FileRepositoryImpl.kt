@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.Uri
 import androidx.work.*
 import com.google.gson.Gson
+import com.vaultionizer.vaultapp.cryptography.CryptoUtils
 import com.vaultionizer.vaultapp.data.cache.FileCache
 import com.vaultionizer.vaultapp.data.db.dao.LocalFileDao
 import com.vaultionizer.vaultapp.data.db.dao.LocalSpaceDao
@@ -12,21 +13,17 @@ import com.vaultionizer.vaultapp.data.model.domain.VNFile
 import com.vaultionizer.vaultapp.data.model.domain.VNSpace
 import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkElement
 import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkFolder
-import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkReferenceFile
 import com.vaultionizer.vaultapp.data.model.rest.request.UploadFileRequest
 import com.vaultionizer.vaultapp.data.model.rest.result.ApiResult
-import com.vaultionizer.vaultapp.data.model.rest.result.ManagedResult
+import com.vaultionizer.vaultapp.data.model.rest.result.Resource
 import com.vaultionizer.vaultapp.repository.FileRepository
 import com.vaultionizer.vaultapp.repository.ReferenceFileRepository
 import com.vaultionizer.vaultapp.repository.SpaceRepository
 import com.vaultionizer.vaultapp.repository.SyncRequestRepository
 import com.vaultionizer.vaultapp.service.FileService
-import com.vaultionizer.vaultapp.util.Constants
-import com.vaultionizer.vaultapp.util.getFileName
-import com.vaultionizer.vaultapp.worker.DataEncryptionWorker
-import com.vaultionizer.vaultapp.worker.FileDownloadWorker
-import com.vaultionizer.vaultapp.worker.FileUploadWorker
-import com.vaultionizer.vaultapp.worker.ReferenceFileSyncWorker
+import com.vaultionizer.vaultapp.util.*
+import com.vaultionizer.vaultapp.util.extension.collectSuccess
+import com.vaultionizer.vaultapp.worker.*
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
@@ -44,6 +41,16 @@ class FileRepositoryImpl @Inject constructor(
     val syncRequestService: SyncRequestRepository,
 ) : FileRepository {
 
+    private sealed class FilePushMode(val affectedFile: VNFile) {
+        data class Upload(val parent: VNFile) : FilePushMode(parent)
+        data class Update(val file: VNFile) : FilePushMode(file)
+    }
+
+    private sealed class FilePushDataSource {
+        data class InMemory(val data: ByteArray, val fileName: String) : FilePushDataSource()
+        data class LocalFileSystem(val uri: Uri) : FilePushDataSource()
+    }
+
     /**
      * Simple in memory cache for files.
      */
@@ -59,22 +66,31 @@ class FileRepositoryImpl @Inject constructor(
      */
     private val minimumIdCache = mutableMapOf<Long, Long>()
 
-    override suspend fun getFileTree(space: VNSpace): Flow<ManagedResult<VNFile>> {
+    override suspend fun getFileTree(space: VNSpace): Flow<Resource<VNFile>> {
         return flow {
-            val cache = fileCaches[space.id] ?: FileCache(FileCache.IdCachingStrategy.LOCAL_ID)
-            fileCaches[space.id] = cache
-            cache.getRootFile()?.let {
-                emit(ManagedResult.Success(it))
+            if (!space.isKeyAvailable) {
+                emit(Resource.CryptographicalError)
                 return@flow
             }
 
-            val referenceFile = referenceFileRepository.downloadReferenceFile(space)
-            referenceFile.collect {
+            val cache = fileCaches[space.id] ?: FileCache(FileCache.IdCachingStrategy.LOCAL_ID)
+            fileCaches[space.id] = cache
+            cache.rootFile?.let {
+                emit(Resource.Success(it))
+                return@flow
+            }
+
+            referenceFileRepository.downloadReferenceFile(space).collect {
+                if (it is Resource.Loading) {
+                    return@collect
+                }
+
                 when (it) {
-                    is ManagedResult.Success -> {
+                    is Resource.Success -> {
+                        val referenceFile = it.data
                         minimumIdCache[space.id] = -1
                         val affectedIds = mutableSetOf<Long>()
-                        persistNetworkTree(it.data.elements, space, -1, affectedIds)
+                        persistNetworkTree(referenceFile.elements, space, -1, affectedIds)
 
                         localFileDao.deleteAllFilesOfSpaceExceptWithIds(affectedIds, space.id)
                         val localFiles =
@@ -86,109 +102,49 @@ class FileRepositoryImpl @Inject constructor(
                         //                      1) Query sync requests
                         //                      2) Add new VNFile to parent folder
                         cache.addFile(root)
-                        emit(ManagedResult.Success(root))
+                        emit(Resource.Success(root))
+
+                        fileCaches[space.id] = cache
+                        return@collect
                     }
                     else -> {
-                        emit(ManagedResult.Error((it as ManagedResult.Error).statusCode))
+                        @Suppress("UNCHECKED_CAST")
+                        val convertedError = it as? Resource<VNFile>
+
+                        if (convertedError == null) {
+                            emit(Resource.UnknownError)
+                        } else emit(convertedError)
                     }
                 }
             }
-
-            fileCaches.put(space.id, cache)
         }.flowOn(Dispatchers.IO)
     }
 
     override suspend fun uploadFile(
-        data: ByteArray,
-        name: String,
+        uri: Uri,
         parent: VNFile,
-    ) {
-        withContext(Dispatchers.IO) {
-            val workManager = WorkManager.getInstance(applicationContext)
-            val name = resolveFileNameConflicts(parent, name)
+    ): VNFile? = pushFile(FilePushMode.Upload(parent), FilePushDataSource.LocalFileSystem(uri))
 
-            // Create file in DB
-            val fileLocalId = localFileDao.createFile(
-                LocalFile(
-                    0,
-                    parent.space.id,
-                    null,
-                    parent.localId,
-                    name,
-                    LocalFile.Type.FILE,
-                    System.currentTimeMillis(),
-                    System.currentTimeMillis(),
-                    System.currentTimeMillis()
-                )
-            )
-
-            // Add temporary file to parent
-            val vnFile = VNFile(
-                name,
-                parent.space,
-                parent,
-                fileLocalId
-            )
-            vnFile.state = VNFile.State.UPLOADING
-
-            // Create upload request
-            val uploadRequest =
-                syncRequestService.createUploadRequest(vnFile, data)
-
-            val encryptionWorkData = workDataOf(
-                Constants.WORKER_SYNC_REQUEST_ID to uploadRequest.requestId,
-            )
-            val uploadWorkData = workDataOf(
-                Constants.WORKER_SYNC_REQUEST_ID to uploadRequest.requestId,
-            )
-            val refWorkData = workDataOf(
-                Constants.WORKER_SPACE_ID to parent.space.id
-            )
-
-            val encryptionWorker =
-                OneTimeWorkRequestBuilder<DataEncryptionWorker>().setInputData(encryptionWorkData)
-                    .addTag(Constants.WORKER_TAG_FILE)
-                    .build()
-            val uploadWorker =
-                OneTimeWorkRequestBuilder<FileUploadWorker>().setInputData(uploadWorkData)
-                    .addTag(Constants.WORKER_TAG_FILE).build()
-            val referenceFileSyncWorker =
-                OneTimeWorkRequestBuilder<ReferenceFileSyncWorker>().setInputData(refWorkData)
-                    .build()
-
-            fileCaches[parent.space.id]?.addFile(vnFile)
-            parent.content?.add(vnFile)
-
-            workManager
-                .beginWith(encryptionWorker)
-                .then(uploadWorker)
-                .then(referenceFileSyncWorker)
-                .enqueue()
-        }
-    }
-
-    override suspend fun uploadFile(parent: VNFile, uri: Uri) {
-        // TODO(jatsqi): Uri error handling
-        uploadFile(
-            applicationContext.contentResolver.openInputStream(uri)!!.readBytes(),
-            applicationContext.contentResolver.getFileName(uri) ?: "UNKNOWN",
-            parent
+    override suspend fun uploadFile(data: ByteArray, name: String, parent: VNFile): VNFile? =
+        pushFile(
+            FilePushMode.Upload(
+                parent
+            ), FilePushDataSource.InMemory(data, name)
         )
-    }
 
     override suspend fun uploadFolder(
-        space: VNSpace,
         name: String,
         parent: VNFile
-    ) {
-        withContext(Dispatchers.IO) {
+    ): VNFile? {
+        return withContext(Dispatchers.IO) {
+            val space = parent.space
             if (!minimumIdCache.containsKey(space.id)) {
                 minimumIdCache[space.id] = -2
             } else {
                 minimumIdCache[space.id] = minimumIdCache[space.id]!! - 1
             }
 
-            val name = resolveFileNameConflicts(parent, name)
+            @Suppress("NAME_SHADOWING") val name = resolveFileNameConflicts(parent, name)
 
             val localFileId = localFileDao.createFile(
                 LocalFile(
@@ -216,46 +172,54 @@ class FileRepositoryImpl @Inject constructor(
             fileCaches[space.id]?.addFile(folder)
             parent.content?.add(folder)
 
-            val refWorkData = workDataOf(
-                Constants.WORKER_SPACE_ID to space.id
-            )
-            val refWorker =
-                OneTimeWorkRequestBuilder<ReferenceFileSyncWorker>().setInputData(refWorkData)
-                    .build()
+            enqueueUniqueFileWork(applicationContext, folder, buildReferenceFileWorker(folder))
 
-            WorkManager.getInstance(applicationContext).enqueue(refWorker)
+            return@withContext folder
         }
     }
 
+    override suspend fun updateFile(file: VNFile, uri: Uri): Boolean = pushFile(
+        FilePushMode.Update(file), FilePushDataSource.LocalFileSystem(uri)
+    ) != null
+
+    override suspend fun updateFile(file: VNFile, data: ByteArray) = pushFile(
+        FilePushMode.Update(file), FilePushDataSource.InMemory(data, file.name)
+    ) != null
+
     override suspend fun downloadFile(file: VNFile) {
         withContext(Dispatchers.IO) {
-            val workManager = WorkManager.getInstance(applicationContext)
             val request = syncRequestService.createDownloadRequest(file)
 
             val downloadWorkData = workDataOf(
                 Constants.WORKER_SYNC_REQUEST_ID to request.requestId
             )
-            val refWorkData = workDataOf(
-                Constants.WORKER_SPACE_ID to file.space.id
-            )
 
             file.state = VNFile.State.DOWNLOADING
 
             val downloadWorker =
-                OneTimeWorkRequestBuilder<FileDownloadWorker>().setInputData(downloadWorkData)
-                    .addTag(Constants.WORKER_TAG_FILE)
-                    .build()
-            val referenceFileSyncWorker =
-                OneTimeWorkRequestBuilder<ReferenceFileSyncWorker>().setInputData(refWorkData)
+                prepareFileWorkerBuilder<FileDownloadWorker>(file, downloadWorkData)
+                    .addTag(Constants.WORKER_TAG_DOWNLOAD)
                     .build()
 
-            workManager.beginWith(downloadWorker).then(referenceFileSyncWorker).enqueue()
+            enqueueUniqueFileWork(applicationContext, file, downloadWorker)
         }
     }
 
+    override suspend fun decryptFile(file: VNFile) {
+        val decryptionWorkData = workDataOf(
+            Constants.WORKER_FILE_ID to file.localId
+        )
+        val decryptionWorker =
+            prepareFileWorkerBuilder<DataDecryptionWorker>(file, decryptionWorkData)
+                .addTag(Constants.WORKER_TAG_DECRYPTION)
+                .build()
+
+        enqueueUniqueFileWork(applicationContext, file, decryptionWorker)
+    }
+
     override suspend fun getFile(fileId: Long): VNFile? {
-        fileCaches.values.forEach {
-            val file = it.getFileByStrategy(fileId, FileCache.IdCachingStrategy.LOCAL_ID)
+        for (cache in fileCaches.values) {
+            val file = cache.getFileByStrategy(fileId, FileCache.IdCachingStrategy.LOCAL_ID)
             if (file != null) {
                 return file
             }
@@ -271,53 +235,156 @@ class FileRepositoryImpl @Inject constructor(
     override fun getFileByRemote(spaceId: Long, fileRemoteId: Long): VNFile? =
         fileCaches[spaceId]?.getFile(fileRemoteId)
 
-    override suspend fun announceUpload(spaceId: Long): Flow<ManagedResult<Long>> {
-        return flow {
-            when (val response = fileService.uploadFile(
-                UploadFileRequest(
-                    1,
-                    (spaceRepository.getSpace(spaceId)
-                        .first() as ManagedResult.Success<VNSpace>).data.remoteId
-                )
-            )) {
-                is ApiResult.Success -> {
-                    emit(ManagedResult.Success(response.data))
-                }
-                is ApiResult.NetworkError -> {
-                    emit(ManagedResult.NetworkError(response.exception))
-                }
-                is ApiResult.Error -> {
-                    emit(ManagedResult.Error(response.statusCode))
-                }
-            }
-        }.flowOn(Dispatchers.IO)
+    override suspend fun announceUpload(spaceId: Long): Long? {
+        val space = spaceRepository.getSpace(spaceId).collectSuccess() ?: return null
+
+        val saveIndex = fileService.uploadFile(
+            UploadFileRequest(1),
+            space.remoteId
+        )
+
+        if (saveIndex !is ApiResult.Success) {
+            return null
+        }
+
+        return saveIndex.data
     }
 
-    /**
-     * TODO(jatsqi): Create background worker for this.
-     */
-    override suspend fun deleteFile(file: VNFile): Flow<ManagedResult<VNFile>> {
-        return flow {
-            if (file.parent != null) {
-                file.parent.content?.remove(file)
-                resyncRefFile(file.space).collect {
-                    when (it) {
-                        is ManagedResult.Success -> {
-                            emit(ManagedResult.Success(file))
-                        }
-                        else -> {
-                            emit(ManagedResult.Error(400)) // TODO(jatsqi): Error handling
-                        }
-                    }
-                }
-            }
+    override suspend fun deleteFile(file: VNFile) {
+        localFileDao.deleteFile(file.localId)
+        fileCaches[file.space.id]?.deleteFile(file)
+
+        if (file.parent != null) {
+            file.parent.content?.remove(file)
         }
+
+        enqueueUniqueFileWork(applicationContext, file, buildReferenceFileWorker(file))
     }
 
     override suspend fun updateFileRemoteId(fileId: Long, remoteId: Long) {
         withContext(Dispatchers.IO) {
             localFileDao.updateFileRemoteId(fileId, remoteId)
+            getFile(fileId)?.remoteId = remoteId
         }
+    }
+
+    override suspend fun clearLocalFiles(userId: Long) {
+        localFileDao.deleteAllFilesOfUser(userId)
+    }
+
+    private suspend fun pushFile(
+        filePushMode: FilePushMode,
+        filePushDataSource: FilePushDataSource
+    ): VNFile? {
+        return withContext(Dispatchers.IO) {
+            if (!filePushMode.affectedFile.space.isKeyAvailable) {
+                return@withContext null
+            }
+
+            // Determine final file name.
+            val name: String = when (filePushDataSource) {
+                is FilePushDataSource.LocalFileSystem -> {
+                    applicationContext.contentResolver.getFileName(filePushDataSource.uri)
+                        ?: "Unknown"
+                }
+                is FilePushDataSource.InMemory -> {
+                    filePushDataSource.fileName
+                }
+            }
+
+            // Construct domain model of file.
+            val vnFile: VNFile = when (filePushMode) {
+                is FilePushMode.Upload -> {
+                    val file = createUnsynchronizedFile(
+                        resolveFileNameConflicts(
+                            filePushMode.affectedFile,
+                            name
+                        ),
+                        filePushMode.affectedFile
+                    )
+
+                    fileCaches[filePushMode.parent.space.id]?.addFile(file)
+                    filePushMode.parent.content!!.add(file)
+                    file
+                }
+
+                is FilePushMode.Update -> {
+                    val file = filePushMode.file
+                    file.lastUpdated = System.currentTimeMillis()
+                    file
+                }
+            }
+
+            // Get URI of file and encrypt if necessary.
+            val uri: Uri = when (filePushDataSource) {
+                is FilePushDataSource.InMemory -> {
+                    try {
+                        val encryptedData =
+                            tryEncryptData(filePushMode.affectedFile.space, filePushDataSource.data)
+                                ?: return@withContext null
+                        applicationContext.writeFile(
+                            vnFile.localId,
+                            encryptedData
+                        )
+                    } catch (ex: Exception) {
+                        return@withContext null
+                    }
+
+                    applicationContext.getAbsoluteFilePath(vnFile.localId)
+                }
+
+                is FilePushDataSource.LocalFileSystem -> {
+                    filePushDataSource.uri
+                }
+            }
+
+            val syncRequest = syncRequestService.createUploadRequest(vnFile, uri)
+            if (filePushDataSource is FilePushDataSource.InMemory) {
+                syncRequest.cryptographicOperationDone = true
+                syncRequestService.updateRequest(syncRequest)
+            }
+
+            enqueueUniqueFileWork(
+                applicationContext,
+                vnFile,
+                buildEncryptionWorker(vnFile, syncRequest.requestId),
+                buildUploadWorker(vnFile, syncRequest.requestId),
+                buildReferenceFileWorker(vnFile)
+            )
+            return@withContext vnFile
+        }
+    }
+
+    private suspend fun tryEncryptData(space: VNSpace, data: ByteArray): ByteArray? {
+        return withContext(Dispatchers.IO) {
+            var encryptedBytes: ByteArray?
+
+            try {
+                encryptedBytes = CryptoUtils.encryptData(space.id, data)
+            } catch (ex: Exception) {
+                return@withContext null
+            }
+
+            return@withContext encryptedBytes
+        }
+    }
+
+    private suspend fun createUnsynchronizedFile(name: String, parent: VNFile): VNFile {
+        val localFile = LocalFile(
+            0,
+            parent.space.id,
+            null,
+            parent.localId,
+            name,
+            LocalFile.Type.FILE,
+            System.currentTimeMillis(),
+            System.currentTimeMillis(),
+            System.currentTimeMillis()
+        )
+        val localFileId = localFileDao.createFile(localFile)
+        return VNFile(
+            name, parent.space, parent, localFileId, null, null
+        )
     }
 
     private suspend fun persistNetworkTree(
@@ -326,21 +393,21 @@ class FileRepositoryImpl @Inject constructor(
         parentId: Long,
         affectedLocalFiles: MutableSet<Long>
     ) {
-        elements?.forEach {
-            val file = localFileDao.getFileByRemoteId(space.id, it.id)
+        for (element in elements ?: emptyList()) {
+            val file = localFileDao.getFileByRemoteId(space.id, element.id)
             if (file != null) {
                 file.parentFileId = parentId
                 affectedLocalFiles.add(file.fileId)
-                if (it is NetworkFolder) {
+                if (element is NetworkFolder) {
                     persistNetworkTree(
-                        it.content ?: listOf(),
+                        element.content ?: listOf(),
                         space,
                         file.fileId,
                         affectedLocalFiles
                     )
                 }
             } else {
-                val type = if (it is NetworkFolder) {
+                val type = if (element is NetworkFolder) {
                     LocalFile.Type.FOLDER
                 } else {
                     LocalFile.Type.FILE
@@ -349,9 +416,9 @@ class FileRepositoryImpl @Inject constructor(
                 val localFile = LocalFile(
                     0,
                     space.id,
-                    it.id,
+                    element.id,
                     parentId,
-                    it.name,
+                    element.name,
                     type,
                     // TODO(jatsqi): Set correct timestamps
                     System.currentTimeMillis(),
@@ -379,36 +446,37 @@ class FileRepositoryImpl @Inject constructor(
             flatChildrenTree[-1]
         )
 
-        elements.sortedBy {
+        val sortedElements = elements.sortedBy {
             it.parentFileId
-        }.forEach {
-            val parentId = it.parentFileId
+        }
+        for (element in sortedElements) {
+            val parentId = element.parentFileId
             val children: MutableList<VNFile>? =
-                if (it.type == LocalFile.Type.FOLDER) {
-                    flatChildrenTree[it.fileId] ?: mutableListOf()
+                if (element.type == LocalFile.Type.FOLDER) {
+                    flatChildrenTree[element.fileId] ?: mutableListOf()
                 } else {
                     null
                 }
             val childrenOfParent = flatChildrenTree[parentId] ?: mutableListOf()
 
-            if (it.remoteFileId != null
+            if (element.remoteFileId != null
                 && minimumIdCache.containsKey(space.id)
-                && minimumIdCache[space.id]!! > it.remoteFileId
+                && minimumIdCache[space.id]!! > element.remoteFileId
             ) {
-                minimumIdCache[space.id] = it.remoteFileId
+                minimumIdCache[space.id] = element.remoteFileId
             }
 
             val vnFile = VNFile(
-                it.name,
+                element.name,
                 space,
                 files[parentId],
-                it.fileId,
-                it.remoteFileId,
+                element.fileId,
+                element.remoteFileId,
                 children
             ).apply {
-                createdAt = it.createdAt
-                lastUpdated = it.lastUpdated
-                lastSyncTimestamp = it.lastSyncTimestamp
+                createdAt = element.createdAt
+                lastUpdated = element.lastUpdated
+                lastSyncTimestamp = element.lastSyncTimestamp
             }
 
             fileCaches[space.id]?.addFile(vnFile)
@@ -417,53 +485,13 @@ class FileRepositoryImpl @Inject constructor(
             }
 
             if (children != null) {
-                flatChildrenTree[it.fileId] = children
+                flatChildrenTree[element.fileId] = children
             }
             childrenOfParent.add(vnFile)
-            files[it.fileId] = vnFile
+            files[element.fileId] = vnFile
             flatChildrenTree[parentId] = childrenOfParent
         }
 
         return files[-1]!!
     }
-
-    /**
-     * TODO(jatsqi): Remove and create background worker for this
-     */
-    private suspend fun resyncRefFile(space: VNSpace): Flow<ManagedResult<NetworkReferenceFile>> {
-        return flow {
-            val cache = fileCaches[space.id]
-            if (cache?.getRootFile() == null) {
-                emit(ManagedResult.ConsistencyError)
-                return@flow
-            }
-
-            val root = cache.getRootFile()!!.mapToNetwork() as NetworkFolder
-
-            val referenceFile = NetworkReferenceFile(
-                1,
-                root.content ?: mutableListOf()
-            )
-
-            emit(referenceFileRepository.uploadReferenceFile(referenceFile, space).first())
-        }.flowOn(Dispatchers.IO)
-    }
-
-    private fun resolveFileNameConflicts(parent: VNFile, name: String): String {
-        val nameSet = parent.content?.map { it.name }?.toSet() ?: return name
-
-        nameSet.forEach {
-            if (it == name) {
-                var currentIndex = 1
-                while (nameSet.contains(buildDuplicateFileName(name, currentIndex)))
-                    ++currentIndex
-
-                return buildDuplicateFileName(name, currentIndex)
-            }
-        }
-
-        return name
-    }
-
-    private fun buildDuplicateFileName(name: String, index: Int) = "($index) $name"
 }

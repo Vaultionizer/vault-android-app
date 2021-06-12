@@ -5,11 +5,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vaultionizer.vaultapp.R
-import com.vaultionizer.vaultapp.cryptography.Cryptography
-import com.vaultionizer.vaultapp.cryptography.crypto.CryptoMode
-import com.vaultionizer.vaultapp.cryptography.crypto.CryptoPadding
-import com.vaultionizer.vaultapp.cryptography.crypto.CryptoType
-import com.vaultionizer.vaultapp.data.model.rest.result.ManagedResult
+import com.vaultionizer.vaultapp.data.model.rest.result.Resource
 import com.vaultionizer.vaultapp.repository.SpaceRepository
 import com.vaultionizer.vaultapp.ui.main.space.SpaceCreationResult
 import com.vaultionizer.vaultapp.ui.main.space.SpaceFormState
@@ -30,25 +26,25 @@ class CreateSpaceViewModel @Inject constructor(val spaceRepository: SpaceReposit
 
     private var spaceNameFormData: String? = null
 
-    fun createSpace(name: String, isPrivate: Boolean, algorithm: String) {
+    fun createSpace(
+        name: String,
+        isPrivate: Boolean,
+        algorithm: String,
+        writeAccess: Boolean,
+        authKeyAccess: Boolean
+    ) {
         viewModelScope.launch {
-            spaceRepository.createSpace(name, isPrivate).collect {
-                when (it) {
-                    is ManagedResult.Success -> {
-                        _spaceCreationResult.value = SpaceCreationResult(it.data, true)
-
-                        Cryptography().createSingleUserKey(
-                            it.data.id,
-                            CryptoType.AES,
-                            CryptoMode.GCM,
-                            CryptoPadding.NoPadding
-                        )
-                    }
-                    else -> {
-                        _spaceCreationResult.value = SpaceCreationResult(null, false)
+            spaceRepository.createSpace(name, isPrivate, writeAccess, authKeyAccess, algorithm)
+                .collect {
+                    when (it) {
+                        is Resource.Success -> {
+                            _spaceCreationResult.value = SpaceCreationResult(it.data, true)
+                        }
+                        else -> {
+                            _spaceCreationResult.value = SpaceCreationResult(null, false)
+                        }
                     }
                 }
-            }
         }
     }
 

@@ -14,7 +14,10 @@ interface LocalSpaceDao {
     fun getSpaceById(id: Long): LocalSpace?
 
     @Query("SELECT * FROM LocalSpace WHERE remote_space_id = :remoteSpaceId AND user_id = :userId")
-    fun getSpaceByRemoteId(userId: Long, remoteSpaceId: Long): LocalSpace?
+    suspend fun getSpaceByRemoteId(userId: Long, remoteSpaceId: Long): LocalSpace?
+
+    @Query("SELECT COALESCE(MAX(rowid), 0)+1 FROM LocalSpace")
+    suspend fun getNextSpaceId(): Long
 
     @Transaction
     @Query("SELECT * FROM LocalSpace")
@@ -33,4 +36,9 @@ interface LocalSpaceDao {
     @Delete
     fun deleteSpaces(vararg spaces: LocalSpace)
 
+    @Query("DELETE FROM LocalSpace WHERE user_id = :userId")
+    fun quitAllSpaces(userId: Long)
+
+    @Query("SELECT remote_space_id FROM LocalSpace WHERE user_id = :userId")
+    fun getAllSpacesWithUser(userId: Long): List<Long>
 }

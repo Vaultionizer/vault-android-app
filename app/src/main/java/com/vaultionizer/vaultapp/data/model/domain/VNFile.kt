@@ -1,12 +1,14 @@
 package com.vaultionizer.vaultapp.data.model.domain
 
 import android.content.Context
+import android.webkit.MimeTypeMap
 import com.vaultionizer.vaultapp.data.db.entity.LocalFile
 import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkElement
 import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkFile
 import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkFolder
 import com.vaultionizer.vaultapp.util.Constants
 import java.io.File
+import java.util.*
 
 class VNFile(
     val name: String,
@@ -14,12 +16,13 @@ class VNFile(
     var localId: Long,
     val parent: VNFile? = null
 ) {
-
     enum class State {
         AVAILABLE_REMOTE,
         AVAILABLE_OFFLINE,
         UPLOADING,
-        DOWNLOADING
+        DOWNLOADING,
+        ENCRYPTING,
+        DECRYPTING
     }
 
     var remoteId: Long? = null
@@ -28,15 +31,27 @@ class VNFile(
     val isFolder: Boolean
         get() = content != null
 
-    // ==== Meta ====
+    /**
+     * Metadata and status
+     */
     var lastUpdated: Long = System.currentTimeMillis()
     var createdAt: Long = System.currentTimeMillis()
     var lastSyncTimestamp: Long = System.currentTimeMillis()
     var state: State? = State.AVAILABLE_REMOTE
     val isBusy: Boolean
-        get() = state == State.DOWNLOADING || state == State.UPLOADING
+        get() = state == State.DOWNLOADING || state == State.UPLOADING || state == State.ENCRYPTING || state == State.DECRYPTING
 
-    // TODO(jatsqi) Refactor constructors
+    /**
+     * Extension information
+     */
+    val extension: String?
+        get() = MimeTypeMap.getFileExtensionFromUrl(name)
+    val mimeType: String
+        get() = MimeTypeMap.getSingleton().getMimeTypeFromExtension(extension)
+            ?: "application/octet-stream"
+    val isImage: Boolean
+        get() = extension?.lowercase(Locale.getDefault()) in setOf("png", "jpg", "jpeg")
+
     constructor(
         name: String,
         space: VNSpace,
@@ -52,8 +67,6 @@ class VNFile(
 
     fun isDownloaded(ctx: Context): Boolean {
         if (isFolder) return false
-        if (localId == null) return false
-        if (state == State.DOWNLOADING || state == State.UPLOADING) return false
 
         val path = File(ctx.filesDir, "$localId.${Constants.VN_FILE_SUFFIX}")
         return path.exists()
@@ -78,8 +91,8 @@ class VNFile(
                 name = name,
                 id = remoteId!!,
                 crc = "",
-                createdAt = createdAt!!,
-                updatedAt = lastUpdated!!,
+                createdAt = createdAt,
+                updatedAt = lastUpdated,
                 size = 0
             )
         }
@@ -92,10 +105,27 @@ class VNFile(
             remoteId,
             parent?.localId ?: -1,
             name,
-            if(isFolder) LocalFile.Type.FOLDER else LocalFile.Type.FILE,
+            if (isFolder) LocalFile.Type.FOLDER else LocalFile.Type.FILE,
             lastUpdated,
             createdAt,
             lastSyncTimestamp
         )
     }
+
+    override fun equals(other: Any?): Boolean {
+        if (this === other) return true
+        if (javaClass != other?.javaClass) return false
+
+        other as VNFile
+
+        if (localId != other.localId) return false
+
+        return true
+    }
+
+    override fun hashCode(): Int {
+        return localId.hashCode()
+    }
+
+
 }

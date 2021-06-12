@@ -1,0 +1,21 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <PreferenceCategory android:title="@string/space_management_title_category">
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="writeAccessSwitch"
+            android:summaryOff="@string/space_management_write_access_switch_summary_off"
+            android:summaryOn="@string/space_management_write_access_switch_summary_on"
+            android:title="@string/space_management_write_access_switch_title"
+            android:enabled="false"/>
+        <Preference
+            android:title="@string/space_management_auth_key_show_title"
+            android:key="showAuthKeyBtn"
+            android:summary="@string/space_management_auth_key_show_summary"
+            />
+        <Preference
+            android:title="@string/space_management_quit_space_title"
+            android:key="quitSpaceBtn"
+            android:summary="@string/space_management_quit_space_summary"
+            />
+    </PreferenceCategory>
+</PreferenceScreen>

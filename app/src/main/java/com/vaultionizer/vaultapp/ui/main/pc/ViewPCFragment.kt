@@ -24,10 +24,10 @@ import com.arthurivanets.bottomsheets.sheets.listeners.OnItemSelectedListener
 import com.arthurivanets.bottomsheets.sheets.model.Option
 import com.nambimobile.widgets.efab.ExpandableFabLayout
 import com.vaultionizer.vaultapp.R
-import com.vaultionizer.vaultapp.data.pc.PCCategory
-import com.vaultionizer.vaultapp.data.pc.PCPair
-import com.vaultionizer.vaultapp.ui.main.file.FileAlertDialogType
-import com.vaultionizer.vaultapp.ui.main.file.showDialog
+import com.vaultionizer.vaultapp.data.model.pc.PCCategory
+import com.vaultionizer.vaultapp.data.model.pc.PCPair
+import com.vaultionizer.vaultapp.ui.common.dialog.AlertDialogType
+import com.vaultionizer.vaultapp.ui.common.dialog.showDialog
 import com.vaultionizer.vaultapp.ui.viewmodel.MainActivityViewModel
 import com.vaultionizer.vaultapp.ui.viewmodel.PCViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -99,13 +99,13 @@ class ViewPCFragment : Fragment(), ViewPCItemClickListener {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         val fabLayout = view.findViewById<ExpandableFabLayout>(R.id.fab_view_pc_layout)
-        fabLayout.portraitConfiguration.fabOptions.forEach {
-            when (it.id) {
+        for (option in fabLayout.portraitConfiguration.fabOptions) {
+            when (option.id) {
                 R.id.fab_view_pc_create_category ->
-                    it.setOnClickListener { transitionToEditCategory() }
+                    option.setOnClickListener { transitionToEditCategory() }
 
                 R.id.fab_view_pc_create_pair ->
-                    it.setOnClickListener { transitionToEditPair() }
+                    option.setOnClickListener { transitionToEditPair() }
             }
         }
         backPressedCallback = object : OnBackPressedCallback(true) {
@@ -128,7 +128,7 @@ class ViewPCFragment : Fragment(), ViewPCItemClickListener {
 
     private fun handleNavigateBack() {
         if (viewModel.pcRepository.changed) {
-            FileAlertDialogType.SAVE_FILE.createDialog(
+            AlertDialogType.SAVE_FILE.createDialog(
                 requireActivity(),
                 { _ ->
                     viewModel.saveFile(mainActivityViewModel.currentDirectory.value!!)
@@ -155,7 +155,7 @@ class ViewPCFragment : Fragment(), ViewPCItemClickListener {
             onItemSelectedListener = OnItemSelectedListener {
                 when (it.id) {
                     PairOptions.DELETE.id -> {
-                        showDialog(FileAlertDialogType.DELETE_FILE) { _ ->
+                        showDialog(AlertDialogType.DELETE_FILE) { _ ->
                             viewModel.pcRepository.deletePair(pair.id)
                             refreshRecyclerView(pair.categoryId)
                         }
@@ -202,13 +202,13 @@ class ViewPCFragment : Fragment(), ViewPCItemClickListener {
                         )
                     }
                     CategoryOptions.DELETE_ONLY_CAT.id -> {
-                        showDialog(FileAlertDialogType.DELETE_ONLY_CATEGORY) { _ ->
+                        showDialog(AlertDialogType.DELETE_ONLY_CATEGORY) { _ ->
                             viewModel.pcRepository.deleteOnlyCategory(category.id)
                             refreshRecyclerView()
                         }
                     }
                     CategoryOptions.DELETE_CAT_AND_PAIRS.id -> {
-                        showDialog(FileAlertDialogType.DELETE_CATEGORY_AND_PAIRS) { _ ->
+                        showDialog(AlertDialogType.DELETE_CATEGORY_AND_PAIRS) { _ ->
                             viewModel.pcRepository.deleteCategoryAndPairs(category.id)
                             refreshRecyclerView()
                         }

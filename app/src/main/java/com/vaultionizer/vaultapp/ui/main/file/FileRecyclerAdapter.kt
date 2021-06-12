@@ -2,7 +2,6 @@ package com.vaultionizer.vaultapp.ui.main.file
 
 import android.content.Context
 import android.graphics.Typeface
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -18,6 +17,7 @@ import com.mikepenz.iconics.view.IconicsImageView
 import com.vaultionizer.vaultapp.R
 import com.vaultionizer.vaultapp.data.model.domain.VNFile
 import java.text.DateFormat
+import java.util.*
 
 class FileRecyclerAdapter(
     private val clickListener: (VNFile) -> Unit,
@@ -52,14 +52,14 @@ class FileRecyclerAdapter(
             }
 
         holder.fileProgress.visibility =
-            if (elem.state == VNFile.State.UPLOADING || elem.state == VNFile.State.DOWNLOADING)
+            if (elem.isBusy)
                 View.VISIBLE
             else
                 View.GONE
 
         holder.fileNameView.text = "${elem.name}"
         holder.fileDate.text = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT)
-            .format(elem.lastUpdated ?: elem.createdAt!!)
+            .format(elem.lastUpdated)
 
         if (elem.isFolder) {
             holder.fileNameView.setTypeface(null, Typeface.BOLD)
@@ -83,7 +83,7 @@ class FileRecyclerAdapter(
 
     private fun chooseFileIcon(name: String): IIcon {
         val type = name.split(".").run {
-            get(size - 1).toLowerCase()
+            get(size - 1).lowercase(Locale.getDefault())
         }
 
         return when (type) {
@@ -93,7 +93,7 @@ class FileRecyclerAdapter(
         }
     }
 
-    private fun chooseFolderIcon(name: String): IIcon {
+    private fun chooseFolderIcon(@Suppress("UNUSED_PARAMETER") name: String): IIcon {
         return FontAwesome.Icon.faw_folder_open
     }
 

@@ -32,6 +32,7 @@ object DatabaseModule {
     fun provideFileDao(database: VaultionizerLocalDatabase): LocalFileDao = database.localFileDao()
 
     @Provides
-    fun provideFileSyncRequestDao(database: VaultionizerLocalDatabase): LocalFileSyncRequestDao = database.localFileSyncRequestDao()
+    fun provideFileSyncRequestDao(database: VaultionizerLocalDatabase): LocalFileSyncRequestDao =
+        database.localFileSyncRequestDao()
 
 }

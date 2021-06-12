@@ -1,24 +1,61 @@
 package com.vaultionizer.vaultapp.service
 
-import com.vaultionizer.vaultapp.data.model.rest.request.DeleteFileRequest
-import com.vaultionizer.vaultapp.data.model.rest.request.DownloadFileRequest
 import com.vaultionizer.vaultapp.data.model.rest.request.UploadFileRequest
 import com.vaultionizer.vaultapp.data.model.rest.result.ApiResult
-import retrofit2.http.Body
-import retrofit2.http.Headers
-import retrofit2.http.POST
-import retrofit2.http.PUT
+import retrofit2.http.*
 
 interface FileService {
 
-    @POST("api/file/upload")
-    suspend fun uploadFile(@Body uploadFileReq: UploadFileRequest): ApiResult<Long>
+    /**
+     * Reserves the next available, unique file id from the server.
+     * The upload itself is done via a WebSocket in a separate step.
+     *
+     * @param uploadFileReq The request body.
+     * @param remoteSpaceId Id of the space on the remote server.
+     * @return              The saveIndex/remoteFileId of the newly requested file.
+     */
+    @POST("api/file/{remoteSpaceId}/upload")
+    suspend fun uploadFile(
+        @Body uploadFileReq: UploadFileRequest,
+        @Path("remoteSpaceId") remoteSpaceId: Long
+    ): ApiResult<Long>
 
-    @PUT("api/file/download")
-    @Headers("Content-Type: application/json")
-    suspend fun downloadFile(@Body downloadFileReq: DownloadFileRequest)
 
-    @PUT("api/file/delete")                                                 //TODO will be changed to delete in the future 11/26/2020
-    suspend fun deleteFile(@Body deleteFileReq: DeleteFileRequest)
+    /**
+     * Requests the download of a specific file.
+     * The file itself is sent to a specific STOMP topic.
+     *
+     * @param remoteSpaceId     Id of the space on the remote server.
+     * @param remoteSaveIndex   Id of the file on the remote server.
+     */
+    @PUT("api/file/{remoteSpaceId}/{remoteSaveIndex}/download")
+    suspend fun downloadFile(
+        @Path("remoteSpaceId") remoteSpaceId: Long,
+        @Path("remoteSaveIndex") remoteSaveIndex: Long
+    )
 
+    /**
+     * Deletes a file from the remote server.
+     *
+     * @param remoteSpaceId     Id of the space on the remote server.
+     * @param remoteSaveIndex   Id of the file on the remote server.
+     */
+    @DELETE("api/file/{remoteSpaceId}/{remoteSaveIndex}")
+    suspend fun deleteFile(
+        @Path("remoteSpaceId") remoteSpaceId: Long,
+        @Path("remoteSaveIndex") remoteSaveIndex: Long
+    )
+
+    /**
+     * Notifies the server that the client wants to update the content of a specific file.
+     * The new content is sent via a specific STOMP topic to the server in a separate step..
+     *
+     * @param remoteSpaceId     Id of the space on the remote server.
+     * @param remoteSaveIndex   Id of the file on the remote server.
+     */
+    @POST("api/file/{remoteSpaceId}/{remoteSaveIndex}/update")
+    suspend fun updateFile(
+        @Path("remoteSpaceId") remoteSpaceId: Long,
+        @Path("remoteSaveIndex") remoteSaveIndex: Long
+    )
 }

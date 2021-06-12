@@ -7,10 +7,29 @@
     <fragment
         android:id="@+id/fileFragment"
         android:name="com.vaultionizer.vaultapp.ui.main.file.FileFragment"
-        android:label="Files">
+        android:label="File Viewer">
         <action
             android:id="@+id/action_fileFragment_to_createPersonalContainerFragment"
             app:destination="@id/createPersonalContainerFragment" />
+        <action
+            android:id="@+id/action_fileFragment_to_fileStatusFragment"
+            app:destination="@id/fileStatusFragment"
+            app:enterAnim="@anim/popup_enter" />
+        <action
+            android:id="@+id/action_fileFragment_to_spacePermissionsFragment"
+            app:destination="@id/spacePermissionsFragment" />
+        <action
+            android:id="@+id/action_fileFragment_to_joinSpaceFragment"
+            app:destination="@id/joinSpaceFragment" />
+        <action
+            android:id="@+id/action_fileFragment_to_settingsFragment"
+            app:destination="@id/settingsFragment" />
+        <action
+            android:id="@+id/action_fileFragment_to_textFileViewerFragment"
+            app:destination="@id/textFileViewerFragment"></action>
+        <action
+            android:id="@+id/action_fileFragment_to_imageFileViewerFragment"
+            app:destination="@id/imageFileViewerFragment" />
     </fragment>
     <fragment
         android:id="@+id/keyManagementFragment"
@@ -82,5 +101,103 @@
             app:destination="@id/fileFragment"
             app:popUpTo="@id/fileFragment"
             app:popUpToInclusive="true" />
+    </fragment>
+    <fragment
+        android:id="@+id/fileStatusFragment"
+        android:name="com.vaultionizer.vaultapp.ui.main.status.FileStatusFragment"
+        android:label="File Status" />
+    <fragment
+        android:id="@+id/spacePermissionsFragment"
+        android:name="com.vaultionizer.vaultapp.ui.main.space.SpacePermissionsFragment"
+        android:label="Space settings" >
+        <action
+            android:id="@+id/action_spacePermissionsFragment_to_fileFragment2"
+            app:destination="@id/fileFragment" />
+        <action
+            android:id="@+id/action_spacePermissionsFragment_to_authKeyFragment"
+            app:destination="@id/authKeyFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/authKeyFragment"
+        android:name="com.vaultionizer.vaultapp.ui.main.space.AuthKeyFragment"
+        android:label="View auth key"
+        tools:layout="@layout/fragment_auth_key">
+        <argument
+            android:name="authKey"
+            app:argType="string"
+            android:defaultValue="@null"
+            app:nullable="true"/>
+        <argument
+            android:name="symmetricKey"
+            app:argType="string"
+            android:defaultValue="@null"
+            app:nullable="true"/>
+        <argument
+            android:name="remoteSpaceId"
+            app:argType="long"
+            android:defaultValue="-1L"/>
+        <action
+            android:id="@+id/action_authKeyFragment_to_spacePermissionsFragment"
+            app:destination="@id/spacePermissionsFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/joinSpaceFragment"
+        android:name="com.vaultionizer.vaultapp.ui.main.space.JoinSpaceFragment"
+        android:label="Join shared space" >
+        <argument
+            android:name="authData"
+            app:argType="string"
+            android:defaultValue="@null"
+            app:nullable="true"/>
+        <action
+            android:id="@+id/action_joinSpaceFragment_to_fileFragment"
+            app:destination="@id/fileFragment" />
+        <action
+            android:id="@+id/action_joinSpaceFragment_to_QRCodeScanFragment"
+            app:destination="@id/QRCodeScanFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/QRCodeScanFragment"
+        android:name="com.vaultionizer.vaultapp.ui.main.qr_scanner.QRCodeScanFragment"
+        android:label="Scan QR code" >
+        <argument
+            android:name="scanType"
+            app:argType="integer"
+            android:defaultValue="0"/>
+        <action
+            android:id="@+id/action_QRCodeScanFragment_to_joinSpaceFragment"
+            app:destination="@id/joinSpaceFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/settingsFragment"
+        android:name="com.vaultionizer.vaultapp.ui.main.settings.SettingsFragment"
+        android:label="SettingsFragment" >
+        <action
+            android:id="@+id/action_settingsFragment_to_fileFragment"
+            app:destination="@id/fileFragment" />
+        <action
+            android:id="@+id/action_settingsFragment_to_authenticationActivity"
+            app:destination="@id/authenticationActivity" />
+    </fragment>
+    <activity
+        android:id="@+id/authenticationActivity"
+        android:name="com.vaultionizer.vaultapp.ui.auth.AuthenticationActivity"
+        android:label="activity_authentication"
+        tools:layout="@layout/activity_authentication" />
+    <fragment
+        android:id="@+id/textFileViewerFragment"
+        android:name="com.vaultionizer.vaultapp.ui.main.file.viewer.TextFileViewerFragment"
+        android:label="TextFileViewerFragment">
+        <argument
+            android:name="fileArgs"
+            app:argType="com.vaultionizer.vaultapp.ui.main.file.viewer.FileViewerArgs" />
+    </fragment>
+    <fragment
+        android:id="@+id/imageFileViewerFragment"
+        android:name="com.vaultionizer.vaultapp.ui.main.file.viewer.ImageFileViewerFragment"
+        android:label="ImageFileViewerFragment">
+        <argument
+            android:name="fileArgs"
+            app:argType="com.vaultionizer.vaultapp.ui.main.file.viewer.FileViewerArgs" />
     </fragment>
 </navigation>

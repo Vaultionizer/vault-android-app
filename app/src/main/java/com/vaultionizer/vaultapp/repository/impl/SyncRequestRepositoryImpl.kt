@@ -1,5 +1,6 @@
 package com.vaultionizer.vaultapp.repository.impl
 
+import android.net.Uri
 import com.vaultionizer.vaultapp.data.db.dao.LocalFileSyncRequestDao
 import com.vaultionizer.vaultapp.data.db.entity.LocalFileSyncRequest
 import com.vaultionizer.vaultapp.data.model.domain.VNFile
@@ -15,7 +16,8 @@ class SyncRequestRepositoryImpl @Inject constructor(val localFileSyncRequestDao:
             LocalFileSyncRequest.Type.DOWNLOAD,
             localFileRef.localId,
             false,
-            localFileRef.remoteId
+            localFileRef.remoteId,
+            null
         )
 
         request.requestId = localFileSyncRequestDao.createRequest(request)
@@ -24,7 +26,7 @@ class SyncRequestRepositoryImpl @Inject constructor(val localFileSyncRequestDao:
 
     override suspend fun createUploadRequest(
         localFileRef: VNFile,
-        data: ByteArray
+        uri: Uri
     ): LocalFileSyncRequest {
         val request = LocalFileSyncRequest(
             0,
@@ -32,7 +34,7 @@ class SyncRequestRepositoryImpl @Inject constructor(val localFileSyncRequestDao:
             localFileRef.localId,
             false,
             null,
-            data
+            uri.toString()
         )
 
         request.requestId = localFileSyncRequestDao.createRequest(request)

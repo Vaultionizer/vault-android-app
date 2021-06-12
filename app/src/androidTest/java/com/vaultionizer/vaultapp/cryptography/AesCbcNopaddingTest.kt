@@ -15,42 +15,38 @@ class AesCbcNopaddingTest{
 
     @Before
     fun cleanup() {
-        Cryptography().deleteKey(testingSpaceID)
+        Cryptography.deleteKey(testingSpaceID)
     }
 
     @Test
-    fun testCryptography_en_de_crypt_AES_GCM_NoPadding(){
+    fun testCryptography_en_de_crypt_AES_CBC_NoPadding(){
 
         val message = ByteArray(16) // length is bounded by 7
         Random().nextBytes(message)
 
         val secretKey = SecretKeySpec(message, "AES")
-        val encrypt =  AesCbcNopadding().encrypt(secretKey, message)
-        val result = AesCbcNopadding().decrypt(secretKey, encrypt.iv, encrypt.cipher)
+        val encrypt =  AesCbcNopadding.encrypt(secretKey, message)
+        val result = AesCbcNopadding.decrypt(secretKey, encrypt.iv, encrypt.cipher)
 
         Truth.assertThat(result).isEqualTo(message)
     }
 
     @Test
-    fun testCryptography_en_de_crypt_AES_GCM_NoPadding_from_Keystore(){
-        Cryptography().deleteKey(testingSpaceID)
-        Cryptography().createSingleUserKey(
+    fun testCryptography_en_de_crypt_AES_CBC_NoPadding_from_Keystore(){
+        Cryptography.deleteKey(testingSpaceID)
+        Cryptography.createSingleUserKey(
             testingSpaceID,
             CryptoType.AES,
             CryptoMode.CBC,
             CryptoPadding.NoPadding
         )
-        val array = ByteArray(16)
+        val message = ByteArray(16)
 
-        Random().nextBytes(array)
+        Random().nextBytes(message)
 
-        val generatedString = String(array, Charset.forName("UTF-8"))
-
-
-        val message = Cryptography().padder(generatedString.toByteArray())
-        val secretKey = Cryptography().getKey(testingSpaceID)
-        val encrypt =  AesCbcNopadding().encrypt(secretKey, message)
-        val result = Cryptography().padder(AesCbcNopadding().decrypt(secretKey, encrypt.iv, encrypt.cipher))
+        val secretKey = Cryptography.getKey(testingSpaceID)
+        val encrypt =  AesCbcNopadding.encrypt(secretKey, message)
+        val result = AesCbcNopadding.decrypt(secretKey, encrypt.iv, encrypt.cipher)
 
         Truth.assertThat(result).isEqualTo(message)
     }

@@ -48,6 +48,8 @@ class CreateSpaceFragment : Fragment() {
         val spaceNameLayout = view.findViewById<TextInputLayout>(R.id.input_space_layout)
         val spaceNameEdit = view.findViewById<EditText>(R.id.input_space_name)
         val spaceShared = view.findViewById<CheckBox>(R.id.input_space_shared)
+        val writeAccess = view.findViewById<CheckBox>(R.id.input_write_access_checkbox)
+        val authKeyAccess = view.findViewById<CheckBox>(R.id.input_auth_access_checkbox)
         val createButton = view.findViewById<Button>(R.id.create_space)
         createButton.isEnabled = false
         createButton.attachTextChangeAnimator()
@@ -60,7 +62,9 @@ class CreateSpaceFragment : Fragment() {
             viewModel.createSpace(
                 spaceNameEdit.text.toString(),
                 !spaceShared.isChecked,
-                spinner.selectedItem.toString()
+                spinner.selectedItem.toString(),
+                spaceShared.isChecked && writeAccess.isChecked,
+                spaceShared.isChecked && authKeyAccess.isChecked
             )
         }
 
@@ -97,6 +101,17 @@ class CreateSpaceFragment : Fragment() {
                 findNavController().navigate(action)
             }
         }
+
+        // write and auth key access can only be configured if shared space
+        spaceShared.setOnCheckedChangeListener { _, isChecked ->
+            writeAccess.isEnabled = isChecked
+            authKeyAccess.isEnabled = isChecked
+            if (!isChecked) {
+                writeAccess.isChecked = false
+                authKeyAccess.isChecked = false
+            }
+        }
+        spaceShared.isChecked = false
     }
 
 }

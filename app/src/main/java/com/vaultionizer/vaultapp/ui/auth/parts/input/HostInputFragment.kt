@@ -11,9 +11,9 @@ import androidx.core.content.ContextCompat
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.Observer
 import com.google.android.material.textfield.TextInputLayout
 import com.vaultionizer.vaultapp.R
+import com.vaultionizer.vaultapp.ui.auth.data.AuthEvent
 import com.vaultionizer.vaultapp.ui.auth.data.AuthViewModel
 import com.vaultionizer.vaultapp.util.extension.getProgressBarDrawable
 import dagger.hilt.android.AndroidEntryPoint
@@ -22,10 +22,6 @@ import dagger.hilt.android.AndroidEntryPoint
 class HostInputFragment : Fragment() {
 
     private val authViewModel: AuthViewModel by activityViewModels()
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -38,18 +34,26 @@ class HostInputFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        authViewModel.hostFormState.observe(viewLifecycleOwner, Observer {
-            val editLayout = requireView().findViewById<TextInputLayout>(R.id.input_host_layout)
+        authViewModel.authenticationEvent.observe(viewLifecycleOwner, {
+            if (it is AuthEvent.HostValidation) {
+                if (it.isLoading) {
+                    return@observe
+                }
+                val editLayout = requireView().findViewById<TextInputLayout>(R.id.input_host_layout)
 
-            if (!it.hostValid) {
-                Log.e("Vault", "Host not valid!")
-                editLayout.error = it.hostError
-                editLayout.endIconDrawable = null
-            } else {
-                editLayout.error = null
-                if (editLayout.endIconDrawable != null) {
-                    editLayout.endIconDrawable =
-                        ContextCompat.getDrawable(requireContext(), R.drawable.ic_outline_done_24)
+                if (it.error != null) {
+                    Log.e("Vault", "Host not valid!")
+                    editLayout.error = it.error
+                    editLayout.endIconDrawable = null
+                } else {
+                    editLayout.error = null
+                    if (editLayout.endIconDrawable != null) {
+                        editLayout.endIconDrawable =
+                            ContextCompat.getDrawable(
+                                requireContext(),
+                                R.drawable.ic_outline_done_24
+                            )
+                    }
                 }
             }
         })

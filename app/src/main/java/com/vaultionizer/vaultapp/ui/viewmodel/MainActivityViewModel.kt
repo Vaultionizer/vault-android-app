@@ -1,6 +1,7 @@
 package com.vaultionizer.vaultapp.ui.viewmodel
 
 import android.content.Context
+import android.net.ConnectivityManager
 import android.net.Uri
 import android.util.Log
 import androidx.lifecycle.LiveData
@@ -8,15 +9,21 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.work.WorkInfo
-import androidx.work.WorkManager
-import com.vaultionizer.vaultapp.R
+import com.hadilq.liveevent.LiveEvent
+import com.vaultionizer.vaultapp.cryptography.CryptoUtils
+import com.vaultionizer.vaultapp.cryptography.crypto.CryptoMode
+import com.vaultionizer.vaultapp.cryptography.crypto.CryptoPadding
+import com.vaultionizer.vaultapp.cryptography.crypto.CryptoType
+import com.vaultionizer.vaultapp.data.live.NetworkLiveData
 import com.vaultionizer.vaultapp.data.model.domain.VNFile
 import com.vaultionizer.vaultapp.data.model.domain.VNSpace
-import com.vaultionizer.vaultapp.data.model.rest.result.ManagedResult
+import com.vaultionizer.vaultapp.data.model.rest.result.Resource
 import com.vaultionizer.vaultapp.repository.FileRepository
 import com.vaultionizer.vaultapp.repository.SpaceRepository
-import com.vaultionizer.vaultapp.ui.main.file.FileDialogState
-import com.vaultionizer.vaultapp.util.Constants
+import com.vaultionizer.vaultapp.ui.main.file.FileEvent
+import com.vaultionizer.vaultapp.ui.main.status.FileWorkerStatusPair
+import com.vaultionizer.vaultapp.util.deleteFile
+import com.vaultionizer.vaultapp.util.getFileName
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.collect
@@ -40,25 +47,45 @@ class MainActivityViewModel @Inject constructor(
     private val _shownElements = MutableLiveData<List<VNFile>>()
     val shownElements: LiveData<List<VNFile>> = _shownElements
 
-    private val _currentDirectory = MutableLiveData<VNFile>()
-    val currentDirectory: LiveData<VNFile> = _currentDirectory
+    private val _currentDirectory = MutableLiveData<VNFile?>()
+    val currentDirectory: LiveData<VNFile?> = _currentDirectory
 
-    private val _fileDialogState = MutableLiveData<FileDialogState>()
-    val fileDialogState: LiveData<FileDialogState> = _fileDialogState
+    private val _fileEvent = LiveEvent<FileEvent>()
+    val fileEvent: LiveEvent<FileEvent> = _fileEvent
 
-    val fileWorkerInfo: LiveData<List<WorkInfo>> =
-        WorkManager.getInstance(context).getWorkInfosByTagLiveData(Constants.WORKER_TAG_FILE)
+    val networkStatus =
+        NetworkLiveData(context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager)
+
+    init {
+        updateUserSpaces()
+    }
 
     fun updateUserSpaces() {
         viewModelScope.launch {
             val result = spaceRepository.getAllSpaces()
 
+            // TODO(jatsqi): Error handling
             result.collect {
-                if (it is ManagedResult.Success) {
+                if (it is Resource.Success) {
                     _userSpaces.value = it.data
+
+                    val lastAccessedSpace =
+                        it.data.sortedByDescending { it.lastAccess }.firstOrNull()
+                    lastAccessedSpace?.let { space ->
+                        selectedSpaceChanged(space)
+                    }
                 }
             }
         }
+    }
+
+    fun generateSpaceKey(space: VNSpace) {
+        CryptoUtils.generateKeyForSingleUserSpace(
+            space.id,
+            CryptoType.AES,
+            CryptoMode.GCM,
+            CryptoPadding.NoPadding
+        )
     }
 
     private fun updateCurrentFiles() {
@@ -74,9 +101,15 @@ class MainActivityViewModel @Inject constructor(
 
                 response.collect {
                     when (it) {
-                        is ManagedResult.Success -> {
+                        is Resource.Success -> {
                             _currentDirectory.value = it.data
                             updateCurrentFiles()
+                        }
+                        is Resource.CryptographicalError -> {
+                            _fileEvent.value =
+                                FileEvent.EncryptionKeyRequired(
+                                    selectedSpace.value!!
+                                )
                         }
                     }
                 }
@@ -84,13 +117,40 @@ class MainActivityViewModel @Inject constructor(
         }
     }
 
-    fun requestUpload(uri: Uri) {
+    fun requestUpload(uri: Uri, forceUpload: Boolean = false) {
         viewModelScope.launch {
-            fileRepository.uploadFile(
-                _currentDirectory.value!!,
-                uri
-            )
-            _fileDialogState.value = FileDialogState(isValid = true)
+            currentDirectory.value?.let {
+                if (forceUpload) {
+                    fileRepository.uploadFile(
+                        uri,
+                        _currentDirectory.value!!,
+                    )
+
+                    return@launch
+                }
+
+                val folder = currentDirectory.value!!
+                val name = context.contentResolver.getFileName(uri)
+
+                for (file in folder.content ?: emptyList()) {
+                    if (file.name == name) {
+                        _fileEvent.value =
+                            FileEvent.UploadFileNameConflict(
+                                it,
+                                uri
+                            )
+                        return@launch
+                    }
+                }
+
+                requestUpload(uri, true)
+            }
+        }
+    }
+
+    fun requestUpdate(file: VNFile, uri: Uri) {
+        viewModelScope.launch {
+            fileRepository.updateFile(file, uri)
         }
     }
 
@@ -100,29 +160,33 @@ class MainActivityViewModel @Inject constructor(
         }
     }
 
+    fun requestDecryption(file: VNFile) {
+        viewModelScope.launch {
+            fileRepository.decryptFile(file)
+        }
+    }
+
     fun requestFolder(name: String) {
         if (_selectedSpace.value != null && _currentDirectory.value != null) {
             viewModelScope.launch {
-                fileRepository.uploadFolder(_selectedSpace.value!!, name, _currentDirectory.value!!)
+                fileRepository.uploadFolder(name, _currentDirectory.value!!)
                 updateCurrentFiles()
             }
         }
     }
 
-    fun requestDeletion(file: VNFile) {
+    fun requestPermanentDeletion(file: VNFile) {
         viewModelScope.launch {
-            fileRepository.deleteFile(file).collect {
-                when (it) {
-                    is ManagedResult.Success -> {
-                        _fileDialogState.value = FileDialogState(isValid = true)
-                        updateCurrentFiles()
-                    }
-                    else -> { // TODO(jatsqi) Error handling
-                        _fileDialogState.value =
-                            FileDialogState(fileError = R.string.host_error_network)
-                    }
-                }
-            }
+            fileRepository.deleteFile(file)
+            updateCurrentFiles()
+        }
+    }
+
+    fun requestLocalDeletion(file: VNFile) {
+        viewModelScope.launch {
+            file.state = VNFile.State.AVAILABLE_REMOTE
+            context.deleteFile(file.localId)
+            updateCurrentFiles()
         }
     }
 
@@ -131,27 +195,36 @@ class MainActivityViewModel @Inject constructor(
         viewModelScope.launch {
             spaceRepository.deleteSpace(_selectedSpace.value!!).collect {
                 when (it) {
-                    is ManagedResult.Success -> {
+                    is Resource.Success -> {
                         val spaces = _userSpaces.value!!.toMutableList()
-                        spaces.remove(it)
+                        spaces.remove(it.data)
 
                         _selectedSpace.value = spaces[0]
                         _currentDirectory.value = null
                         updateUserSpaces()
                         updateCurrentFiles()
-
-                        _fileDialogState.value = FileDialogState(isValid = true)
                     }
                 }
             }
         }
     }
 
-    fun selectedSpaceChanged(space: VNSpace) {
+    fun requestQuitSpace() {
+        // TODO
+    }
+
+    fun selectedSpaceChanged(space: VNSpace): Boolean {
         Log.e("Vault", "Change space...")
+        if (!space.isKeyAvailable) {
+            _fileEvent.value = FileEvent.EncryptionKeyRequired(space)
+            return false
+        }
+
         _currentDirectory.value = null
         _selectedSpace.value = space
         updateCurrentFiles()
+
+        return true
     }
 
     fun onDirectoryChange(newFolder: VNFile?) {
@@ -180,7 +253,7 @@ class MainActivityViewModel @Inject constructor(
         }
         if (_currentDirectory.value != null) {
             val list = mutableListOf<VNFile>()
-            buildSearchList(query.toLowerCase(), _currentDirectory.value!!, list)
+            buildSearchList(query.lowercase(Locale.getDefault()), _currentDirectory.value!!, list)
 
             _shownElements.value = list
         }
@@ -188,21 +261,31 @@ class MainActivityViewModel @Inject constructor(
 
     private fun buildSearchList(query: String, file: VNFile, list: MutableList<VNFile>) {
         if (file.isFolder) {
-            file.content?.forEach {
-                Log.e("Vault", it.name)
-
-                if (it.name.toLowerCase().contains(query)) {
-                    list.add(it)
+            for (child in file.content ?: emptyList()) {
+                if (child.name.lowercase(Locale.getDefault()).contains(query)) {
+                    list.add(child)
                 }
 
-                if (it.isFolder) buildSearchList(query, it, list)
+                if (child.isFolder) buildSearchList(query, child, list)
             }
         }
     }
 
-    fun onWorkerInfoChange() {
+    fun onWorkerInfoChange(status: List<FileWorkerStatusPair>) {
         viewModelScope.launch {
             updateCurrentFiles()
+
+            for (workerPair in status) {
+                if (workerPair.status == WorkInfo.State.FAILED || workerPair.status == WorkInfo.State.CANCELLED) {
+                    _fileEvent.value = FileEvent.FileExchangeError(
+                        workerPair.file,
+                    )
+                }
+            }
         }
+    }
+
+    fun onOpenFileActivityFailure() {
+        _fileEvent.value = FileEvent.NoAppFoundToOpenFile
     }
 }

@@ -11,14 +11,13 @@ import android.widget.EditText
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
-import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.github.razir.progressbutton.attachTextChangeAnimator
 import com.github.razir.progressbutton.hideProgress
 import com.github.razir.progressbutton.showProgress
-import com.thedeanda.lorem.LoremIpsum
 import com.vaultionizer.vaultapp.R
 import com.vaultionizer.vaultapp.data.db.dao.LocalUserDao
+import com.vaultionizer.vaultapp.ui.auth.data.AuthEvent
 import com.vaultionizer.vaultapp.ui.auth.data.AuthViewModel
 import com.vaultionizer.vaultapp.ui.auth.parts.input.HostInputFragment
 import dagger.hilt.android.AndroidEntryPoint
@@ -31,6 +30,9 @@ class LoginFragment : Fragment() {
 
     @Inject
     lateinit var userService: LocalUserDao
+
+    private var hostValid = false
+    private var userDataValid = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -65,37 +67,43 @@ class LoginFragment : Fragment() {
         val loginButton = view.findViewById<Button>(R.id.login)
         loginButton.attachTextChangeAnimator()
         loginButton.setOnClickListener {
-            loginButton.showProgress {
-                buttonTextRes = R.string.login_login_progress
-                progressColor = Color.WHITE
-            }
             loginButton.isClickable = false
             authViewModel.loginWithFormData()
         }
 
-        authViewModel.loginResult.observe(viewLifecycleOwner, {
-            if (it == null) return@observe
-            if (it.error == null) {
-                val action = LoginFragmentDirections.actionLoginFragmentToMainActivity2()
-                findNavController().navigate(action)
-                activity?.finish()
-            } else {
-                if (requireContext() != null) {
-                    Toast.makeText(requireContext(), it.error!!, Toast.LENGTH_LONG).show()
+        authViewModel.authenticationEvent.observe(viewLifecycleOwner, {
+            when (it) {
+                is AuthEvent.LoginValidation -> {
+                    when {
+                        it.isLoading == true -> {
+                            loginButton.showProgress {
+                                buttonTextRes = R.string.login_login_progress
+                                progressColor = Color.WHITE
+                            }
+                        }
+                        it.error == null -> {
+                            val action =
+                                LoginFragmentDirections.actionLoginFragmentToMainActivity2()
+                            findNavController().navigate(action)
+                            activity?.finish()
+                        }
+                        else -> {
+                            if (requireContext() != null) {
+                                Toast.makeText(requireContext(), it.error, Toast.LENGTH_LONG)
+                                    .show()
+                            }
+                            loginButton.isClickable = true
+                            loginButton.hideProgress(R.string.login_login)
+                        }
+                    }
                 }
-                loginButton.isClickable = true
-                loginButton.hideProgress(R.string.login_login)
+
+                is AuthEvent.UserDataValidation -> userDataValid = it.isDataValid
+                is AuthEvent.HostValidation -> hostValid = it.error == null
             }
+
+            loginButton.isEnabled = hostValid && userDataValid
         })
-
-        val changeListener = Observer<Any> {
-            loginButton.isEnabled =
-                authViewModel.hostFormState.value?.hostValid == true && authViewModel.userDataFormState.value?.isDataValid == true && authViewModel.hostValidationResult.value?.version != null
-        }
-
-        authViewModel.hostFormState.observe(viewLifecycleOwner, changeListener)
-        authViewModel.userDataFormState.observe(viewLifecycleOwner, changeListener)
-        authViewModel.hostValidationResult.observe(viewLifecycleOwner, changeListener)
 
         val signUpButton = view.findViewById<Button>(R.id.login_sign_up)
         signUpButton.setOnClickListener {

@@ -3,7 +3,7 @@ package com.vaultionizer.vaultapp.cryptography
 import android.security.keystore.KeyGenParameterSpec
 import android.security.keystore.KeyProperties
 import android.security.keystore.KeyProtection
-import com.vaultionizer.vaultapp.cryptography.dataclasses.IvCipher
+import com.vaultionizer.vaultapp.cryptography.model.IvCipher
 import com.vaultionizer.vaultapp.util.Constants
 import java.security.KeyStore
 import javax.crypto.Cipher
@@ -11,12 +11,10 @@ import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
 import javax.crypto.spec.IvParameterSpec
 
-class AesCbcNopadding : CryptoClass() {
+object AesCbcNopadding : CryptoClass() {
 
-    companion object {
-        const val TRANSFORMATION = "AES/CBC/NoPadding"
-        const val BLOCK_MODE_IV_SIZE = 16
-    }
+    const val TRANSFORMATION = "AES/CBC/NoPadding"
+    override val BLOCK_MODE_IV_SIZE = 16
 
     override fun generateSingleUserKey(keystoreAlias: String) {
         val keyGenerator = KeyGenerator.getInstance(
@@ -52,13 +50,6 @@ class AesCbcNopadding : CryptoClass() {
         return cipher.doFinal(message)
     }
 
-    override fun dewrapper(warp: ByteArray): IvCipher {
-        val iv: ByteArray = warp.sliceArray(0 until BLOCK_MODE_IV_SIZE)
-        val cipherText: ByteArray = warp.sliceArray(BLOCK_MODE_IV_SIZE until warp.size)
-
-        return IvCipher(iv, cipherText)
-    }
-
     override fun addKeyToKeyStore(secretKey: SecretKey, keystoreAlias: String) {
         val keyStore: KeyStore = KeyStore.getInstance("AndroidKeyStore")
         keyStore.load(null)
@@ -66,7 +57,7 @@ class AesCbcNopadding : CryptoClass() {
             keystoreAlias,
             KeyStore.SecretKeyEntry(secretKey),
             KeyProtection.Builder(KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT)
-                .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
+                .setBlockModes(KeyProperties.BLOCK_MODE_CBC)
                 .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
                 .build()
         )

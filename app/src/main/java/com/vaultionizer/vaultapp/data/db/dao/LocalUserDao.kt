@@ -26,4 +26,7 @@ interface LocalUserDao {
 
     @Update
     fun updateUsers(vararg users: LocalUser)
+
+    @Query("DELETE FROM LocalUser WHERE user_id = :userId")
+    fun deleteUser(userId: Long)
 }

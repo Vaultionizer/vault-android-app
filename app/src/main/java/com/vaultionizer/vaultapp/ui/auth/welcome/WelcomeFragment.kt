@@ -27,9 +27,12 @@ class WelcomeFragment : Fragment() {
         (activity as AppCompatActivity).supportActionBar?.hide()
 
         view.findViewById<Button>(R.id.button_lets_go).setOnClickListener {
-            val action = WelcomeFragmentDirections.actionWelcomeFragmentToLoginFragment()
-            findNavController().navigate(action)
+            navigateToLogin()
         }
     }
 
+    private fun navigateToLogin() {
+        val action = WelcomeFragmentDirections.actionWelcomeFragmentToLoginFragment()
+        findNavController().navigate(action)
+    }
 }

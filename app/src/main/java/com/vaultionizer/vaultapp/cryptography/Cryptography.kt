@@ -5,20 +5,17 @@ import android.util.Log
 import com.vaultionizer.vaultapp.cryptography.crypto.CryptoMode
 import com.vaultionizer.vaultapp.cryptography.crypto.CryptoPadding
 import com.vaultionizer.vaultapp.cryptography.crypto.CryptoType
-import com.vaultionizer.vaultapp.cryptography.dataclasses.IvCipher
-import com.vaultionizer.vaultapp.cryptography.dataclasses.KeySalt
-import com.vaultionizer.vaultapp.cryptography.dataclasses.SaltIvcipher
+import com.vaultionizer.vaultapp.cryptography.model.*
 import com.vaultionizer.vaultapp.util.Constants
 import java.security.KeyStore
 import java.security.KeyStoreException
-import java.security.SecureRandom
 import java.util.*
 import javax.crypto.SecretKey
 import javax.crypto.SecretKeyFactory
 import javax.crypto.spec.SecretKeySpec
 
 
-class Cryptography {
+object Cryptography {
 
     // TODO: Import- / Export-Keys may have different ciphers, block-modes or paddings. ATM only AesGcmNopadding. This also applies for the transferred keys themself
 
@@ -54,13 +51,13 @@ class Cryptography {
         cryptoType: CryptoType,
         cryptoMode: CryptoMode,
         cryptoPadding: CryptoPadding,
-        password: String
+        password: Password
     ): ByteArray {
         if (cryptoType == CryptoType.AES) {
             if (cryptoMode == CryptoMode.GCM) {
                 if (cryptoPadding == CryptoPadding.NoPadding) {
 
-                    val sharedKeyOutput = AesGcmNopadding().generateSharedKey(
+                    val sharedKeyOutput = AesGcmNopadding.generateSharedKey(
                         "${Constants.VN_KEY_PREFIX}$spaceID",
                         password
                     )
@@ -98,24 +95,25 @@ class Cryptography {
         if (cryptoMode == CryptoMode.GCM) {
             if (cryptoPadding == CryptoPadding.NoPadding) {
 
-                AesGcmNopadding().generateSingleUserKey("${Constants.VN_KEY_PREFIX}$spaceID")
+                AesGcmNopadding.generateSingleUserKey("${Constants.VN_KEY_PREFIX}$spaceID")
                 return
             }
         }
         if (cryptoMode == CryptoMode.CBC) {
             if (cryptoPadding == CryptoPadding.NoPadding) {
 
-                AesCbcNopadding().generateSingleUserKey("${Constants.VN_KEY_PREFIX}$spaceID")
+                AesCbcNopadding.generateSingleUserKey("${Constants.VN_KEY_PREFIX}$spaceID")
                 return
             }
         }
     }
 
-    fun importKey(spaceID: Long, bytes: ByteArray, password: String): Boolean {
+    fun importKey(spaceID: Long, bytes: ByteArray, pwd: Password): Boolean {
         val saltIvcipher = desalter(bytes)
+        val salt = Salt(saltIvcipher.salt)
         val importKey =
-            SecretKeySpec(Hashing().sha256(password.toByteArray() + saltIvcipher.salt), "AES")
-        val keyPlainUnchecked = AesGcmNopadding().decrypt(
+            SecretKeySpec(Hashing.bCryptHash(pwd, salt).hash.toByteArray(), "AES")
+        val keyPlainUnchecked = AesGcmNopadding.decrypt(            // TODO generalize when more exchange key types are available
             importKey,
             saltIvcipher.ivcipher.iv,
             saltIvcipher.ivcipher.cipher
@@ -123,7 +121,7 @@ class Cryptography {
         if (validate(keyPlainUnchecked)) {
             val keyPlain = keyPlainUnchecked.sliceArray(16 until keyPlainUnchecked.size)
             val secretKey = SecretKeySpec(keyPlain, "AES")
-            AesGcmNopadding().addKeyToKeyStore(secretKey, "${Constants.VN_KEY_PREFIX}$spaceID")
+            AesGcmNopadding.addKeyToKeyStore(secretKey, "${Constants.VN_KEY_PREFIX}$spaceID") // TODO generalize when more exchange key types are available
 
             return true
         }
@@ -132,11 +130,10 @@ class Cryptography {
     }
 
     fun encryptor(spaceID: Long, bytes: ByteArray): ByteArray {
-        return wrapper(encryptData(getKey(spaceID), padder(bytes)))
-    }
-
-    fun encryptorNoPadder(spaceID: Long, bytes: ByteArray): ByteArray {
-        return wrapper(encryptData(getKey(spaceID), bytes))
+        if (existsKey(spaceID)){
+            return wrapper(encryptData(getKey(spaceID), bytes))
+        }
+        throw RuntimeException("Tried to encrypted with a nonexistent key")
     }
 
     fun decrytor(spaceID: Long, bytes: ByteArray): ByteArray {
@@ -145,7 +142,7 @@ class Cryptography {
         val iv = pairIvCipher.iv
         val cipher = pairIvCipher.cipher
 
-        return dewrapper(secretKey, decryptData(secretKey, iv, cipher)).cipher
+        return decryptData(secretKey, iv, cipher)
     }
 
     fun deleteKey(spaceID: Long): Boolean {
@@ -169,11 +166,9 @@ class Cryptography {
     }
 
 
-    fun generateImportExportKeyAndSalt(password: String): KeySalt {
-        val random = SecureRandom()
-        val salt = ByteArray(16)
-        random.nextBytes(salt)
-        return KeySalt(SecretKeySpec(Hashing().sha256(password.toByteArray() + salt), "AES"), salt)
+    fun generateImportExportKeyAndSalt(pwd: Password): KeySalt {
+        val hashSalt = Hashing.bCryptHash(pwd)
+        return KeySalt(SecretKeySpec(hashSalt.hash.hash, "AES"), hashSalt.salt.salt)
     }
 
     fun validate(keyPlainUnchecked: ByteArray): Boolean {
@@ -186,14 +181,6 @@ class Cryptography {
         return true
     }
 
-    fun padder(input: ByteArray): ByteArray {
-        if (input.size % 16 == 0) {
-            return input
-        }
-        val due = 16 - (input.size % 16)
-        return input + ByteArray(due) { 0 }
-    }
-
     fun wrapper(pair: IvCipher): ByteArray {
         return pair.iv + pair.cipher
     }
@@ -203,13 +190,24 @@ class Cryptography {
     }
 
     fun dewrapper(secretKey: SecretKey, warp: ByteArray): IvCipher {
-        return getCryptoClass(secretKey).dewrapper(warp)
+        val ivLength = getCryptoClass(secretKey).BLOCK_MODE_IV_SIZE
+        val iv: ByteArray = warp.sliceArray(0 until ivLength)
+        val cipherText: ByteArray = warp.sliceArray(ivLength until warp.size)
+
+        return IvCipher(iv, cipherText)
+    }
+
+    fun dewrapper(warp: ByteArray, ivLength : Int): IvCipher{
+        val iv: ByteArray = warp.sliceArray(0 until ivLength)
+        val cipherText: ByteArray = warp.sliceArray(ivLength until warp.size)
+
+        return IvCipher(iv, cipherText)
     }
 
     fun desalter(bytes: ByteArray): SaltIvcipher {
-        val salt = bytes.sliceArray(0 until 16)
-        val bytesivCipher = bytes.sliceArray(16 until bytes.size)
-        val ivCipher = AesGcmNopadding().dewrapper(bytesivCipher)
+        val salt = bytes.sliceArray(0 until 29)
+        val bytesivCipher = bytes.sliceArray(29 until bytes.size)
+        val ivCipher = dewrapper(bytesivCipher, AesGcmNopadding.BLOCK_MODE_IV_SIZE)             // TODO generalize when more exchange key types are available
 
         return SaltIvcipher(salt, ivCipher)
     }
@@ -231,12 +229,12 @@ class Cryptography {
         if (secretKey.algorithm == CryptoType.AES.name) {
             if (keyInfo.blockModes[0] == CryptoMode.GCM.name) {
                 if (keyInfo.encryptionPaddings[0] == CryptoPadding.NoPadding.name) {
-                    return AesGcmNopadding()
+                    return AesGcmNopadding
                 }
             }
             if (keyInfo.blockModes[0] == CryptoMode.CBC.name) {
                 if (keyInfo.encryptionPaddings[0] == CryptoPadding.NoPadding.name) {
-                    return AesCbcNopadding()
+                    return AesCbcNopadding
                 }
             }
         }
