@@ -27,8 +27,9 @@ import com.vaultionizer.vaultapp.worker.*
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
-import java.util.concurrent.locks.ReentrantLock
 import javax.inject.Inject
 
 class FileRepositoryImpl @Inject constructor(
@@ -67,16 +68,15 @@ class FileRepositoryImpl @Inject constructor(
      */
     private val minimumIdCache = mutableMapOf<Long, Long>()
 
-    // Lock for files
-    private val fileTreeLock = ReentrantLock()
+    /**
+     * Mutex for file tree locking
+     */
+    val fileTreeMutex = Mutex()
 
     override suspend fun getFileTree(space: VNSpace): Flow<Resource<VNFile>> {
         return flow {
-            try {
-                fileTreeLock.lock()
+            fileTreeMutex.withLock {
                 emitAll(getFileTreeInternal(space))
-            } finally {
-                fileTreeLock.unlock()
             }
         }
     }

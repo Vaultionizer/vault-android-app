@@ -28,6 +28,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.util.*
 import javax.inject.Inject
 
@@ -37,7 +39,6 @@ class MainActivityViewModel @Inject constructor(
     val spaceRepository: SpaceRepository,
     val fileRepository: FileRepository
 ) : ViewModel() {
-
     private val _userSpaces = MutableLiveData<List<VNSpace>>()
     val userSpaces: LiveData<List<VNSpace>> = _userSpaces
 
@@ -52,6 +53,8 @@ class MainActivityViewModel @Inject constructor(
 
     private val _fileEvent = LiveEvent<FileEvent>()
     val fileEvent: LiveEvent<FileEvent> = _fileEvent
+
+    private val updateFileMutex = Mutex()
 
     val networkStatus =
         NetworkLiveData(context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager)
@@ -94,22 +97,24 @@ class MainActivityViewModel @Inject constructor(
                 return@launch
             }
 
-            if (_currentDirectory.value != null) {
-                _shownElements.value = _currentDirectory.value!!.content
-            } else {
-                val response = fileRepository.getFileTree(_selectedSpace.value!!)
+            updateFileMutex.withLock {
+                if (_currentDirectory.value != null) {
+                    _shownElements.value = _currentDirectory.value!!.content
+                } else {
+                    val response = fileRepository.getFileTree(_selectedSpace.value!!)
 
-                response.collect {
-                    when (it) {
-                        is Resource.Success -> {
-                            _currentDirectory.value = it.data
-                            updateCurrentFiles()
-                        }
-                        is Resource.CryptographicalError -> {
-                            _fileEvent.value =
-                                FileEvent.EncryptionKeyRequired(
-                                    selectedSpace.value!!
-                                )
+                    response.collect {
+                        when (it) {
+                            is Resource.Success -> {
+                                _currentDirectory.value = it.data
+                                updateCurrentFiles()
+                            }
+                            is Resource.CryptographicalError -> {
+                                _fileEvent.value =
+                                    FileEvent.EncryptionKeyRequired(
+                                        selectedSpace.value!!
+                                    )
+                            }
                         }
                     }
                 }
