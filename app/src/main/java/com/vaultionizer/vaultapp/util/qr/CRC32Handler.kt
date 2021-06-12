@@ -1,7 +1,18 @@
 package com.vaultionizer.vaultapp.util.qr
 
+import android.util.Base64
 import android.util.Log
+import java.lang.Exception
+import java.lang.Integer.parseInt
+import java.lang.Long.parseLong
 import java.util.zip.CRC32
+
+data class AuthKeyPayload(
+    val remoteSpaceId: Long,
+    val authKey: String,
+    val key: ByteArray
+)
+
 
 object CRC32Handler {
 
@@ -39,6 +50,18 @@ object CRC32Handler {
 
     fun createQRPayload(authKey: String, remoteSpaceId: Long, symmetricKey: String): String {
         return generateCRC32(createAuthKeyPayload(authKey, remoteSpaceId, symmetricKey))
+    }
+
+    fun parseContent(payload: String): AuthKeyPayload?{
+        val split = payload.split('@')
+        if (split.size != 3) return null
+        return try {
+            val spaceId = parseLong(split[0])
+            val decodedKey = Base64.decode(split[2], Base64.NO_WRAP)
+            AuthKeyPayload(spaceId, split[1], decodedKey)
+        }catch (e: Exception){
+            null
+        }
     }
 
     private fun testCRC32() {

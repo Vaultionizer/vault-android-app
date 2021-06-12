@@ -1,5 +1,6 @@
 package com.vaultionizer.vaultapp.repository.impl
 
+import android.util.Log
 import com.google.gson.Gson
 import com.vaultionizer.vaultapp.cryptography.CryptoUtils
 import com.vaultionizer.vaultapp.cryptography.crypto.CryptoMode
@@ -8,10 +9,13 @@ import com.vaultionizer.vaultapp.cryptography.crypto.CryptoType
 import com.vaultionizer.vaultapp.data.cache.AuthCache
 import com.vaultionizer.vaultapp.data.db.dao.LocalFileDao
 import com.vaultionizer.vaultapp.data.db.dao.LocalSpaceDao
+import com.vaultionizer.vaultapp.data.db.dao.SharedSpaceSecretDao
 import com.vaultionizer.vaultapp.data.db.entity.LocalSpace
+import com.vaultionizer.vaultapp.data.db.entity.SharedSpaceSecret
 import com.vaultionizer.vaultapp.data.model.domain.VNSpace
 import com.vaultionizer.vaultapp.data.model.rest.refFile.NetworkReferenceFile
 import com.vaultionizer.vaultapp.data.model.rest.request.CreateSpaceRequest
+import com.vaultionizer.vaultapp.data.model.rest.request.JoinSpaceRequest
 import com.vaultionizer.vaultapp.data.model.rest.result.ApiResult
 import com.vaultionizer.vaultapp.data.model.rest.result.NetworkBoundResource
 import com.vaultionizer.vaultapp.data.model.rest.result.Resource
@@ -29,6 +33,7 @@ class SpaceRepositoryImpl @Inject constructor(
     val spaceService: SpaceService,
     val localSpaceDao: LocalSpaceDao,
     val localFileDao: LocalFileDao,
+    val sharedSecretDao : SharedSpaceSecretDao,
     val gson: Gson,
     val authCache: AuthCache
 ) : SpaceRepository {
@@ -98,22 +103,34 @@ class SpaceRepositoryImpl @Inject constructor(
         isPrivate: Boolean,
         writeAccess: Boolean,
         authKeyAccess: Boolean,
-        algorithm: String
+        algorithm: String,
+        password: String?
     ): Flow<Resource<VNSpace>> {
         if (CryptoUtils.existsKey(peekNextSpaceId())) {
             CryptoUtils.deleteKey(peekNextSpaceId())
         }
 
         val cryptoMode = if (algorithm.contains("GCM")) CryptoMode.GCM else CryptoMode.CBC
+        val nextSpaceId = peekNextSpaceId()
         if (isPrivate) {
             CryptoUtils.generateKeyForSingleUserSpace(
-                peekNextSpaceId(),
+                nextSpaceId,
                 CryptoType.AES,
                 cryptoMode,
                 CryptoPadding.NoPadding
             )
         } else {
-            TODO()
+            val secret = CryptoUtils.generateKeyForSharedSpace(
+                nextSpaceId,
+                CryptoType.AES,
+                cryptoMode,
+                CryptoPadding.NoPadding,
+                password!!
+            )
+            withContext(Dispatchers.IO) {
+                sharedSecretDao.createSharedSecret(SharedSpaceSecret(nextSpaceId, secret))
+            }
+            Log.e("Vault", "Test "+secret.size)
         }
 
         return flow {
@@ -132,6 +149,7 @@ class SpaceRepositoryImpl @Inject constructor(
                     val persisted = persistNetworkSpace(
                         response.data,
                         isPrivate,
+                        true,
                         name
                     )
 
@@ -160,6 +178,7 @@ class SpaceRepositoryImpl @Inject constructor(
     private suspend fun persistNetworkSpace(
         remoteSpaceId: Long,
         isPrivate: Boolean,
+        isOwner: Boolean,
         name: String?
     ): VNSpace {
         var space =
@@ -187,12 +206,13 @@ class SpaceRepositoryImpl @Inject constructor(
             space.name,
             space.lastAccess,
             isPrivate,
+            isOwner,
             System.currentTimeMillis()
         )
     }
 
     private suspend fun persistNetworkSpace(networkSpace: NetworkSpace): VNSpace =
-        persistNetworkSpace(networkSpace.spaceID, networkSpace.private, null)
+        persistNetworkSpace(networkSpace.spaceID, networkSpace.private, true, null)
 
     override suspend fun quitAllSpaces(): Boolean {
         val userId = authCache.loggedInUser?.localUser?.userId
@@ -216,4 +236,33 @@ class SpaceRepositoryImpl @Inject constructor(
         }
         return true
     }
+
+    override suspend fun getSpaceSecret(spaceId: Long): Flow<Resource<SharedSpaceSecret>> {
+        return flow {
+            val res = sharedSecretDao.getSecret(spaceId)
+            if (res != null){
+                emit(Resource.Success(res))
+            }
+            else {
+                emit(Resource.Error(-1))
+            }
+        }.flowOn(Dispatchers.IO)
+    }
+
+    override suspend fun joinSpace(remoteSpaceId: Long, spaceId: Long, authKey: String): Flow<Resource<Boolean>> {
+        return flow {
+            val joinRes = spaceService.join(JoinSpaceRequest(authKey), remoteSpaceId)
+            when(joinRes){
+                is ApiResult.Success -> {
+                    localSpaceDao.createSpace(LocalSpace(spaceId, remoteSpaceId, 0, " Hallo", null, 0))
+                    emit(Resource.Success(true))
+                }
+                else -> {
+                    // TODO error handling
+                    emit(Resource.Error(-1))
+                }
+            }
+        }.flowOn(Dispatchers.IO)
+    }
+
 }

@@ -15,6 +15,7 @@ import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
+import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.afollestad.materialdialogs.MaterialDialog
@@ -35,6 +36,7 @@ import com.vaultionizer.vaultapp.data.model.domain.VNFile
 import com.vaultionizer.vaultapp.ui.common.dialog.AlertDialogType
 import com.vaultionizer.vaultapp.ui.common.dialog.createDialog
 import com.vaultionizer.vaultapp.ui.common.dialog.showDialog
+import com.vaultionizer.vaultapp.ui.main.MainActivity
 import com.vaultionizer.vaultapp.ui.main.file.viewer.FileViewerArgs
 import com.vaultionizer.vaultapp.ui.viewmodel.FileStatusViewModel
 import com.vaultionizer.vaultapp.ui.viewmodel.MainActivityViewModel
@@ -63,6 +65,8 @@ class FileFragment : Fragment(), View.OnClickListener {
     private lateinit var backPressedCallback: OnBackPressedCallback
 
     private var bottomSheet: BottomSheet? = null
+
+    private val args: FileFragmentArgs by navArgs()
 
     override fun onCreateView(
         inflater: LayoutInflater,

@@ -8,6 +8,10 @@
         android:id="@+id/fileFragment"
         android:name="com.vaultionizer.vaultapp.ui.main.file.FileFragment"
         android:label="File Viewer">
+        <argument
+            android:name="reloadContent"
+            app:argType="boolean"
+            android:defaultValue="false"/>
         <action
             android:id="@+id/action_fileFragment_to_createPersonalContainerFragment"
             app:destination="@id/createPersonalContainerFragment" />
@@ -112,7 +116,9 @@
         android:label="Space settings" >
         <action
             android:id="@+id/action_spacePermissionsFragment_to_fileFragment2"
-            app:destination="@id/fileFragment" />
+            app:destination="@id/fileFragment"
+            app:popUpTo="@id/fileFragment"
+            app:popUpToInclusive="true" />
         <action
             android:id="@+id/action_spacePermissionsFragment_to_authKeyFragment"
             app:destination="@id/authKeyFragment" />
@@ -154,7 +160,9 @@
             app:destination="@id/fileFragment" />
         <action
             android:id="@+id/action_joinSpaceFragment_to_QRCodeScanFragment"
-            app:destination="@id/QRCodeScanFragment" />
+            app:destination="@id/QRCodeScanFragment"
+            app:popUpTo="@id/joinSpaceFragment"
+            app:popUpToInclusive="true" />
     </fragment>
     <fragment
         android:id="@+id/QRCodeScanFragment"
@@ -166,7 +174,8 @@
             android:defaultValue="0"/>
         <action
             android:id="@+id/action_QRCodeScanFragment_to_joinSpaceFragment"
-            app:destination="@id/joinSpaceFragment" />
+            app:destination="@id/joinSpaceFragment"
+            app:popUpToInclusive="true" />
     </fragment>
     <fragment
         android:id="@+id/settingsFragment"

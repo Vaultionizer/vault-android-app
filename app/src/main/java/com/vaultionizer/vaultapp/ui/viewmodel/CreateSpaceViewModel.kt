@@ -1,5 +1,6 @@
 package com.vaultionizer.vaultapp.ui.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
@@ -31,10 +32,11 @@ class CreateSpaceViewModel @Inject constructor(val spaceRepository: SpaceReposit
         isPrivate: Boolean,
         algorithm: String,
         writeAccess: Boolean,
-        authKeyAccess: Boolean
+        authKeyAccess: Boolean,
+        password: String?
     ) {
         viewModelScope.launch {
-            spaceRepository.createSpace(name, isPrivate, writeAccess, authKeyAccess, algorithm)
+            spaceRepository.createSpace(name, isPrivate, writeAccess, authKeyAccess, algorithm, password)
                 .collect {
                     when (it) {
                         is Resource.Success -> {

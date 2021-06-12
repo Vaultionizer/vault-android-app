@@ -76,7 +76,7 @@ interface SpaceService {
     suspend fun join(
         @Body joinSpaceReq: JoinSpaceRequest,
         @Path("remoteSpaceId") spaceID: Long
-    ): ApiResult<Nothing>
+    ): ApiResult<Unit>
 
     /**
      * Kicks a other users from the space.
