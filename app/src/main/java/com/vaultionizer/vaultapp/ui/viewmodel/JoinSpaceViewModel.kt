@@ -15,6 +15,7 @@ import com.vaultionizer.vaultapp.util.qr.CRC32Handler
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import java.lang.Exception
 import javax.inject.Inject
 
 data class JoinSpaceResult(
@@ -39,6 +40,7 @@ class JoinSpaceViewModel @Inject constructor(
     private val _joinSpaceInputState = MutableLiveData<JoinSpaceInputState>()
     val joinSpaceInputState: LiveData<JoinSpaceInputState> = _joinSpaceInputState
 
+    var spaceNameContent: String = ""
 
     fun reset() {
         _doneTestingJoinSpace.value = JoinSpaceResult(false, false, false, null)
@@ -50,13 +52,20 @@ class JoinSpaceViewModel @Inject constructor(
         viewModelScope.launch {
             val pair = CRC32Handler.parseContent(payload) ?: return@launch
             val spaceId = spaceRepository.peekNextSpaceId()
-            val success = CryptoUtils.importKeyForSharedSpace(spaceId, pair.key, password)
+            var success = false
+            try {
+                success = CryptoUtils.importKeyForSharedSpace(spaceId, pair.key, password)
+            }catch (e: Exception){
+                _doneTestingJoinSpace.value = JoinSpaceResult(false, false, true, null)
+                return@launch
+            }
+
             if (!success) {
                 _doneTestingJoinSpace.value = JoinSpaceResult(false, false, true, null)
                 return@launch
             }
 
-            spaceRepository.joinSpace(pair.remoteSpaceId, spaceId, pair.authKey).collect {
+            spaceRepository.joinSpace(pair.remoteSpaceId, spaceId, pair.authKey, spaceNameContent).collect {
                 when(it){
                     is Resource.Success -> {
                         _doneTestingJoinSpace.value = JoinSpaceResult(true, false, true, null)

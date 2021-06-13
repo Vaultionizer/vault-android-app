@@ -2,10 +2,13 @@ package com.vaultionizer.vaultapp.ui.main.qr_scanner
 
 import android.media.Image
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
+import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import com.google.zxing.*
@@ -15,13 +18,21 @@ import com.otaliastudios.cameraview.CameraView
 import com.otaliastudios.cameraview.frame.FrameProcessor
 import com.otaliastudios.cameraview.size.Size
 import com.vaultionizer.vaultapp.R
+import com.vaultionizer.vaultapp.ui.viewmodel.JoinSpaceViewModel
 import com.vaultionizer.vaultapp.util.qr.CRC32Handler
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.DisposableHandle
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.withContext
 import java.util.*
 
 @AndroidEntryPoint
 class QRCodeScanFragment : Fragment() {
     private val args: QRCodeScanFragmentArgs by navArgs()
+    private val joinSpaceViewModel: JoinSpaceViewModel by activityViewModels()
+    private var foundQRCode = false
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -62,7 +73,7 @@ class QRCodeScanFragment : Fragment() {
                 )
                 try {
                     val qrCodeResult: Result = MultiFormatReader().decodeWithState(binaryBitmap)
-                    evaluateQRCode(qrCodeResult.text)
+                    runBlocking { evaluateQRCode(qrCodeResult.text) }
                 } catch (e: Exception) {
                     return@FrameProcessor
                 }
@@ -75,17 +86,18 @@ class QRCodeScanFragment : Fragment() {
 
     }
 
-    private fun evaluateQRCode(content: String) {
-        if (!CRC32Handler.checkValid(content)) return
+    private suspend fun evaluateQRCode(content: String) {
+        if (foundQRCode || !CRC32Handler.checkValid(content)) return
         val payload = CRC32Handler.parsePayload(content) ?: return
-
+        foundQRCode = true
         if (args.scanType == 0) {
             // authentication code parsing
-            findNavController().navigate(
-                QRCodeScanFragmentDirections.actionQRCodeScanFragmentToJoinSpaceFragment(
-                    payload
-                )
-            )
+            withContext(Dispatchers.Main) {
+                val action =
+                    QRCodeScanFragmentDirections.actionQRCodeScanFragmentToJoinSpaceFragment(payload)
+                findNavController().navigate(action)
+            }
+
         }
     }
 

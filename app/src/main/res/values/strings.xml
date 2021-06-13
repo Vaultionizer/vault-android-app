@@ -294,4 +294,5 @@
     <string name="enter_password_title">Enter password for auth key</string>
     <string name="join_space_password_button">Submit</string>
     <string name="join_space_password_title">Enter password for auth key</string>
+    <string name="join_enter_space_name">Enter space name</string>
 </resources>

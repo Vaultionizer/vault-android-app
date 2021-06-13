@@ -249,12 +249,12 @@ class SpaceRepositoryImpl @Inject constructor(
         }.flowOn(Dispatchers.IO)
     }
 
-    override suspend fun joinSpace(remoteSpaceId: Long, spaceId: Long, authKey: String): Flow<Resource<Boolean>> {
+    override suspend fun joinSpace(remoteSpaceId: Long, spaceId: Long, authKey: String, name: String): Flow<Resource<Boolean>> {
         return flow {
             val joinRes = spaceService.join(JoinSpaceRequest(authKey), remoteSpaceId)
             when(joinRes){
                 is ApiResult.Success -> {
-                    localSpaceDao.createSpace(LocalSpace(spaceId, remoteSpaceId, 0, " Hallo", null, 0))
+                    localSpaceDao.createSpace(LocalSpace(spaceId, remoteSpaceId, authCache.loggedInUser?.localUser?.userId!!, name, null, 0))
                     emit(Resource.Success(true))
                 }
                 else -> {

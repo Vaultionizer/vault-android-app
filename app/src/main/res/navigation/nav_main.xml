@@ -160,9 +160,7 @@
             app:destination="@id/fileFragment" />
         <action
             android:id="@+id/action_joinSpaceFragment_to_QRCodeScanFragment"
-            app:destination="@id/QRCodeScanFragment"
-            app:popUpTo="@id/joinSpaceFragment"
-            app:popUpToInclusive="true" />
+            app:destination="@id/QRCodeScanFragment" />
     </fragment>
     <fragment
         android:id="@+id/QRCodeScanFragment"
@@ -175,6 +173,7 @@
         <action
             android:id="@+id/action_QRCodeScanFragment_to_joinSpaceFragment"
             app:destination="@id/joinSpaceFragment"
+            app:popUpTo="@id/joinSpaceFragment"
             app:popUpToInclusive="true" />
     </fragment>
     <fragment

@@ -31,5 +31,5 @@ interface SpaceRepository {
 
     suspend fun getSpaceSecret(spaceId: Long): Flow<Resource<SharedSpaceSecret>>
 
-    suspend fun joinSpace(remoteSpaceId: Long, spaceId: Long, authKey: String): Flow<Resource<Boolean>>
+    suspend fun joinSpace(remoteSpaceId: Long, spaceId: Long, authKey: String, name: String): Flow<Resource<Boolean>>
 }
