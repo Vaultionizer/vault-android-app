@@ -18,11 +18,11 @@ jobs:
       - name: Build with Gradle and create APK
         run: ./gradlew build assembleDebug
       - name: Upload APK
-          uses: SamKirkland/FTP-Deploy-Action@4.0.0
-          with:
-            server: ${{ secrets.FTP_RELEASE_HOST }}
-            username: ${{ secrets.FTP_RELEASE_USER }}
-            password: ${{ secrets.FTP_RELEASE_PASSWORD }}
-            protocol: sftp
-            server-dir: ${{ secrets.FTP_RELEASE_SERVER_DIR }}
-            local-dir: app/build/outputs/apk/
+        uses: SamKirkland/FTP-Deploy-Action@4.0.0
+        with:
+          server: ${{ secrets.FTP_RELEASE_HOST }}
+          username: ${{ secrets.FTP_RELEASE_USER }}
+          password: ${{ secrets.FTP_RELEASE_PASSWORD }}
+          protocol: sftp
+          server-dir: ${{ secrets.FTP_RELEASE_SERVER_DIR }}
+          local-dir: app/build/outputs/apk/
