@@ -8,6 +8,7 @@ class VNSpace(
     val userId: Long,
     val name: String?,
     val lastAccess: Long,
+    val isPrivate: Boolean,
     val owner: Boolean,
     val lastSuccessfulFetch: Long
 ) {

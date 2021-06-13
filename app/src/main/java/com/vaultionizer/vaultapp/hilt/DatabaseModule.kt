@@ -3,10 +3,7 @@ package com.vaultionizer.vaultapp.hilt
 import android.content.Context
 import androidx.room.Room
 import com.vaultionizer.vaultapp.data.db.VaultionizerLocalDatabase
-import com.vaultionizer.vaultapp.data.db.dao.LocalFileDao
-import com.vaultionizer.vaultapp.data.db.dao.LocalFileSyncRequestDao
-import com.vaultionizer.vaultapp.data.db.dao.LocalSpaceDao
-import com.vaultionizer.vaultapp.data.db.dao.LocalUserDao
+import com.vaultionizer.vaultapp.data.db.dao.*
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -34,5 +31,9 @@ object DatabaseModule {
     @Provides
     fun provideFileSyncRequestDao(database: VaultionizerLocalDatabase): LocalFileSyncRequestDao =
         database.localFileSyncRequestDao()
+
+    @Provides
+    fun provideSharedSpaceSecretDao(database: VaultionizerLocalDatabase): SharedSpaceSecretDao =
+        database.sharedSpaceSecretDao()
 
 }

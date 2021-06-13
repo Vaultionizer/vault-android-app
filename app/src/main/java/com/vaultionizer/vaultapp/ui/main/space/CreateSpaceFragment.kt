@@ -11,6 +11,8 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
 import androidx.navigation.fragment.findNavController
+import com.afollestad.materialdialogs.MaterialDialog
+import com.afollestad.materialdialogs.input.input
 import com.github.razir.progressbutton.attachTextChangeAnimator
 import com.github.razir.progressbutton.hideProgress
 import com.github.razir.progressbutton.showProgress
@@ -54,7 +56,7 @@ class CreateSpaceFragment : Fragment() {
         createButton.isEnabled = false
         createButton.attachTextChangeAnimator()
 
-        createButton.setOnClickListener {
+        val createSpaceLambda = { password: String? ->
             createButton.showProgress {
                 buttonTextRes = R.string.create_space_progress
                 progressColor = Color.WHITE
@@ -64,8 +66,28 @@ class CreateSpaceFragment : Fragment() {
                 !spaceShared.isChecked,
                 spinner.selectedItem.toString(),
                 spaceShared.isChecked && writeAccess.isChecked,
-                spaceShared.isChecked && authKeyAccess.isChecked
+                spaceShared.isChecked && authKeyAccess.isChecked,
+                password
             )
+        }
+
+        createButton.setOnClickListener {
+            var password: String? = null
+            if (spaceShared.isChecked)
+            {
+                MaterialDialog(requireContext()).show {
+                    input { dialog, text ->
+                        createSpaceLambda(text.toString())
+                    }
+                    positiveButton(R.string.enter_password_button)
+                    title(R.string.enter_password_title)
+                }
+            }
+            else{
+                createSpaceLambda(null)
+            }
+
+
         }
 
         spaceNameEdit.addTextChangedListener {

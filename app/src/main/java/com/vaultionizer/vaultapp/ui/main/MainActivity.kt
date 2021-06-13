@@ -219,7 +219,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun buildSpaceDrawerItem(space: VNSpace): NavigationDrawerItem<AbstractBadgeableDrawerItem.ViewHolder> {
         val primary = PrimaryDrawerItem().apply {
-            iconicsIcon = if (space.owner) {
+            iconicsIcon = if (space.isPrivate) {
                 FontAwesome.Icon.faw_user
             } else {
                 FontAwesome.Icon.faw_users

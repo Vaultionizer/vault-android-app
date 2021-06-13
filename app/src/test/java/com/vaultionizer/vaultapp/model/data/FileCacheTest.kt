@@ -17,6 +17,7 @@ class FileCacheTest {
             "Nice Space",
             0,
             true,
+            true,
             System.currentTimeMillis()
         ),
         null,

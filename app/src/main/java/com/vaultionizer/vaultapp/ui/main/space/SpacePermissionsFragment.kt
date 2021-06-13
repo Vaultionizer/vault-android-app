@@ -1,6 +1,8 @@
 package com.vaultionizer.vaultapp.ui.main.space
 
+import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
@@ -11,6 +13,7 @@ import androidx.preference.SwitchPreference
 import com.vaultionizer.vaultapp.R
 import com.vaultionizer.vaultapp.ui.common.dialog.AlertDialogType
 import com.vaultionizer.vaultapp.ui.common.dialog.showDialog
+import com.vaultionizer.vaultapp.ui.main.MainActivity
 import com.vaultionizer.vaultapp.ui.viewmodel.MainActivityViewModel
 import com.vaultionizer.vaultapp.ui.viewmodel.ManageSpaceViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -60,7 +63,10 @@ class SpacePermissionsFragment : PreferenceFragmentCompat() {
             setupBtn(
                 deleteSpaceBtn,
                 AlertDialogType.DELETE_SPACE
-            ) { mainActivityViewModel.requestSpaceDeletion() }
+            ) { mainActivityViewModel.requestSpaceDeletion()
+
+                val i = Intent(requireActivity(), MainActivity::class.java)
+                startActivity(i)}
             setupBtn(
                 genAuthKeyBtn,
                 AlertDialogType.REGENERATE_AUTH_KEY
@@ -116,11 +122,20 @@ class SpacePermissionsFragment : PreferenceFragmentCompat() {
 
 
     private fun showAuthKey() {
-        findNavController().navigate(
-            SpacePermissionsFragmentDirections.actionSpacePermissionsFragmentToAuthKeyFragment(
-                "Test", "symmetric", 69
-            )
-        )
+        val secret = viewModel.getSharedSpaceSecret()
+        val remoteId = mainActivityViewModel.selectedSpace.value?.remoteId ?: return
+        viewModel.authKey.observe(viewLifecycleOwner){
+            Log.e("Vault", "Auth key "+it)
+            if(it != null){
+                findNavController().navigate(
+                    SpacePermissionsFragmentDirections.actionSpacePermissionsFragmentToAuthKeyFragment(
+                        it.authKey, it.secret, remoteId
+                    )
+                )
+            }
+        }
+        viewModel.getAuthKey(remoteId)
+
     }
 
 

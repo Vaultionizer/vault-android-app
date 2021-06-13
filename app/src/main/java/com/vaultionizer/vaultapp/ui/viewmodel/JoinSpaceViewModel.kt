@@ -1,13 +1,21 @@
 package com.vaultionizer.vaultapp.ui.viewmodel
 
+import android.util.Log
 import androidx.core.text.trimmedLength
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.vaultionizer.vaultapp.R
+import com.vaultionizer.vaultapp.cryptography.CryptoUtils
+import com.vaultionizer.vaultapp.data.model.rest.result.ApiResult
+import com.vaultionizer.vaultapp.data.model.rest.result.Resource
+import com.vaultionizer.vaultapp.repository.SpaceRepository
+import com.vaultionizer.vaultapp.util.qr.CRC32Handler
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import java.lang.Exception
 import javax.inject.Inject
 
 data class JoinSpaceResult(
@@ -24,7 +32,7 @@ data class JoinSpaceInputState(
 
 @HiltViewModel
 class JoinSpaceViewModel @Inject constructor(
-
+    val spaceRepository: SpaceRepository
 ) : ViewModel() {
     private val _doneTestingJoinSpace = MutableLiveData<JoinSpaceResult>()
     val doneTestingJoinSpace: LiveData<JoinSpaceResult> = _doneTestingJoinSpace
@@ -32,17 +40,44 @@ class JoinSpaceViewModel @Inject constructor(
     private val _joinSpaceInputState = MutableLiveData<JoinSpaceInputState>()
     val joinSpaceInputState: LiveData<JoinSpaceInputState> = _joinSpaceInputState
 
+    var spaceNameContent: String = ""
 
     fun reset() {
         _doneTestingJoinSpace.value = JoinSpaceResult(false, false, false, null)
         _joinSpaceInputState.value = JoinSpaceInputState(true, null)
     }
 
-    fun joinSpace() {
+    fun joinSpace(payload: String, password: String) {
         _doneTestingJoinSpace.value = JoinSpaceResult(false, true, false, null)
         viewModelScope.launch {
+            val pair = CRC32Handler.parseContent(payload) ?: return@launch
+            val spaceId = spaceRepository.peekNextSpaceId()
+            var success = false
+            try {
+                success = CryptoUtils.importKeyForSharedSpace(spaceId, pair.key, password)
+            }catch (e: Exception){
+                _doneTestingJoinSpace.value = JoinSpaceResult(false, false, true, null)
+                return@launch
+            }
 
-            _doneTestingJoinSpace.value = JoinSpaceResult(false, false, true, null)
+            if (!success) {
+                _doneTestingJoinSpace.value = JoinSpaceResult(false, false, true, null)
+                return@launch
+            }
+
+            spaceRepository.joinSpace(pair.remoteSpaceId, spaceId, pair.authKey, spaceNameContent).collect {
+                when(it){
+                    is Resource.Success -> {
+                        _doneTestingJoinSpace.value = JoinSpaceResult(true, false, true, null)
+                    }
+                    else -> {
+                        _doneTestingJoinSpace.value = JoinSpaceResult(false, false, true, null)
+                        // TODO handle error
+                    }
+                }
+            }
+
+
         }
     }
 

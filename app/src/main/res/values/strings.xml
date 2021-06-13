@@ -289,4 +289,10 @@
 
     <string name="users_have_write_access_checkbox_text">Users have write access</string>
     <string name="users_can_invite_other_users_checkbox_text">Users can invite other users</string>
+
+    <string name="enter_password_button">Submit</string>
+    <string name="enter_password_title">Enter password for auth key</string>
+    <string name="join_space_password_button">Submit</string>
+    <string name="join_space_password_title">Enter password for auth key</string>
+    <string name="join_enter_space_name">Enter space name</string>
 </resources>
