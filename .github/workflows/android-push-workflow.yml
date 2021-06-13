@@ -18,11 +18,11 @@ jobs:
       - name: Build with Gradle and create APK
         run: ./gradlew build assembleDebug
       - name: Upload APK
-        uses: SamKirkland/FTP-Deploy-Action@4.0.0
+        uses: wlixcc/SFTP-Deploy-Action@v1.0
         with:
           server: ${{ secrets.FTP_RELEASE_HOST }}
           port: ${{ secrets.FTP_RELEASE_PORT }}
           username: ${{ secrets.FTP_RELEASE_USER }}
-          password: ${{ secrets.FTP_RELEASE_PASSWORD }}
-          server-dir: ${{ secrets.FTP_RELEASE_SERVER_DIR }}
-          local-dir: app/build/outputs/apk/
+          ssh_private_key: ${{ secrets.FTP_RELEASE_KEY }}
+          remote_path: ${{ secrets.FTP_RELEASE_SERVER_DIR }}
+          local_path: app/build/outputs/apk/
