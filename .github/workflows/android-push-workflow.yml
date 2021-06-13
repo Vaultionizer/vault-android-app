@@ -23,6 +23,5 @@ jobs:
           server: ${{ secrets.FTP_RELEASE_HOST }}
           username: ${{ secrets.FTP_RELEASE_USER }}
           password: ${{ secrets.FTP_RELEASE_PASSWORD }}
-          protocol: sftp
           server-dir: ${{ secrets.FTP_RELEASE_SERVER_DIR }}
           local-dir: app/build/outputs/apk/
