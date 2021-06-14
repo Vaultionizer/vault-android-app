@@ -62,15 +62,17 @@ class VaultionizerContentProvider : ContentProvider() {
                 VaultionizerContentProviderEntryPoint::class.java
             )
 
+        val fileId = uri.lastPathSegment!!.toLong()
         val decryptionCache = hiltEntryPoint.decryptionResultCache()
-        val decryptionResult = decryptionCache.getResultByFileId(uri.lastPathSegment!!.toLong())
-            ?: return null
+        val decryptionResult = decryptionCache.getResultByFileId(fileId)
+                ?: return null
         val pipe = ParcelFileDescriptor.createPipe()
 
         thread(start = true) {
+            decryptionCache.annotateResultAsShown(fileId)
             sendDecryptedData(
-                decryptionResult,
-                ParcelFileDescriptor.AutoCloseOutputStream(pipe[1])
+                    decryptionResult,
+                    ParcelFileDescriptor.AutoCloseOutputStream(pipe[1])
             )
         }
 
