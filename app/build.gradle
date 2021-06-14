@@ -12,6 +12,9 @@ jacoco {
     toolVersion = "0.8.6"
 }*/
 
+def keyStoreProperties = new Properties()
+keyStoreProperties.load(rootProject.file("keystore.properties").newReader())
+
 android {
     compileSdkVersion 30
     buildToolsVersion "30.0.3"
@@ -32,6 +35,15 @@ android {
             assets.srcDirs = ['src/androidTest/assets']
         }
     }
+    
+    signingConfigs {
+        create("release") {
+            storeFile = rootProject.file(keyStoreProperties['keyStoreFile'])
+            storePassword = keyStoreProperties['keyStorePassword']
+            keyAlias = keyStoreProperties['keyAlias']
+            keyPassword = keyStoreProperties['keyPassword']
+        }
+    }
 
     buildTypes {
         debug {
@@ -40,6 +52,7 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 
