@@ -12,6 +12,8 @@ jacoco {
     toolVersion = "0.8.6"
 }*/
 
+def keyStoreProperties = new Properties().load(file("keystore.properties").newReader())
+
 android {
     compileSdkVersion 30
     buildToolsVersion "30.0.3"
@@ -196,8 +198,6 @@ dependencies {
 def getInstrumentation() {
     project.hasProperty("cucumber") ? "com.vaultionizer.vaultapp.cucumber.runner.CucumberTestRunner" : "androidx.test.runner.AndroidJUnitRunner"
 }
-
-def keyStoreProperties = new Properties().load(file("keystore.properties").newReader())
 
 task jacocoTestReport(type: JacocoReport, dependsOn: ['createDebugCoverageReport']) {
     reports {
