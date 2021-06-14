@@ -11,7 +11,7 @@
 
 | Release | Link                                                                               | Comment                     |
 |---------|------------------------------------------------------------------------------------|-----------------------------|
-| latest  | [Click here](https://releases.vaultionizer.com/latest/apk/release/app-release.apk) | This APP might be unstable. |
+| latest  | [Click here](https://releases.vaultionizer.com/latest/apk/release/app-release.apk) | This APK might be unstable. |
 | stable  | N/A                                                                                |                             |
 
 ### Steps
