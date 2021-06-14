@@ -90,7 +90,7 @@
 
     <!-- File Viewer background errors -->
     <string name="file_viewer_exchange_error_title">Something went wrong!</string>
-    <string name="file_viewer_exchange_error_message">Error while syncing file %s. We\'ll try again later, no worries.</string>
+    <string name="file_viewer_exchange_error_message">Error while processing file %s. We\'ll try again later, no worries.</string>
     <string name="file_viewer_exchange_error_positive">Understood.</string>
 
     <!-- File Viewer Bottom Sheets -->
