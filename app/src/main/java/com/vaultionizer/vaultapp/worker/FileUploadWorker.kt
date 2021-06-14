@@ -56,9 +56,9 @@ class FileUploadWorker @AssistedInject constructor(
                 ?: return@withContext Result.failure()
             try {
                 fileExchangeService.uploadFile(
-                    fileRepository.getFile(request.localFileId)?.space!!.id,
-                    request.remoteFileId!!,
-                    bytes
+                        fileRepository.getFile(request.localFileId)?.space!!.remoteId,
+                        request.remoteFileId!!,
+                        bytes
                 )
                 file.lastUpdated = System.currentTimeMillis()
             } catch (exception: Exception) {
