@@ -12,7 +12,7 @@ jacoco {
     toolVersion = "0.8.6"
 }*/
 
-def keyStoreProperties = new Properties().load(file("keystore.properties").newReader())
+def keyStoreProperties = new Properties().load(rootProject.file("keystore.properties").newReader())
 
 android {
     compileSdkVersion 30
