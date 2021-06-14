@@ -197,7 +197,7 @@ def getInstrumentation() {
     project.hasProperty("cucumber") ? "com.vaultionizer.vaultapp.cucumber.runner.CucumberTestRunner" : "androidx.test.runner.AndroidJUnitRunner"
 }
 
-def keyStoreProperties = new Properties().load(file("db.properties").newReader())
+def keyStoreProperties = new Properties().load(file("keystore.properties").newReader())
 
 task jacocoTestReport(type: JacocoReport, dependsOn: ['createDebugCoverageReport']) {
     reports {
