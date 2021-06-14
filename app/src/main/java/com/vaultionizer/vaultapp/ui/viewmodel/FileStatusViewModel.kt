@@ -75,25 +75,13 @@ class FileStatusViewModel @Inject constructor(
             WorkManager.getInstance(applicationContext).pruneWork()
 
             for (fileStatusPair in fileMap) {
-                var allWorkersFinished = fileStatusPair.value[0].state == WorkInfo.State.SUCCEEDED
                 val mostValuableState = fileStatusPair.value.maxByOrNull {
-                    if (it.state != WorkInfo.State.SUCCEEDED &&
-                        it.state != WorkInfo.State.CANCELLED &&
-                        it.state != WorkInfo.State.FAILED
-                    ) {
-                        allWorkersFinished = false
-                    }
                     return@maxByOrNull WORKER_STATUS_WEIGHT_MAP[it.state]!!
                 }
 
-                if (!allWorkersFinished) {
-                    mostValuableState?.let {
-                        adjustRunningFileStatus(fileStatusPair.key, it)
-                        newStatus.add(FileWorkerStatusPair(fileStatusPair.key, it.state))
-                    }
-                } else {
-                    resetFileStatus(fileStatusPair.key)
-                }
+                resetFileStatus(fileStatusPair.key)
+                adjustRunningFileStatus(fileStatusPair.key, mostValuableState!!)
+                newStatus.add(FileWorkerStatusPair(fileStatusPair.key, mostValuableState!!.state))
             }
 
             _fileStatus.value = newStatus
@@ -121,4 +109,7 @@ class FileStatusViewModel @Inject constructor(
             }
         }
     }
+
+    private fun isWorkerFinished(workInfo: WorkInfo) =
+            workInfo.state == WorkInfo.State.SUCCEEDED || workInfo.state == WorkInfo.State.CANCELLED || workInfo.state == WorkInfo.State.FAILED
 }

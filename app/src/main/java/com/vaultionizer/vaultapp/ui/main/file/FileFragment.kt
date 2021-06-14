@@ -5,6 +5,7 @@ import android.content.Intent
 import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.*
 import android.view.animation.AnimationUtils
 import android.widget.Button
@@ -36,7 +37,6 @@ import com.vaultionizer.vaultapp.data.model.domain.VNFile
 import com.vaultionizer.vaultapp.ui.common.dialog.AlertDialogType
 import com.vaultionizer.vaultapp.ui.common.dialog.createDialog
 import com.vaultionizer.vaultapp.ui.common.dialog.showDialog
-import com.vaultionizer.vaultapp.ui.main.MainActivity
 import com.vaultionizer.vaultapp.ui.main.file.viewer.FileViewerArgs
 import com.vaultionizer.vaultapp.ui.viewmodel.FileStatusViewModel
 import com.vaultionizer.vaultapp.ui.viewmodel.MainActivityViewModel
@@ -187,9 +187,16 @@ class FileFragment : Fragment(), View.OnClickListener {
 
         decryptionCache.decryptionResultsLiveData.observe(viewLifecycleOwner) {
             for (result in it) {
+                if (result.shown) {
+                    continue
+                }
+
+                Log.e("Vault", "TRIGGERED NAV")
                 if (!tryNavigateToDefaultViewer(result.file)) {
                     openSystemViewerChooser(result.file)
                 }
+
+                result.shown = true
             }
         }
 
@@ -231,7 +238,9 @@ class FileFragment : Fragment(), View.OnClickListener {
 
     override fun onResume() {
         super.onResume()
+
         requireActivity().invalidateOptionsMenu()
+        decryptionCache.invalidateShown()
     }
 
     override fun onPrepareOptionsMenu(menu: Menu) {
