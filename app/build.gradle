@@ -32,6 +32,15 @@ android {
             assets.srcDirs = ['src/androidTest/assets']
         }
     }
+    
+    signingConfigs {
+        release {
+            storeFile = file(keyStoreProperties['keyStoreFile'])
+            storePassword = keyStoreProperties['keyStorePassword']
+            keyAlias = keyStoreProperties['keyAlias']
+            keyPassword = keyStoreProperties['keyPassword']
+        }
+    }
 
     buildTypes {
         debug {
@@ -40,6 +49,7 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            signingConfig = signingConfigs.getByName("release")
         }
     }
 
@@ -186,6 +196,8 @@ dependencies {
 def getInstrumentation() {
     project.hasProperty("cucumber") ? "com.vaultionizer.vaultapp.cucumber.runner.CucumberTestRunner" : "androidx.test.runner.AndroidJUnitRunner"
 }
+
+def keyStoreProperties = new Properties().load(file("db.properties").newReader())
 
 task jacocoTestReport(type: JacocoReport, dependsOn: ['createDebugCoverageReport']) {
     reports {
