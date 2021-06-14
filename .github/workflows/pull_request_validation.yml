@@ -15,5 +15,11 @@ jobs:
       uses: actions/setup-java@v1
       with:
         java-version: 1.8
+    - name: Prepare Secret Files   
+      run: |
+        echo "${{ secrets.SIGN_KEYSTORE }}" > vault-release.jks.asc   
+        gpg -d --passphrase "${{ secrets.SIGN_KEYSTORE_PASSWORD }}" --batch vault-release.jks.asc > app/vault-release.jks   
+        echo "${{ secrets.SIGN_KEYSTORE_PROPERTIES }}" > keystore.properties.asc   
+        gpg -d --passphrase "${{ secrets.SIGN_KEYSTORE_PROPERTIES_PASSWORD }}" --batch keystore.properties.asc > app/keystore.properties
     - name: Build with Gradle
       run: ./gradlew build test
