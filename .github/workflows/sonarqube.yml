@@ -16,6 +16,12 @@ jobs:
         uses: actions/setup-java@v1
         with:
           java-version: 11
+      - name: Prepare Secret Files   
+        run: |   
+           echo "${{ secrets.SIGN_KEYSTORE }}" > vault-release.jks.asc   
+           gpg -d --passphrase "${{ secrets.SIGN_KEYSTORE_PASSWORD }}" --batch vault-release.jks.asc > vault-release.jks   
+           echo "${{ secrets.SIGN_KEYSTORE_PROPERTIES }}" > keystore.properties.asc   
+           gpg -d --passphrase "${{ secrets.SIGN_KEYSTORE_PROPERTIES_PASSWORD }}" --batch keystore.properties.asc > keystore.properties
       - name: Cache SonarCloud packages
         uses: actions/cache@v1
         with:
