@@ -124,7 +124,7 @@ dependencies {
 
     // WebSocket
     implementation 'org.hildan.krossbow:krossbow-stomp-core:2.1.0'
-    implementation 'org.hildan.krossbow:krossbow-websocket-okhttp:2.0.0'
+    implementation 'org.hildan.krossbow:krossbow-websocket-okhttp:2.1.0'
 
     // Expandable FAB
     implementation 'com.nambimobile.widgets:expandable-fab:1.0.2'
