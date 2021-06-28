@@ -193,7 +193,7 @@ dependencies {
     implementation 'com.otaliastudios:cameraview:2.7.0'
 
     // LiveEvent
-    implementation "com.github.hadilq:live-event:1.2.3"
+    implementation "com.github.hadilq:live-event:1.3.0"
 }
 
 def getInstrumentation() {
