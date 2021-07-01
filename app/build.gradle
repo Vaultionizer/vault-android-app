@@ -127,7 +127,7 @@ dependencies {
     implementation 'org.hildan.krossbow:krossbow-websocket-okhttp:2.0.0'
 
     // Expandable FAB
-    implementation 'com.nambimobile.widgets:expandable-fab:1.0.2'
+    implementation 'com.nambimobile.widgets:expandable-fab:1.1.1'
 
     // Material Search Bar
     implementation 'com.github.mancj:MaterialSearchBar:0.8.5'
