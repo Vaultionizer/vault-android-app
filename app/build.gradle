@@ -190,7 +190,7 @@ dependencies {
     implementation "org.mindrot:jbcrypt:0.4-atlassian-1"
 
     // CameraKit
-    implementation 'com.otaliastudios:cameraview:2.7.0'
+    implementation 'com.otaliastudios:cameraview:2.7.1'
 
     // LiveEvent
     implementation "com.github.hadilq:live-event:1.2.3"
